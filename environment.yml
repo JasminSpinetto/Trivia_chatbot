@@ -1,0 +1,20 @@
+name: nlp_project
+channels: 
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - tqdm
+  - requests
+  - python-dotenv
+  - ipykernel
+  - pip:
+      - transformers
+      - datasets
+      - huggingface_hub

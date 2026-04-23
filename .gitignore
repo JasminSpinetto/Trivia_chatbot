@@ -1,0 +1,45 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+
+# Model weights and large files
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.gguf
+
+# HuggingFace cache
+.cache/
+~/.cache/huggingface/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs and Outputs
+logs/
+*.log
+outputs/
+runs/
+wandb/
