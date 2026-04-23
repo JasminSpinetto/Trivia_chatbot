@@ -1,0 +1,3 @@
+Create a branch for each model to try. Develop:
+- base code in .py file to allow easier merges
+- commented/explanatory.ipynb version 
