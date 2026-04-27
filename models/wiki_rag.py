@@ -1,6 +1,9 @@
+import re
 import torch
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from transformers import BitsAndBytesConfig
+
+_COT_MAX_TOKENS = 200
 
 try:
     import wikipedia
@@ -121,7 +124,8 @@ class WikiRAGModel(LLMModel):
 
 
 class WikiRAG8B(WikiRAGModel):
-    """Llama-3.1-8B-Instruct (4-bit) with Wikipedia → DuckDuckGo RAG retrieval."""
+    """Llama-3.1-8B-Instruct (4-bit) with Wikipedia → DuckDuckGo RAG retrieval,
+    chain-of-thought reasoning, and answer verification."""
 
     _model_name = "meta-llama/Llama-3.1-8B-Instruct"
     _quantization_config = BitsAndBytesConfig(
@@ -130,3 +134,73 @@ class WikiRAG8B(WikiRAGModel):
         bnb_4bit_compute_dtype=torch.bfloat16,
         bnb_4bit_use_double_quant=True,
     )
+
+    def _parse_answer(self, response: str, options: dict) -> int:
+        match = re.search(r'[Aa]nswer:\s*(\d+)', response)
+        if match and match.group(1) in options:
+            return int(match.group(1))
+        for token in response.split():
+            token = token.strip('.,!?:')
+            if token in options:
+                return int(token)
+        return int(next(iter(options)))
+
+    def _build_content(self, context: str, question_text: str, options: dict, cot: bool) -> str:
+        options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
+        suffix = (
+            "Think step by step, then end with 'Answer: <number>'."
+            if cot else
+            "Reply with only the option number."
+        )
+        if context:
+            return (
+                f"Context from web search:\n{context}\n\n"
+                f"Question: {question_text}\n\nOptions:\n{options_str}\n\n{suffix}"
+            )
+        return f"Question: {question_text}\n\nOptions:\n{options_str}\n\n{suffix}"
+
+    def _run(self, messages: list, max_new_tokens: int) -> str:
+        output = self.pipe(
+            messages,
+            max_new_tokens=max_new_tokens,
+            return_full_text=False,
+            do_sample=self._do_sample,
+            temperature=self._temperature,
+        )
+        return output[0]["generated_text"].strip()
+
+    def answer(self, question_text: str, options: dict) -> int:
+        context = self._retrieve_context(question_text)
+
+        # Chain-of-thought call
+        cot_msgs = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a quiz contestant. Think step by step, "
+                    "then end your response with 'Answer: <number>'."
+                ),
+            },
+            {"role": "user", "content": self._build_content(context, question_text, options, cot=True)},
+        ]
+        cot = self._parse_answer(self._run(cot_msgs, _COT_MAX_TOKENS), options)
+
+        # Fast verification call
+        verify_msgs = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a quiz contestant. Reply with ONLY the number of the correct option. No explanation."
+                ),
+            },
+            {"role": "user", "content": self._build_content(context, question_text, options, cot=False)},
+        ]
+        verify = self._parse_answer(self._run(verify_msgs, self._max_new_tokens), options)
+
+        # Both agree → confident; disagree → trust verify (less influenced by bad context)
+        return cot if cot == verify else verify
+
+    def get_info(self) -> dict:
+        info = super().get_info()
+        info["enhancements"] = "chain-of-thought, answer verification"
+        return info
