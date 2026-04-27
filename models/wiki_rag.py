@@ -1,5 +1,8 @@
+import logging
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from datetime import datetime
 
 try:
     import wikipedia
@@ -38,10 +41,26 @@ class WikiRAGModel(LLMModel):
         super().__init__()
         self._max_new_tokens = 20  # used for the fast verification call only
         self.debug = False
+        self._logger = None
+
+    def _setup_logger(self):
+        os.makedirs("logs", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_path = f"logs/wiki_rag_{timestamp}.log"
+        logger = logging.getLogger(f"wiki_rag_{timestamp}")
+        logger.setLevel(logging.DEBUG)
+        handler = logging.FileHandler(log_path, encoding="utf-8")
+        handler.setFormatter(logging.Formatter("%(asctime)s  %(message)s"))
+        logger.addHandler(handler)
+        self._logger = logger
+        print(f"[WikiRAG] Debug logging → {log_path}")
 
     def _log(self, msg: str):
-        if self.debug:
-            self._log(msg)
+        if not self.debug:
+            return
+        if self._logger is None:
+            self._setup_logger()
+        self._logger.info(msg)
 
     # ── 1. Query extraction ───────────────────────────────────────────────────
 
