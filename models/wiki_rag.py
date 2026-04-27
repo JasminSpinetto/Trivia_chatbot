@@ -44,7 +44,9 @@ class WikiRAGModel(LLMModel):
         """Strip question/stop words to get a cleaner Wikipedia search query."""
         words = question_text.lower().replace('?', '').split()
         filtered = [w for w in words if w not in _QUESTION_WORDS and w not in _STOP_WORDS]
-        return ' '.join(filtered) if filtered else question_text
+        query = ' '.join(filtered) if filtered else question_text
+        print(f"\n[WikiRAG] Query extracted: '{query}'")
+        return query
 
     # ── 2. Re-ranking ─────────────────────────────────────────────────────────
 
@@ -69,40 +71,58 @@ class WikiRAGModel(LLMModel):
     def _search_wikipedia(self, query: str) -> str:
         titles = wikipedia.search(query, results=3)
         if not titles:
+            print("[WikiRAG] Wikipedia: no titles found")
             return ""
+        print(f"[WikiRAG] Wikipedia articles found: {titles[:3]}")
         with ThreadPoolExecutor(max_workers=3) as ex:
             summaries = [s for s in ex.map(self._fetch_wiki_summary, titles[:3]) if s]
-        return self._rank_summaries(query, summaries)
+        best = self._rank_summaries(query, summaries)
+        print(f"[WikiRAG] Best summary (first 200 chars): {best[:200]!r}")
+        return best
 
     def _search_duckduckgo(self, query: str) -> str:
         try:
             with DDGS() as ddgs:
                 hits = list(ddgs.text(query, max_results=3))
-            return ' '.join(h.get('body', '') for h in hits)[:800]
-        except Exception:
+            snippet = ' '.join(h.get('body', '') for h in hits)[:800]
+            print(f"[WikiRAG] DuckDuckGo snippet (first 200 chars): {snippet[:200]!r}")
+            return snippet
+        except Exception as e:
+            print(f"[WikiRAG] DuckDuckGo failed: {e}")
             return ""
 
     def _retrieve_context(self, question_text: str) -> str:
         query = self._extract_query(question_text)
 
         if _WIKIPEDIA_AVAILABLE:
+            print("[WikiRAG] Searching Wikipedia...")
             with ThreadPoolExecutor(max_workers=1) as ex:
                 fut = ex.submit(self._search_wikipedia, query)
                 try:
                     ctx = fut.result(timeout=_SEARCH_TIMEOUT)
                     if ctx:
+                        print("[WikiRAG] Using Wikipedia context.")
                         return ctx
-                except (FuturesTimeoutError, Exception):
-                    pass
+                except FuturesTimeoutError:
+                    print("[WikiRAG] Wikipedia timed out.")
+                except Exception as e:
+                    print(f"[WikiRAG] Wikipedia error: {e}")
 
         if _DDGS_AVAILABLE:
+            print("[WikiRAG] Falling back to DuckDuckGo...")
             with ThreadPoolExecutor(max_workers=1) as ex:
                 fut = ex.submit(self._search_duckduckgo, query)
                 try:
-                    return fut.result(timeout=_SEARCH_TIMEOUT) or ""
-                except (FuturesTimeoutError, Exception):
-                    pass
+                    ctx = fut.result(timeout=_SEARCH_TIMEOUT) or ""
+                    if ctx:
+                        print("[WikiRAG] Using DuckDuckGo context.")
+                    return ctx
+                except FuturesTimeoutError:
+                    print("[WikiRAG] DuckDuckGo timed out.")
+                except Exception as e:
+                    print(f"[WikiRAG] DuckDuckGo error: {e}")
 
+        print("[WikiRAG] No context retrieved — answering from model weights only.")
         return ""
 
     # ── Shared helpers ────────────────────────────────────────────────────────
@@ -144,6 +164,7 @@ class WikiRAGModel(LLMModel):
     # ── 4. Chain-of-thought call ──────────────────────────────────────────────
 
     def _cot_answer(self, context: str, question_text: str, options: dict) -> int:
+        print("[WikiRAG] Running chain-of-thought inference...")
         messages = [
             {
                 "role": "system",
@@ -154,11 +175,16 @@ class WikiRAGModel(LLMModel):
             },
             {"role": "user", "content": self._build_user_content(context, question_text, options, cot=True)},
         ]
-        return self._parse_answer(self._run_pipe(messages, _COT_MAX_TOKENS), options)
+        response = self._run_pipe(messages, _COT_MAX_TOKENS)
+        print(f"[WikiRAG] CoT response:\n{response}")
+        answer = self._parse_answer(response, options)
+        print(f"[WikiRAG] CoT answer parsed: {answer}")
+        return answer
 
     # ── 5. Verification call ──────────────────────────────────────────────────
 
     def _verify_answer(self, context: str, question_text: str, options: dict) -> int:
+        print("[WikiRAG] Running verification inference...")
         messages = [
             {
                 "role": "system",
@@ -166,16 +192,26 @@ class WikiRAGModel(LLMModel):
             },
             {"role": "user", "content": self._build_user_content(context, question_text, options, cot=False)},
         ]
-        return self._parse_answer(self._run_pipe(messages, self._max_new_tokens), options)
+        response = self._run_pipe(messages, self._max_new_tokens)
+        print(f"[WikiRAG] Verification response: {response!r}")
+        answer = self._parse_answer(response, options)
+        print(f"[WikiRAG] Verification answer parsed: {answer}")
+        return answer
 
     # ── Main entry point ──────────────────────────────────────────────────────
 
     def answer(self, question_text: str, options: dict) -> int:
+        print(f"\n{'='*60}")
+        print(f"[WikiRAG] Question: {question_text}")
         context = self._retrieve_context(question_text)
         cot = self._cot_answer(context, question_text, options)
         verify = self._verify_answer(context, question_text, options)
-        # Both agree → confident answer; disagree → trust the reasoned CoT
-        return cot if cot == verify else cot
+        if cot == verify:
+            print(f"[WikiRAG] Both calls agree → final answer: {cot}")
+        else:
+            print(f"[WikiRAG] Disagreement (CoT={cot}, verify={verify}) → trusting CoT: {cot}")
+        print('='*60)
+        return cot
 
     def get_info(self) -> dict:
         info = super().get_info()
