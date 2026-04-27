@@ -255,12 +255,20 @@ def main():
         default=False,
         help=f"Append session results to {RESULTS_FILE}"
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Print model internals (retrieval, CoT, verification) for debugging"
+    )
     args = parser.parse_args()
 
     module_path, class_name = MODELS[args.model]
     module = importlib.import_module(module_path)
     model_class = getattr(module, class_name)
     model = model_class()
+    if hasattr(model, "debug"):
+        model.debug = args.debug
 
     if args.multiplicity < 1:
         print("Input Error: Multiplicity value should be greater or equal to 1!")
