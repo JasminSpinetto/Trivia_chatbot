@@ -5,8 +5,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from utils.HF_login import HF_login
 
 
-class LlamaModel:
-    """Base class for all Llama variants. Subclasses set _model_name and _quantization_config."""
+class LLMModel:
+    """Base class for any HuggingFace causal LLM. Subclasses set _model_name and optionally _quantization_config."""
 
     _model_name: str = None
     _quantization_config: BitsAndBytesConfig = None
@@ -20,7 +20,7 @@ class LlamaModel:
         torch.cuda.manual_seed_all(42)
 
         self._do_sample = True
-        self._temperature = 0.1
+        self._temperature = 0.15
         self._max_new_tokens = 10
 
         kwargs = dict(
@@ -84,15 +84,15 @@ class LlamaModel:
         return int(next(iter(options)))
 
 
-class Llama1B(LlamaModel):
+class Llama1B(LLMModel):
     _model_name = "meta-llama/Llama-3.2-1B-Instruct"
 
 
-class Llama3B(LlamaModel):
+class Llama3B(LLMModel):
     _model_name = "meta-llama/Llama-3.2-3B-Instruct"
 
 
-class Llama8B(LlamaModel):
+class Llama8B(LLMModel):
     _model_name = "meta-llama/Llama-3.1-8B-Instruct"
     _quantization_config = BitsAndBytesConfig(
         load_in_4bit=True,

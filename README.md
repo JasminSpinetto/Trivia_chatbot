@@ -82,9 +82,9 @@ This command runs the selected model and plays ```[number]``` games for each com
 | Model key | Description |
 |-----------|-------------|
 | `random` | Random baseline — picks a uniformly random answer (`models/random.py`) |
-| `llama-1b` | Meta LLaMA 3.2 1B Instruct, locally hosted via HuggingFace (`models/Llama.py`) |
-| `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/Llama.py`) |
-| `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/Llama.py`) |
+| `llama-1b` | Meta LLaMA 3.2 1B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
+| `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
+| `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/LLM.py`) |
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 

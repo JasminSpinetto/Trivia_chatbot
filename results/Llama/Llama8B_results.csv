@@ -1,48 +1,4 @@
 ================================================================================
-MODEL: random | 2026-04-27 16:14:10
-model_name: Random baseline
-decoding: uniform random choice
---------------------------------------------------------------------------------
-Competition,Games,Avg Correct / 15,Accuracy %
-Entertainment,5,0.20,1.3%
-Ancient History and Politics,5,0.60,4.0%
-Science and Nature,5,0.20,1.3%
-Maths,5,0.20,1.3%
-OVERALL,20,0.30,2.0%
-================================================================================
-
-================================================================================
-MODEL: llama | 2026-04-27 16:33:33
-model_name: meta-llama/Llama-3.2-1B-Instruct
-parameters: ~1.2B
-decoding: sampling (temperature=0.2)
-max_new_tokens: 10
---------------------------------------------------------------------------------
-Competition,Games,Avg Correct / 15,Accuracy %
-Entertainment,20,1.75,11.7%
-Ancient History and Politics,20,1.70,11.3%
-Science and Nature,20,1.20,8.0%
-Maths,20,0.25,1.7%
-OVERALL,80,1.23,8.2%
-================================================================================
-
-================================================================================
-MODEL: llama-3b | 2026-04-27 16:58:49
-model_name: meta-llama/Llama-3.2-3B-Instruct
-parameters: ~3.2B
-quantization: none
-decoding: sampling (temperature=0.2)
-max_new_tokens: 10
---------------------------------------------------------------------------------
-Competition,Games,Avg Correct / 15,Accuracy %
-Entertainment,20,4.70,31.3%
-Ancient History and Politics,20,2.05,13.7%
-Science and Nature,20,2.95,19.7%
-Maths,20,0.50,3.3%
-OVERALL,80,2.55,17.0%
-================================================================================
-
-================================================================================
 MODEL: llama-8b | 2026-04-27 17:42:23
 model_name: meta-llama/Llama-3.1-8B-Instruct
 parameters: ~8.0B
@@ -58,5 +14,51 @@ Maths,20,0.65,4.3%
 OVERALL,80,3.79,25.2%
 ================================================================================
 
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:46:25
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.1)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,4.30,28.7%
+Ancient History and Politics,20,2.30,15.3%
+Science and Nature,20,6.90,46.0%
+Maths,20,0.40,2.7%
+OVERALL,80,3.48,23.2%
+================================================================================
 
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:49:28
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.3)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,5.55,37.0%
+Ancient History and Politics,20,2.15,14.3%
+Science and Nature,20,4.80,32.0%
+Maths,20,0.25,1.7%
+OVERALL,80,3.19,21.2%
+================================================================================
+
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:56:02
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.15)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,3.85,25.7%
+Ancient History and Politics,20,2.80,18.7%
+Science and Nature,20,6.65,44.3%
+Maths,20,0.65,4.3%
+OVERALL,80,3.49,23.2%
+================================================================================
 

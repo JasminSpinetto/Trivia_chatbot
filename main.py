@@ -8,9 +8,9 @@ from utils import MillionaireClient, AuthenticationError
 ONLINE = True
 MODELS = {
     "random": ("models.random", "RandomModel"),
-    "llama-1b": ("models.Llama", "Llama1B"),
-    "llama-3b": ("models.Llama", "Llama3B"),
-    "llama-8b": ("models.Llama", "Llama8B"),
+    "llama-1b": ("models.LLM", "Llama1B"),
+    "llama-3b": ("models.LLM", "Llama3B"),
+    "llama-8b": ("models.LLM", "Llama8B"),
 }
 
 # choose where to save results
