@@ -70,12 +70,21 @@ The main entry point is `main.py`. It accepts a `--model` argument to select whi
 ```bash
 python main.py --model [model_name]
 ```
+### Benchmarking usage
+To benchmark models and save aggregate performance results, run:
+```bash
+python main.py --model [model_name] --test_all --multiplicity [number] --verbose
+```
+This command runs the selected model and plays ```[number]``` games for each competition, saving the results to a ```results.csv``` file.
 
 ### Available Models
 
 | Model key | Description |
 |-----------|-------------|
-| `baseline` | Baseline model (`models/baseline.py`) |
+| `random` | Random baseline — picks a uniformly random answer (`models/random.py`) |
+| `llama-1b` | Meta LLaMA 3.2 1B Instruct, locally hosted via HuggingFace (`models/Llama.py`) |
+| `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/Llama.py`) |
+| `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/Llama.py`) |
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 

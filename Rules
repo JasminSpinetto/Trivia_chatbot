@@ -1,3 +1,8 @@
+BRANCHES:
 Create a branch for each model to try. Develop:
 - base code in .py file to allow easier merges
 - commented/explanatory.ipynb version 
+
+RESULTS:
+- create a [model_name].csv file to save results for different configs of the same model
+- save BEST RESULTS/CONFIG ONLY for each model in the "results.csv" file
