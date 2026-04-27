@@ -1,4 +1,6 @@
+import torch
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from transformers import BitsAndBytesConfig
 
 try:
     import wikipedia
@@ -116,3 +118,15 @@ class WikiRAGModel(LLMModel):
         info = super().get_info()
         info["retrieval"] = "Wikipedia → DuckDuckGo fallback"
         return info
+
+
+class WikiRAG8B(WikiRAGModel):
+    """Llama-3.1-8B-Instruct (4-bit) with Wikipedia → DuckDuckGo RAG retrieval."""
+
+    _model_name = "meta-llama/Llama-3.1-8B-Instruct"
+    _quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+        bnb_4bit_use_double_quant=True,
+    )

@@ -12,6 +12,7 @@ MODELS = {
     "llama-3b": ("models.LLM", "Llama3B"),
     "llama-8b": ("models.LLM", "Llama8B"),
     "llama-3b-wiki": ("models.wiki_rag", "WikiRAGModel"),
+    "llama-8b-wiki": ("models.wiki_rag", "WikiRAG8B"),
 }
 
 # choose where to save results

@@ -86,6 +86,7 @@ This command runs the selected model and plays ```[number]``` games for each com
 | `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
 | `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/LLM.py`) |
 | `llama-3b-wiki` | Meta LLaMA 3.2 3B Instruct with Wikipedia → DuckDuckGo RAG retrieval (`models/wiki_rag.py`) |
+| `llama-8b-wiki` | Meta LLaMA 3.1 8B Instruct (4-bit) with Wikipedia → DuckDuckGo RAG retrieval (`models/wiki_rag.py`) |
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 
