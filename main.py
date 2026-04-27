@@ -7,23 +7,24 @@ from utils import MillionaireClient, AuthenticationError
 
 ONLINE = True
 MODELS = {
-    "random": ("models.random", "RandomModel"),
-    "llama-1b": ("models.LLM", "Llama1B"),
-    "llama-3b": ("models.LLM", "Llama3B"),
-    "llama-8b": ("models.LLM", "Llama8B"),
+    "random":    ("models.random", "RandomModel"),
+    "llama-1b":  ("models.LLM", "Llama1B"),
+    "llama-3b":  ("models.LLM", "Llama3B"),
+    "llama-8b":  ("models.LLM", "Llama8B"),
+    "qwen-1.5b":       ("models.LLM", "Qwen15B"),
+    "qwen-7b":         ("models.LLM", "Qwen7B"),
+    "qwen-7b-code":    ("models.LLM", "QwenWithCode"),
 }
 
-# choose where to save results
-RESULTS_FILE = "results/Llama_results.csv"
+RESULTS_FILE = "results/math-results.csv"
+
 
 def login():
     """
     Authenticates the user with the MillionaireClient using credentials
     stored in the .env file (API_URL, USERNAME, PASSWORD).
     """
-
     config = dotenv_values(".env")
-
     client = MillionaireClient(config["API_URL"])
     try:
         user = client.login(config["USERNAME"], config["PASSWORD"])
@@ -31,16 +32,16 @@ def login():
     except AuthenticationError as e:
         print(f"Login failed: {e}")
         return None
-
     return client
 
 
-def save_results(model_key, model, competitions, play_history):
+def save_results(model_key, model, competitions, play_history, math_only):
     info = model.get_info() if hasattr(model, "get_info") else {}
 
     lines = []
     lines.append("=" * 80)
-    lines.append(f"MODEL: {model_key} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    label = "MATH BENCHMARK" if math_only else "MODEL"
+    lines.append(f"{label}: {model_key} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     for k, v in info.items():
         lines.append(f"{k}: {v}")
     lines.append("-" * 80)
@@ -64,7 +65,7 @@ def save_results(model_key, model, competitions, play_history):
             f"{competitions[comp_id].name},{n},{avg_correct:.2f},{accuracy:.1f}%"
         )
 
-    if total_games > 0:
+    if total_games > 0 and not math_only:
         overall_accuracy = total_correct / total_possible * 100
         lines.append(
             f"OVERALL,{total_games},{total_correct/total_games:.2f},{overall_accuracy:.1f}%"
@@ -79,7 +80,7 @@ def save_results(model_key, model, competitions, play_history):
     print(f"\nResults appended to {RESULTS_FILE}")
 
 
-def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
+def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, math_only):
     """
     Runs an interactive quiz session against the online platform.
     Allows the user to select a competition, play multiple games, and
@@ -93,8 +94,8 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
         print("Game arrested.")
         return
 
-    # Session summary
-    num_competitions = len(client.competitions.list_all())
+    competitions = client.competitions.list_all()
+    num_competitions = len(competitions)
     play_history = {
         i: {"num_games": 0, "level": [], "score": []}
         for i in range(num_competitions)
@@ -102,23 +103,40 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
 
     # List available competitions
     print("\n=== Available Competitions ===")
-    competitions = client.competitions.list_all()
     for comp in competitions:
         print(f"  {comp.id}: {comp.name} ({comp.max_levels} questions)")
 
-    cnt = -1
-    print_cond = (not test_all) or verbose
+    # Resolve math competition index
+    if math_only:
+        math_comp_id = next(
+            (i for i, c in enumerate(competitions) if "math" in c.name.lower()),
+            None
+        )
+        if math_comp_id is None:
+            print("Error: no math competition found.")
+            return
+        print(f"\nMath-only mode: running {multiplicity} games on '{competitions[math_comp_id].name}'")
 
-    while(True):
+    cnt = -1
+    print_cond = (not test_all and not math_only) or verbose
+
+    while True:
         # Choose a competition ID
-        if test_all:
+        if math_only:
+            cnt += 1
+            comp_id = math_comp_id
+            play_history[comp_id]["num_games"] += 1
+            if verbose:
+                print(f"Competition selected: {competitions[comp_id].name}")
+        elif test_all:
             cnt += 1
             comp_id = cnt % num_competitions
             play_history[comp_id]["num_games"] += 1
-            if verbose: print(f"Competition selected: {competitions[comp_id]}")
+            if verbose:
+                print(f"Competition selected: {competitions[comp_id].name}")
         else:
             comp_id = int(input("Enter competition ID:"))
-            while(comp_id < 0 or comp_id >= num_competitions):
+            while comp_id < 0 or comp_id >= num_competitions:
                 print(f"Invalid competition. Please enter a competition ID in [0-{num_competitions-1}]")
                 comp_id = int(input("Enter competition ID:"))
             play_history[comp_id]["num_games"] += 1
@@ -145,21 +163,15 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
                 for opt in question.options:
                     print(f"  [{opt.id}] {opt.text}")
 
-            options = {
-                str(opt.id) : opt.text
-                for opt in question.options
-            }
+            options = {str(opt.id): opt.text for opt in question.options}
 
-            # Get answer
             answer_id = model.answer(question.text, options)
             if print_cond: print(f"\nSelected answer: {answer_id}")
 
-            # Get time remaining
             time_left = game.time_remaining
             if time_left and print_cond:
                 print(f"Time to answer: {30.0 - time_left:.1f}s")
 
-            # Submit answer
             result = game.answer(answer_id)
 
             if print_cond:
@@ -188,7 +200,10 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
         play_history[comp_id]["level"].append(game.current_level - 1)
         play_history[comp_id]["score"].append(game.earned_amount)
 
-        if test_all:
+        if math_only:
+            if cnt + 1 >= multiplicity:
+                break
+        elif test_all:
             if cnt + 1 >= num_competitions * multiplicity:
                 break
         else:
@@ -199,8 +214,8 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
     print("\n=== Session Summary ===")
     for comp_id in play_history.keys():
         num_games = play_history[comp_id]["num_games"]
-        if num_games == 0: continue
-
+        if num_games == 0:
+            continue
         print(f"\nCOMPETITION {competitions[comp_id]}:")
         print(f"Number of games: {num_games}")
         print(f"Average correct answers: {sum(play_history[comp_id]['level'])/num_games:,.2f}")
@@ -208,17 +223,17 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
         print()
 
     if output_csv:
-        save_results(model_key, model, competitions, play_history)
+        save_results(model_key, model, competitions, play_history, math_only)
 
 
-def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv):
+def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only):
     """
     Runs the quiz session in offline mode using a local dataset.
     Used when the online platform is no longer available.
     """
-
     #TODO
     return
+
 
 def main():
     parser = argparse.ArgumentParser(description="PoliMillionaire chatbot")
@@ -236,11 +251,17 @@ def main():
         help="Test all competitions"
     )
     parser.add_argument(
+        "--math",
+        action="store_true",
+        default=False,
+        help="Run benchmark on the math competition only"
+    )
+    parser.add_argument(
         "--multiplicity",
         type=int,
         required=False,
         default=1,
-        help="How many attempts for competition"
+        help="Number of games per competition (or total games when --math is set)"
     )
     parser.add_argument(
         "--verbose",
@@ -256,19 +277,19 @@ def main():
     )
     args = parser.parse_args()
 
-    module_path, class_name = MODELS[args.model]
-    module = importlib.import_module(module_path)
-    model_class = getattr(module, class_name)
-    model = model_class()
-
     if args.multiplicity < 1:
         print("Input Error: Multiplicity value should be greater or equal to 1!")
         return
 
+    module_path, class_name = MODELS[args.model]
+    module = importlib.import_module(module_path)
+    model = getattr(module, class_name)()
+
     if ONLINE:
-        play_online(model, args.model, args.test_all, args.multiplicity, args.verbose, args.output_csv)
+        play_online(model, args.model, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
     else:
-        play_offline(model, args.model, args.test_all, args.multiplicity, args.verbose, args.output_csv)
+        play_offline(model, args.model, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
+
 
 if __name__ == "__main__":
     main()
