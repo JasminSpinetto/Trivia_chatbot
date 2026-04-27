@@ -18,3 +18,5 @@ dependencies:
       - transformers
       - datasets
       - huggingface_hub
+      - accelerate #for HuggingFace GPU use
+      - bitsandbytes #for 4-bit quantization

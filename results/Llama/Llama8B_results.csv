@@ -1,0 +1,64 @@
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:42:23
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.1)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,3.75,25.0%
+Ancient History and Politics,20,4.90,32.7%
+Science and Nature,20,5.85,39.0%
+Maths,20,0.65,4.3%
+OVERALL,80,3.79,25.2%
+================================================================================
+
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:46:25
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.1)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,4.30,28.7%
+Ancient History and Politics,20,2.30,15.3%
+Science and Nature,20,6.90,46.0%
+Maths,20,0.40,2.7%
+OVERALL,80,3.48,23.2%
+================================================================================
+
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:49:28
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.3)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,5.55,37.0%
+Ancient History and Politics,20,2.15,14.3%
+Science and Nature,20,4.80,32.0%
+Maths,20,0.25,1.7%
+OVERALL,80,3.19,21.2%
+================================================================================
+
+================================================================================
+MODEL: llama-8b | 2026-04-27 17:56:02
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.15)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,3.85,25.7%
+Ancient History and Politics,20,2.80,18.7%
+Science and Nature,20,6.65,44.3%
+Maths,20,0.65,4.3%
+OVERALL,80,3.49,23.2%
+================================================================================
+

@@ -1,12 +1,20 @@
+import torch  # must be imported before utils/requests to avoid DLL conflicts on Windows
 import argparse
 import importlib
+from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
 ONLINE = True
-MODELS = { 
-    "baseline": ("models.baseline", "BaselineModel") # Example
+MODELS = {
+    "random": ("models.random", "RandomModel"),
+    "llama-1b": ("models.LLM", "Llama1B"),
+    "llama-3b": ("models.LLM", "Llama3B"),
+    "llama-8b": ("models.LLM", "Llama8B"),
 }
+
+# choose where to save results
+RESULTS_FILE = "results/Llama_results.csv"
 
 def login():
     """
@@ -26,7 +34,52 @@ def login():
 
     return client
 
-def play_online(model, test_all, multiplicity, verbose):
+
+def save_results(model_key, model, competitions, play_history):
+    info = model.get_info() if hasattr(model, "get_info") else {}
+
+    lines = []
+    lines.append("=" * 80)
+    lines.append(f"MODEL: {model_key} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    for k, v in info.items():
+        lines.append(f"{k}: {v}")
+    lines.append("-" * 80)
+    lines.append("Competition,Games,Avg Correct / 15,Accuracy %")
+
+    total_games = 0
+    total_correct = 0
+    total_possible = 0
+
+    for comp_id, data in play_history.items():
+        n = data["num_games"]
+        if n == 0:
+            continue
+        avg_correct = sum(data["level"]) / n
+        max_lvl = competitions[comp_id].max_levels
+        accuracy = avg_correct / max_lvl * 100
+        total_games += n
+        total_correct += sum(data["level"])
+        total_possible += max_lvl * n
+        lines.append(
+            f"{competitions[comp_id].name},{n},{avg_correct:.2f},{accuracy:.1f}%"
+        )
+
+    if total_games > 0:
+        overall_accuracy = total_correct / total_possible * 100
+        lines.append(
+            f"OVERALL,{total_games},{total_correct/total_games:.2f},{overall_accuracy:.1f}%"
+        )
+
+    lines.append("=" * 80)
+    lines.append("")
+
+    with open(RESULTS_FILE, "a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+    print(f"\nResults appended to {RESULTS_FILE}")
+
+
+def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
     """
     Runs an interactive quiz session against the online platform.
     Allows the user to select a competition, play multiple games, and
@@ -43,7 +96,7 @@ def play_online(model, test_all, multiplicity, verbose):
     # Session summary
     num_competitions = len(client.competitions.list_all())
     play_history = {
-        i: {"num_games": 0, "level": [], "score": []} 
+        i: {"num_games": 0, "level": [], "score": []}
         for i in range(num_competitions)
     }
 
@@ -60,10 +113,10 @@ def play_online(model, test_all, multiplicity, verbose):
         # Choose a competition ID
         if test_all:
             cnt += 1
-            comp_id = cnt % multiplicity
+            comp_id = cnt % num_competitions
             play_history[comp_id]["num_games"] += 1
-            if verbose: print(f"Competition selected: {competitions[comp_id]}")   
-        else: 
+            if verbose: print(f"Competition selected: {competitions[comp_id]}")
+        else:
             comp_id = int(input("Enter competition ID:"))
             while(comp_id < 0 or comp_id >= num_competitions):
                 print(f"Invalid competition. Please enter a competition ID in [0-{num_competitions-1}]")
@@ -84,7 +137,7 @@ def play_online(model, test_all, multiplicity, verbose):
             if not question:
                 if print_cond: print("No question available. Game may have ended.")
                 break
-            
+
             if print_cond:
                 print(f"\n--- Level {game.current_level} ---")
                 print(f"Q: {question.text}")
@@ -136,13 +189,13 @@ def play_online(model, test_all, multiplicity, verbose):
         play_history[comp_id]["score"].append(game.earned_amount)
 
         if test_all:
-            if cnt + 1 >= num_competitions*multiplicity:
+            if cnt + 1 >= num_competitions * multiplicity:
                 break
-        else: 
+        else:
             play_again = input("Play again? [Y/N]: ")
             if play_again.lower() == 'n':
                 break
-    
+
     print("\n=== Session Summary ===")
     for comp_id in play_history.keys():
         num_games = play_history[comp_id]["num_games"]
@@ -154,7 +207,11 @@ def play_online(model, test_all, multiplicity, verbose):
         print(f"Average earnings: {sum(play_history[comp_id]['score'])/num_games:,.2f}")
         print()
 
-def play_offline(model, test_all, multiplicity, verbose):
+    if output_csv:
+        save_results(model_key, model, competitions, play_history)
+
+
+def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv):
     """
     Runs the quiz session in offline mode using a local dataset.
     Used when the online platform is no longer available.
@@ -191,6 +248,12 @@ def main():
         default=False,
         help="Print logs"
     )
+    parser.add_argument(
+        "--output_csv",
+        action="store_true",
+        default=False,
+        help=f"Append session results to {RESULTS_FILE}"
+    )
     args = parser.parse_args()
 
     module_path, class_name = MODELS[args.model]
@@ -201,8 +264,11 @@ def main():
     if args.multiplicity < 1:
         print("Input Error: Multiplicity value should be greater or equal to 1!")
         return
-    
-    play_online(model, args.test_all, args.multiplicity, args.verbose) if ONLINE else play_offline(model, args.test_all, args.multiplicity, args.verbose)
+
+    if ONLINE:
+        play_online(model, args.model, args.test_all, args.multiplicity, args.verbose, args.output_csv)
+    else:
+        play_offline(model, args.model, args.test_all, args.multiplicity, args.verbose, args.output_csv)
 
 if __name__ == "__main__":
     main()
