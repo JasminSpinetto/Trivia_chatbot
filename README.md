@@ -85,6 +85,8 @@ This command runs the selected model and plays ```[number]``` games for each com
 | `llama-1b` | Meta LLaMA 3.2 1B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
 | `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
 | `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/LLM.py`) |
+| `tfidf-base` | Matches answers to the question using Cosine Similarity on TF-IDF representation (`models/tfidf.py`) |
+| `tfidf-web` | Retrieves top web search document for the question and matches answers to it using TF-IDF (`models/tfidf.py`) |
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 
