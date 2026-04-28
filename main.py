@@ -11,10 +11,9 @@ MODELS = {
     "llama-1b": ("models.LLM", "Llama1B"),
     "llama-3b": ("models.LLM", "Llama3B"),
     "llama-8b": ("models.LLM", "Llama8B"),
+    "tfidf-base": ("models.tfidf", "TfIdfBaseModel"),
+    "tfidf-web": ("models.tfidf", "TfIdfWebModel"),
 }
-
-# choose where to save results
-RESULTS_FILE = "results/Llama_results.csv"
 
 def login():
     """
@@ -36,6 +35,7 @@ def login():
 
 
 def save_results(model_key, model, competitions, play_history):
+    results_file = f"results/{model_key}.csv"
     info = model.get_info() if hasattr(model, "get_info") else {}
 
     lines = []
@@ -73,10 +73,10 @@ def save_results(model_key, model, competitions, play_history):
     lines.append("=" * 80)
     lines.append("")
 
-    with open(RESULTS_FILE, "a", encoding="utf-8") as f:
+    with open(results_file, "a", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
-    print(f"\nResults appended to {RESULTS_FILE}")
+    print(f"\nResults appended to {results_file}")
 
 
 def play_online(model, model_key, test_all, multiplicity, verbose, output_csv):
@@ -252,7 +252,7 @@ def main():
         "--output_csv",
         action="store_true",
         default=False,
-        help=f"Append session results to {RESULTS_FILE}"
+        help="Append session results to results/[model_name].csv"
     )
     args = parser.parse_args()
 
