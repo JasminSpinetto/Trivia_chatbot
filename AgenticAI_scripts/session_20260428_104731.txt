@@ -1,0 +1,48 @@
+================================================================================
+QUESTION: Jennifer is competing in a marathon, which is a 26.2-mile race. If Jennifer runs the first half of the race at 8 mph and the second half of the race at 6 mph, approximately how many hours does it take for her to complete the race?
+OPTIONS:
+  0: 4.12
+  1: 2.62
+  2: 3.82
+  3: 3.74
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 3
+================================================================================
+
+================================================================================
+QUESTION: If V and W are 2-dimensional subspaces of R^4 ,what are the possible dimensions of the subspace V intersect W?
+OPTIONS:
+  0: 0 and 1 only
+  1: 2 only
+  2: 0, 1, and 2 only
+  3: 1 only
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 2
+================================================================================
+
+================================================================================
+QUESTION: If A = {1, 2, 3} then relation S = {(1, 1), (2, 2)} is
+OPTIONS:
+  0: anti-symmetric only
+  1: an equivalence relation
+  2: symmetric only
+  3: both symmetric and anti-symmetric
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 2
+================================================================================
+
+================================================================================
+QUESTION: For which integers n such that 3 <= n <= 11 is there only one group of order n (up to isomorphism)?
+OPTIONS:
+  0: For 4, 6, 8, and 10 only
+  1: For 3, 5, 7, 9, and 11 only
+  2: For 3, 5, 7, and 11 only
+  3: For no such integer n
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 3
+================================================================================
+

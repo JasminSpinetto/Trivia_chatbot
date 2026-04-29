@@ -1,0 +1,6 @@
+model_name: "meta-llama/Llama-3.2-3B-Instruct"
+do_sample: true
+temperature: 0.15
+max_new_tokens: 10
+system_prompt: "default"
+search_reversed: false
