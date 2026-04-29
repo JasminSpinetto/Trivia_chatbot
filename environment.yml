@@ -16,6 +16,7 @@ dependencies:
   - ipykernel
   - pip:
       - transformers
+      - sentence_transformers
       - datasets
       - huggingface_hub
       - accelerate #for HuggingFace GPU use
