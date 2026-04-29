@@ -1,0 +1,13 @@
+model_name: "Qwen/Qwen2.5-Math-7B-Instruct"
+do_sample: false
+temperature: null
+max_new_tokens: 256
+system_prompt: "code"
+search_reversed: true
+quantization:
+  load_in_4bit: true
+  quant_type: "nf4"
+  compute_dtype: "bfloat16"
+  double_quant: true
+use_code_executor: true
+log_dir: "AgenticAI_scripts"
