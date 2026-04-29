@@ -98,6 +98,8 @@ Runs `N` games on the Maths competition only. Useful for evaluating math-specifi
 | `--verbose` | Print question-by-question logs |
 | `--output_csv` | Append session results to `results/results.csv` |
 
+Note: only the math category has a dedicated flag since it's the trickiest category to handle, so testing on it specifically is encouraged.
+
 ### Available configs
 
 | Config file | Model | Notes |

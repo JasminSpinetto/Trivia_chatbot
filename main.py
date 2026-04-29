@@ -22,9 +22,12 @@ def load_model(config_path: str):
     if model_class_name == "RandomModel":
         from models.random import RandomModel
         return RandomModel(), model_key
-
-    from models.LLM import LLMModel
-    return LLMModel(**config), model_key
+    elif model_class_name == "MathLLMModel":
+        from models.MATH import MathLLMModel
+        return MathLLMModel(**config), model_key
+    else:
+        from models.LLM import LLMModel
+        return LLMModel(**config), model_key
 
 
 def login():
