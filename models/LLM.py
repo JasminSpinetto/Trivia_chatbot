@@ -1,6 +1,9 @@
+import logging
+import os
 import random
 import numpy as np
 import torch
+from datetime import datetime
 from typing import Optional
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, GenerationConfig, pipeline
 from utils.HF_login import HF_login
@@ -86,6 +89,28 @@ class LLMModel:
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
+        self.debug   = False
+        self._logger = None
+
+    def _setup_logger(self):
+        os.makedirs("logs", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_path  = f"logs/{self._model_name.split('/')[-1]}_{timestamp}.log"
+        logger    = logging.getLogger(f"llm_{timestamp}")
+        logger.setLevel(logging.DEBUG)
+        handler   = logging.FileHandler(log_path, encoding="utf-8")
+        handler.setFormatter(logging.Formatter("%(asctime)s  %(message)s"))
+        logger.addHandler(handler)
+        self._logger = logger
+        print(f"[LLM] Debug logging → {log_path}")
+
+    def _log(self, msg: str):
+        if not self.debug:
+            return
+        if self._logger is None:
+            self._setup_logger()
+        self._logger.info(msg)
+
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
         if context:
@@ -96,6 +121,12 @@ class LLMModel:
             )
         else:
             user_content = f"Question: {question_text}\n\nOptions:\n{options_str}\n\nReply with only the option number."
+
+        self._log(f"{'='*60}")
+        self._log(f"QUESTION : {question_text}")
+        self._log(f"CONTEXT  : {context[:300] + '...' if len(context) > 300 else context or '(none)'}")
+        self._log(f"PROMPT   :\n[system] {self._system_prompt}\n[user] {user_content}")
+
         messages = [
             {"role": "system", "content": self._system_prompt},
             {"role": "user",   "content": user_content},
@@ -105,8 +136,10 @@ class LLMModel:
             do_sample=self._do_sample,
             temperature=self._temperature if self._do_sample else None,
         )
-        output = self.pipe(messages, generation_config=gen_config, return_full_text=False)
-        return output[0]["generated_text"].strip()
+        output   = self.pipe(messages, generation_config=gen_config, return_full_text=False)
+        response = output[0]["generated_text"].strip()
+        self._log(f"RESPONSE : {response!r}")
+        return response
 
     def _parse_token(self, response: str, options: dict) -> int:
         tokens = list(reversed(response.split())) if self._search_reversed else response.split()
@@ -133,4 +166,8 @@ class LLMModel:
 
     def answer(self, question_text: str, options: dict) -> int:
         context = self._retriever.get_context(question_text) if self._retriever else ""
-        return self._parse_token(self._generate(question_text, options, context), options)
+        response = self._generate(question_text, options, context)
+        answer   = self._parse_token(response, options)
+        self._log(f"ANSWER   : {answer}")
+        self._log(f"{'='*60}")
+        return answer

@@ -225,6 +225,8 @@ def main():
     parser.add_argument("--verbose",     action="store_true", default=False, help="Print logs")
     parser.add_argument("--output_csv",  action="store_true", default=False,
                         help=f"Append session results to {RESULTS_FILE}")
+    parser.add_argument("--debug",       action="store_true", default=False,
+                        help="Log prompts, context, and answers to a timestamped file in logs/")
     args = parser.parse_args()
 
     if args.multiplicity < 1:
@@ -243,6 +245,8 @@ def main():
         return
 
     model, model_key = load_model(config_path)
+    if hasattr(model, "debug"):
+        model.debug = args.debug
 
     if ONLINE:
         play_online(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
