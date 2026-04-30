@@ -2,7 +2,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
 _SEARCH_TIMEOUT = 8
-_MIN_RELEVANCE = 0.15
+_MIN_RELEVANCE = 0.10
 
 # Words that carry no search signal in quiz questions
 _STOP_WORDS = frozenset({
@@ -47,7 +47,25 @@ def _keywords(text: str) -> set:
 
 
 def _relevance(question: str, context: str) -> float:
-    """Fraction of question keywords that appear in context (with 4-char prefix matching)."""
+    """Score how relevant a context is to a question.
+
+    Primary signal: proper nouns (Nero, Homer, Egypt…) — these are the topic
+    entities and appear verbatim in on-topic articles.  Generic question words
+    like 'historical', 'figure', 'associated' never appear in Wikipedia, so we
+    only fall back to keyword overlap when there are no proper nouns.
+    """
+    c_lower = context.lower()
+
+    # Primary: proper nouns — capitalised mid-sentence words of length >= 4
+    words = re.findall(r"\b[a-zA-Z]+\b", question)
+    proper = [w.lower() for i, w in enumerate(words)
+              if i > 0 and w[0].isupper() and len(w) >= 4]
+    if proper:
+        matches = sum(1 for p in proper if p in c_lower)
+        if matches > 0:
+            return matches / len(proper)
+
+    # Fallback: content keyword overlap (questions with no clear proper nouns)
     q_kw = _keywords(question)
     if not q_kw:
         return 0.0
