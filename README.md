@@ -63,22 +63,23 @@ HF_TOKEN =
 
 ## How to Run
 
-The main entry point is `main.py`. It accepts a `--model` argument to select which model to use for answering questions.
+The main entry point is `main.py`. Models are configured via YAML files in the `config/` folder and selected with `--config`.
 
-### Usage
+### Basic usage
 
 ```bash
-python main.py --model [model_name]
+python main.py --config [config_file]
 ```
-### Benchmarking usage
-To benchmark models and save aggregate performance results, run:
+
+### Full benchmark — all competitions, multiple games, save results
+
 ```bash
-python main.py --model [model_name] --test_all --multiplicity [number] --verbose
+python main.py --config [config_file] --test_all --multiplicity [N] --output_csv
 ```
-This command runs the selected model and plays ```[number]``` games for each competition, saving the results to a ```results.csv``` file.
 
-### Available Models
+Plays `N` games per competition and appends results to `results/results.csv`.
 
+<<<<<<< HEAD
 | Model key | Description |
 |-----------|-------------|
 | `random` | Random baseline — picks a uniformly random answer (`models/random.py`) |
@@ -86,6 +87,43 @@ This command runs the selected model and plays ```[number]``` games for each com
 | `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
 | `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/LLM.py`) |
 | `llama-3b-wiki` | Meta LLaMA 3.2 3B Instruct with Wikipedia → DuckDuckGo RAG retrieval (`models/wiki_rag.py`) |
+=======
+### Math-only benchmark
+
+```bash
+python main.py --config [config_file] --math --multiplicity [N] --output_csv
+```
+
+Runs `N` games on the Maths competition only. Useful for evaluating math-specific models.
+
+### All flags
+
+| Flag | Description |
+|------|-------------|
+| `--config` | YAML config filename (resolved from `config/`) or full path |
+| `--test_all` | Run on all competitions |
+| `--math` | Run on the math competition only |
+| `--multiplicity N` | Number of games per competition (default: 1) |
+| `--verbose` | Print question-by-question logs |
+| `--output_csv` | Append session results to `results/results.csv` |
+
+Note: only the math category has a dedicated flag since it's the trickiest category to handle, so testing on it specifically is encouraged.
+
+### Available configs
+
+| Config file | Model | Notes |
+|-------------|-------|-------|
+| `random.yaml` | Random baseline | Picks a uniformly random answer |
+| `llama-1b.yaml` | Meta LLaMA 3.2 1B Instruct | Requires re-download |
+| `llama-3b.yaml` | Meta LLaMA 3.2 3B Instruct | Requires re-download |
+| `llama-8b.yaml` | Meta LLaMA 3.1 8B Instruct | 4-bit quantized, ~15 GB disk |
+| `qwen-7b.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit, math-focused, CoT |
+| `qwen-7b-code.yaml` | Qwen 2.5 Math 7B + code executor | Agentic AI: generates and runs Python to solve computation problems |
+
+### Adding a new experiment
+
+Create a new YAML file in `config/` — no code changes needed. All model parameters (`model_name`, `temperature`, `max_new_tokens`, `system_prompt`, `quantization`, etc.) are defined in the YAML. See existing configs for reference.
+>>>>>>> origin/main
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 
