@@ -15,8 +15,7 @@ SYSTEM_PROMPTS = {
     ),
     "retrieval": (
         "You are a quiz contestant. Given a multiple choice question and optional web context, "
-        "reply with ONLY the number of the correct option. No explanation. "
-        "If the provided context is not relevant to the question, ignore it and rely on your own knowledge."
+        "reply with ONLY the number of the correct option. No explanation."
     ),
 }
 

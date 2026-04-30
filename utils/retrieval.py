@@ -1,30 +1,6 @@
-import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
-_SEARCH_TIMEOUT = 8
-_MIN_RELEVANCE = 0.10
-
-# Words that carry no search signal in quiz questions
-_STOP_WORDS = frozenset({
-    "what", "which", "how", "where", "when", "why", "who", "whom", "whose",
-    "the", "a", "an",
-    "of", "for", "to", "from", "by", "at", "in", "on", "into", "with",
-    "about", "between", "among", "during", "after", "before",
-    "and", "or", "but",
-    "is", "are", "was", "were", "did", "does", "do", "have", "has", "had",
-    "be", "been", "being", "would", "could", "should", "will", "can", "may",
-    "might", "must", "used",
-    "it", "its", "this", "that", "these", "those", "they", "them", "their",
-    "he", "she", "his", "her", "we", "our", "you", "your",
-    "also", "then", "than", "not", "no", "more", "most", "such", "very",
-    # Quiz question filler words that don't help disambiguation
-    "term", "refers", "refer", "using", "based", "given", "found", "known",
-    "called", "named", "describes", "describe", "connection", "according",
-    "following", "primary", "secondary", "fundamental", "best", "main",
-    "whole", "general", "specific", "certain", "common",
-    "times", "time", "year", "years", "century", "period",
-    "article", "question", "option", "answer",
-})
+_SEARCH_TIMEOUT = 8  # seconds — leaves ~14s for inference within the 30s game limit
 
 try:
     import wikipedia
@@ -41,69 +17,12 @@ except ImportError:
     _DDGS_AVAILABLE = False
 
 
-def _keywords(text: str) -> set:
-    words = re.findall(r"[a-zA-Z]+", text.lower())
-    return {w for w in words if len(w) > 4 and w not in _STOP_WORDS}
-
-
-def _relevance(question: str, context: str) -> float:
-    """Score how relevant a context is to a question.
-
-    Primary signal: proper nouns (Nero, Homer, Egypt…) — these are the topic
-    entities and appear verbatim in on-topic articles.  Generic question words
-    like 'historical', 'figure', 'associated' never appear in Wikipedia, so we
-    only fall back to keyword overlap when there are no proper nouns.
-    """
-    c_lower = context.lower()
-
-    # Primary: proper nouns — capitalised mid-sentence words of length >= 4
-    words = re.findall(r"\b[a-zA-Z]+\b", question)
-    proper = [w.lower() for i, w in enumerate(words)
-              if i > 0 and w[0].isupper() and len(w) >= 4]
-    if proper:
-        matches = sum(1 for p in proper if p in c_lower)
-        if matches > 0:
-            return matches / len(proper)
-
-    # Fallback: content keyword overlap (questions with no clear proper nouns)
-    q_kw = _keywords(question)
-    if not q_kw:
-        return 0.0
-    c_kw = _keywords(context)
-    matches = sum(
-        1 for qw in q_kw
-        if qw in c_kw or (len(qw) >= 5 and any(cw.startswith(qw[:4]) or qw.startswith(cw[:4]) for cw in c_kw))
-    )
-    return matches / len(q_kw)
-
-
-def _focused_query(question: str) -> str:
-    """Build a concise search query by prioritising proper nouns then content words."""
-    words = re.findall(r"\b[a-zA-Z']+\b", question)
-    # Proper nouns: capitalised words that aren't the first word
-    proper = [re.sub(r"'s?$", "", w) for i, w in enumerate(words)
-              if i > 0 and w[0].isupper() and len(w) > 2]
-    # Content words: long words not in the stop list
-    content = [w.lower() for w in words if len(w) > 4 and w.lower() not in _STOP_WORDS]
-    seen = {p.lower() for p in proper}
-    extra = [w for w in content if w not in seen]
-    combined = proper + extra
-    return " ".join(combined[:6])
-
-
 class Retriever:
-    """Fetches context for a question: Wikipedia first, DuckDuckGo as fallback.
-
-    Strategy:
-    1. Build a focused keyword query from the question (proper nouns + content words).
-    2. Fetch with that query and validate relevance (keyword overlap >= 15%).
-    3. If irrelevant, retry with the full question text.
-    4. If still irrelevant, return "" so the model answers from its own knowledge.
-    """
+    """Fetches context for a question: Wikipedia first, DuckDuckGo as fallback."""
 
     def _search_wikipedia(self, query: str) -> str:
         try:
-            titles = wikipedia.search(query, results=3)
+            titles = wikipedia.search(query, results=2)
             if not titles:
                 return ""
             return wikipedia.summary(titles[0], sentences=4, auto_suggest=False)
@@ -118,12 +37,12 @@ class Retriever:
         except Exception:
             return ""
 
-    def _fetch(self, query: str, timeout: float) -> str:
+    def get_context(self, question: str) -> str:
         if _WIKIPEDIA_AVAILABLE:
             with ThreadPoolExecutor(max_workers=1) as ex:
-                fut = ex.submit(self._search_wikipedia, query)
+                fut = ex.submit(self._search_wikipedia, question)
                 try:
-                    ctx = fut.result(timeout=timeout)
+                    ctx = fut.result(timeout=_SEARCH_TIMEOUT)
                     if ctx:
                         return ctx
                 except (FuturesTimeoutError, Exception):
@@ -131,27 +50,10 @@ class Retriever:
 
         if _DDGS_AVAILABLE:
             with ThreadPoolExecutor(max_workers=1) as ex:
-                fut = ex.submit(self._search_duckduckgo, query)
+                fut = ex.submit(self._search_duckduckgo, question)
                 try:
-                    return fut.result(timeout=timeout) or ""
+                    return fut.result(timeout=_SEARCH_TIMEOUT) or ""
                 except (FuturesTimeoutError, Exception):
                     pass
-
-        return ""
-
-    def get_context(self, question: str) -> str:
-        focused = _focused_query(question)
-
-        # Attempt 1: focused keyword query
-        if focused:
-            ctx = self._fetch(focused, timeout=4.0)
-            if ctx and _relevance(question, ctx) >= _MIN_RELEVANCE:
-                return ctx
-
-        # Attempt 2: full question as fallback (skip if identical to focused)
-        if focused.lower() != question.lower():
-            ctx = self._fetch(question, timeout=3.5)
-            if ctx and _relevance(question, ctx) >= _MIN_RELEVANCE:
-                return ctx
 
         return ""
