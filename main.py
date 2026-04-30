@@ -25,9 +25,6 @@ def load_model(config_path: str):
     elif model_class_name == "MathLLMModel":
         from models.MATH import MathLLMModel
         return MathLLMModel(**config), model_key
-    elif model_class_name == "WikiRAGModel":
-        from models.wiki_rag import WikiRAGModel
-        return WikiRAGModel(), model_key
     else:
         from models.LLM import LLMModel
         return LLMModel(**config), model_key
