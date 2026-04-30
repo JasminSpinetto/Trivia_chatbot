@@ -117,6 +117,64 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 
 Create a new YAML file in `config/` — no code changes needed. All model parameters (`model_name`, `temperature`, `max_new_tokens`, `system_prompt`, `quantization`, `use_retrieval`, etc.) are defined in the YAML. See existing configs for reference.
 
+---
+
+## RAG Models (Wikipedia + DuckDuckGo)
+
+The `llama-3b-wiki` and `llama-8b-wiki` configs enable retrieval-augmented generation. Before each question, the model searches Wikipedia (with DuckDuckGo as fallback) and injects the retrieved context into the prompt.
+
+### Running a RAG model
+
+```bash
+# 3B model with retrieval
+python main.py --config llama-3b-wiki.yaml
+
+# 8B model (4-bit) with retrieval
+python main.py --config llama-8b-wiki.yaml
+```
+
+### Enabling any model with retrieval
+
+Add `use_retrieval: true` to any existing config — no code changes needed:
+
+```yaml
+model_name: "meta-llama/Llama-3.2-3B-Instruct"
+use_retrieval: true
+max_new_tokens: 20
+```
+
+### Debug logging
+
+Pass `--debug` to write a full trace of every question to a timestamped log file in `logs/`:
+
+```bash
+python main.py --config llama-8b-wiki.yaml --debug
+```
+
+Each entry logs the question, retrieved context, full prompt, raw model response, and final answer:
+
+```
+============================================================
+QUESTION : What term describes the body of Roman citizens?
+CONTEXT  : The Roman people was the body of Roman citizens...
+PROMPT   :
+[system] You are a quiz contestant...
+[user] Context from web search: ...
+RESPONSE : '0'
+ANSWER   : 0
+============================================================
+```
+
+### Viewing the log in Google Colab
+
+```python
+import glob
+
+log_files = sorted(glob.glob("logs/*.log"))
+with open(log_files[-1]) as f:
+    print(f.read())
+```
+
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 
 ## Acknowledgments
