@@ -10,6 +10,10 @@ SYSTEM_PROMPTS = {
         "You are a quiz contestant. Given a multiple choice question, "
         "reply with ONLY the number of the correct option. No explanation."
     ),
+    "retrieval": (
+        "You are a quiz contestant. Given a multiple choice question and optional web context, "
+        "reply with ONLY the number of the correct option. No explanation."
+    ),
 }
 
 _DTYPE_MAP = {
@@ -34,6 +38,7 @@ class LLMModel:
         system_prompt: str = "default",
         search_reversed: bool = False,
         quantization: Optional[dict] = None,
+        use_retrieval: bool = False,
     ):
         HF_login()
 
@@ -50,7 +55,14 @@ class LLMModel:
         self._temperature     = temperature
         self._max_new_tokens  = max_new_tokens
         self._search_reversed = search_reversed
-        self._system_prompt   = SYSTEM_PROMPTS.get(system_prompt, system_prompt)
+
+        if use_retrieval:
+            from utils.retrieval import Retriever
+            self._retriever     = Retriever()
+            self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt) if system_prompt != "default" else SYSTEM_PROMPTS["retrieval"]
+        else:
+            self._retriever     = None
+            self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt)
 
         if quantization:
             self._quantization_config = BitsAndBytesConfig(
@@ -74,23 +86,19 @@ class LLMModel:
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
-    def get_info(self) -> dict:
-        num_params   = self.pipe.model.num_parameters()
-        quantization = "4-bit" if self._quantization_config is not None else "none"
-        decoding     = "greedy" if not self._do_sample else f"sampling (temperature={self._temperature})"
-        return {
-            "model_name":     self._model_name,
-            "parameters":     f"~{num_params / 1e9:.1f}B",
-            "quantization":   quantization,
-            "decoding":       decoding,
-            "max_new_tokens": self._max_new_tokens,
-        }
-
-    def _generate(self, question_text: str, options: dict) -> str:
+    def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
+        if context:
+            user_content = (
+                f"Context from web search:\n{context}\n\n"
+                f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
+                "Using the context above, reply with only the option number."
+            )
+        else:
+            user_content = f"Question: {question_text}\n\nOptions:\n{options_str}\n\nReply with only the option number."
         messages = [
             {"role": "system", "content": self._system_prompt},
-            {"role": "user",   "content": f"Question: {question_text}\n\nOptions:\n{options_str}\n\nReply with only the option number."},
+            {"role": "user",   "content": user_content},
         ]
         gen_config = GenerationConfig(
             max_new_tokens=self._max_new_tokens,
@@ -108,5 +116,21 @@ class LLMModel:
                 return int(token)
         return int(next(iter(options)))
 
+    def get_info(self) -> dict:
+        num_params   = self.pipe.model.num_parameters()
+        quantization = "4-bit" if self._quantization_config is not None else "none"
+        decoding     = "greedy" if not self._do_sample else f"sampling (temperature={self._temperature})"
+        info = {
+            "model_name":     self._model_name,
+            "parameters":     f"~{num_params / 1e9:.1f}B",
+            "quantization":   quantization,
+            "decoding":       decoding,
+            "max_new_tokens": self._max_new_tokens,
+        }
+        if self._retriever:
+            info["retrieval"] = "Wikipedia → DuckDuckGo fallback"
+        return info
+
     def answer(self, question_text: str, options: dict) -> int:
-        return self._parse_token(self._generate(question_text, options), options)
+        context = self._retriever.get_context(question_text) if self._retriever else ""
+        return self._parse_token(self._generate(question_text, options, context), options)

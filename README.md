@@ -79,15 +79,6 @@ python main.py --config [config_file] --test_all --multiplicity [N] --output_csv
 
 Plays `N` games per competition and appends results to `results/results.csv`.
 
-<<<<<<< HEAD
-| Model key | Description |
-|-----------|-------------|
-| `random` | Random baseline — picks a uniformly random answer (`models/random.py`) |
-| `llama-1b` | Meta LLaMA 3.2 1B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
-| `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
-| `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/LLM.py`) |
-| `llama-3b-wiki` | Meta LLaMA 3.2 3B Instruct with Wikipedia → DuckDuckGo RAG retrieval (`models/wiki_rag.py`) |
-=======
 ### Math-only benchmark
 
 ```bash
@@ -119,11 +110,12 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 | `llama-8b.yaml` | Meta LLaMA 3.1 8B Instruct | 4-bit quantized, ~15 GB disk |
 | `qwen-7b.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit, math-focused, CoT |
 | `qwen-7b-code.yaml` | Qwen 2.5 Math 7B + code executor | Agentic AI: generates and runs Python to solve computation problems |
+| `llama-3b-wiki.yaml` | Meta LLaMA 3.2 3B Instruct | Wikipedia → DuckDuckGo RAG retrieval |
+| `llama-8b-wiki.yaml` | Meta LLaMA 3.1 8B Instruct (4-bit) | Wikipedia → DuckDuckGo RAG retrieval |
 
 ### Adding a new experiment
 
-Create a new YAML file in `config/` — no code changes needed. All model parameters (`model_name`, `temperature`, `max_new_tokens`, `system_prompt`, `quantization`, etc.) are defined in the YAML. See existing configs for reference.
->>>>>>> origin/main
+Create a new YAML file in `config/` — no code changes needed. All model parameters (`model_name`, `temperature`, `max_new_tokens`, `system_prompt`, `quantization`, `use_retrieval`, etc.) are defined in the YAML. See existing configs for reference.
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 
