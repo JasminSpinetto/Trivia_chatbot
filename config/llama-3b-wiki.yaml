@@ -1,0 +1,3 @@
+model_name: "meta-llama/Llama-3.2-3B-Instruct"
+use_retrieval: true
+max_new_tokens: 20

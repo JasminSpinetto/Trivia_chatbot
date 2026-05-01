@@ -1,0 +1,8 @@
+model_name: "meta-llama/Llama-3.1-8B-Instruct"
+use_retrieval: true
+max_new_tokens: 20
+quantization:
+  load_in_4bit: true
+  quant_type: "nf4"
+  compute_dtype: "bfloat16"
+  double_quant: true
