@@ -20,6 +20,8 @@ dependencies:
       - huggingface_hub
       - accelerate #for HuggingFace GPU use
       - bitsandbytes #for 4-bit quantization
+      - sympy #for symbolic math in code executor
+      - scipy #for stats/integration in code executor
       - pyyaml #for loading model config files
       - wikipedia
       - duckduckgo-search

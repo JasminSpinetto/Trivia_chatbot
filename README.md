@@ -87,16 +87,27 @@ python main.py --config [config_file] --math --multiplicity [N] --output_csv
 
 Runs `N` games on the Maths competition only. Useful for evaluating math-specific models.
 
+### Offline mode — run against a local question dataset
+
+Set `ONLINE = False` in `main.py`, then:
+
+```bash
+python main.py --config [config_file] --dataset data/math_questions.json --output_csv
+```
+
+Runs the model against the fixed JSON dataset (no server connection needed). All questions in the file are answered exactly once and accuracy is reported. The dataset in `data/math_questions.json` contains 29 curated math questions with verified correct answers. `--math` and `--multiplicity` are not needed in this mode.
+
 ### All flags
 
 | Flag | Description |
 |------|-------------|
 | `--config` | YAML config filename (resolved from `config/`) or full path |
-| `--test_all` | Run on all competitions |
-| `--math` | Run on the math competition only |
-| `--multiplicity N` | Number of games per competition (default: 1) |
+| `--test_all` | Run on all competitions (online mode) |
+| `--math` | Run on the math competition only (online mode) |
+| `--multiplicity N` | Number of games per competition, or runs per question in offline mode (default: 1) |
 | `--verbose` | Print question-by-question logs |
 | `--output_csv` | Append session results to `results/results.csv` |
+| `--dataset` | Path to a JSON question file for offline mode |
 
 Note: only the math category has a dedicated flag since it's the trickiest category to handle, so testing on it specifically is encouraged.
 

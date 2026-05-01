@@ -1,13 +1,14 @@
 import torch  # must be imported before utils/requests to avoid DLL conflicts on Windows
 import os
+import json
 import argparse
 import yaml
 from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
-ONLINE       = True
-RESULTS_FILE = "results/results.csv"
+ONLINE       = False
+RESULTS_FILE = "results/Math/local-math-results.csv"
 CONFIG_DIR   = "config"
 
 
@@ -161,6 +162,9 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
 
             result = game.answer(answer_id)
 
+            if hasattr(model, "log_result"):
+                model.log_result(result.correct)
+
             if print_cond:
                 if result.correct:
                     print("\n CORRECT!")
@@ -202,13 +206,65 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
         save_results(model_key, model, competitions, play_history, math_only)
 
 
-def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only):
+def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only, dataset):
     """
-    Runs the quiz session in offline mode using a local dataset.
-    Used when the online platform is no longer available.
+    Runs the model against a local JSON dataset of questions.
+    Each question is answered multiplicity times and results are aggregated.
     """
-    #TODO
-    return
+    if not dataset:
+        print("Error: --dataset <path> is required in offline mode.")
+        return
+
+    with open(dataset, encoding="utf-8") as f:
+        questions = json.load(f)
+
+    print(f"\nOffline mode: {len(questions)} questions × {multiplicity} run(s) = {len(questions) * multiplicity} total answers\n")
+
+    total = correct_count = 0
+
+    for run in range(multiplicity):
+        if multiplicity > 1:
+            print(f"\n--- Run {run + 1} / {multiplicity} ---")
+        for i, q in enumerate(questions):
+            options   = {str(k): v for k, v in q["options"].items()}
+            answer_id = model.answer(q["question"], options)
+            correct   = answer_id == q["answer"]
+
+            if hasattr(model, "log_result"):
+                model.log_result(correct)
+
+            total         += 1
+            correct_count += int(correct)
+            verdict        = "CORRECT" if correct else f"WRONG (correct: {q['answer']})"
+
+            if verbose:
+                print(f"\nQ{i+1}: {q['question'][:80]}...")
+                for k, v in options.items():
+                    print(f"  [{k}] {v}")
+            print(f"  Q{i+1:02d} → answered {answer_id} | {verdict}")
+
+    accuracy = correct_count / total * 100 if total else 0
+    print(f"\n=== Offline Summary ===")
+    print(f"Dataset : {dataset}")
+    print(f"Model   : {model_key}")
+    print(f"Score   : {correct_count}/{total} ({accuracy:.1f}%)")
+
+    if hasattr(model, "finalize_log"):
+        model.finalize_log(correct_count, total)
+
+    if output_csv:
+        os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
+        with open(RESULTS_FILE, "a", encoding="utf-8") as f:
+            f.write("=" * 80 + "\n")
+            f.write(f"OFFLINE | {model_key} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            info = model.get_info() if hasattr(model, "get_info") else {}
+            for k, v in info.items():
+                f.write(f"{k}: {v}\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"Dataset,Questions,Correct,Accuracy %\n")
+            f.write(f"{dataset},{total},{correct_count},{accuracy:.1f}%\n")
+            f.write("=" * 80 + "\n\n")
+        print(f"Results appended to {RESULTS_FILE}")
 
 
 def main():
@@ -225,6 +281,8 @@ def main():
     parser.add_argument("--verbose",     action="store_true", default=False, help="Print logs")
     parser.add_argument("--output_csv",  action="store_true", default=False,
                         help=f"Append session results to {RESULTS_FILE}")
+    parser.add_argument("--dataset",     type=str, default=None,
+                        help="Path to a JSON question dataset for offline mode")
     parser.add_argument("--debug",       action="store_true", default=False,
                         help="Log prompts, context, and answers to a timestamped file in logs/")
     args = parser.parse_args()
@@ -251,7 +309,7 @@ def main():
     if ONLINE:
         play_online(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
     else:
-        play_offline(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
+        play_offline(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math, args.dataset)
 
 
 if __name__ == "__main__":
