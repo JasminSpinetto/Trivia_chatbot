@@ -142,11 +142,19 @@ class LLMModel:
         return response
 
     def _parse_token(self, response: str, options: dict) -> int:
+        # 1. try \boxed{X} pattern first (common in R1/math models)
+        import re
+        boxed = re.search(r"\\boxed\{(\d+)\}", response)
+        if boxed and boxed.group(1) in options:
+            return int(boxed.group(1))
+
+        # 2. scan tokens, stripping broad punctuation
         tokens = list(reversed(response.split())) if self._search_reversed else response.split()
         for token in tokens:
-            token = token.strip(".,!?")
+            token = token.strip(".,!?{}()[]\\*_`\"'")
             if token in options:
                 return int(token)
+
         return int(next(iter(options)))
 
     def get_info(self) -> dict:

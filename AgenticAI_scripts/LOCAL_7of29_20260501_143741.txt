@@ -1,0 +1,496 @@
+SCORE: 7/29 (24.1%)
+================================================================================
+
+================================================================================
+QUESTION: The polynomial x^4 + 4 can be factored into linear factors in Z_5[x]. Find this factorization.
+OPTIONS:
+  0: (x-1)^3(x+1)
+  1: (x-1)(x+1)^3
+  2: (x+1)^4
+  3: (x-2)(x+2)(x-1)(x+1)
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+A factor of a polynomial P(x) of degree n is a polynomial Q(x) of degree less than n which can be multiplied by another polynomial R(x) of degree less than n to yield P(x), i.e., a polynomial Q(x) such that P(x)=Q(x)R(x). For example, since x^2-1=(x+1)(x-1), both x-1 and x+1 are factors of x^2-1. Polynomial factorization can be performed in the Wolfram Language using Factor[poly ... For example, the roots of the polynomial x^3-2x^2-x+2= (x-2) (x-1) (x+1) (1) are -1, 1, and 2. Finding roots of a polynomial is therefore equivalent to polynomial factorization into factors of degree 1. Any polynomial can be numerically factored, although different algorithms have different strengths and...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 13.7s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/1 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: Six positive integers are written on the faces of a cube. Each vertex is labeled with the product of the three numbers on the faces adjacent to the vertex. If the sum of the numbers on the vertices is equal to 1001, then what is the sum of the numbers written on the faces?
+OPTIONS:
+  0: 1001
+  1: 18
+  2: 13
+  3: 31
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+The positive integers are the numbers 1, 2, 3, ... (OEIS A000027), sometimes called the counting numbers or natural numbers, denoted Z^+ . They are the solution to the simple linear recurrence equation. The following table gives the number of vertices v , edges e , and faces f , together with the number of -gonal faces f_n for the Archimedean solids.Condition (1) simply says that the figure consists of two or more polygons, each having at least three sides.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 16.7s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/2 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: After a frost warning was issued, the owner of a large orange grove asked his workers to spray all his trees with water. The water was supposed to freeze and form a protective covering of ice around the orange blossom. Nevertheless, the owner suspected that some trees suffered considerable damage due to the frost. To estimate the proportion of trees that suffered more than 50 percent damage due to the frost, he took a random sample of 100 trees from his grove. What is the response variable in this experiment?
+OPTIONS:
+  0: The number of trees sampled from the grove.
+  1: The number of trees affected by the frost.
+  2: The proportion of trees that suffered more than 50 percent damage due to frost.
+  3: For each sampled tree, whether it suffered more than 50 percent damage or at most 50 percent damage.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+A tree (also called a central tree) having a single node that is a graph center. A rooted tree is a tree in which a special ("labeled") node is singled out. This node is called the "root" or (less commonly) "eve" of the tree.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 14.1s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/3 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the area, in square units, of a square whose sides are the same length as the radius of a circle with a circumference of 12*pi units?
+OPTIONS:
+  0: 12
+  1: 10
+  2: 36
+  3: 11
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+August 5, 2004 - The inradius , circumradius , and area can be computed directly from the formulas for a general regular polygon with side length and sides, The length of the polygon diagonal of the unit square is , sometimes known as Pythagoras's constant. ... The area of a square constructed inside a unit square as shown in the above diagram can be found as follows. Label and as shown, then ... The straightedge and compass construction of the square is simple. Draw the line and construct a circle having as a radius. December 1, 2004 - The circumference-to-diameter ratio for a circle is constant as the size of the circle is changed (as it must be since scaling a plane figure by a factor increases its perimeter by ), and also scales by . This ratio is denoted (pi), and has been proved tran
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.5s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/4 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: Where, in the first quadrant, does the rose r = sin(3*theta) have a vertical tangent?
+OPTIONS:
+  0: theta = 0.52
+  1: theta = 0.47
+  2: nowhere
+  3: theta = 0.39
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+A rose curve, also called Grandi's rose or the multifolium, is a curve which has the shape of a petalled flower. This curve was named rhodonea by the Italian mathematician Guido Grandi between 1723 and 1728 because it resembles a rose. (Here, tan^(-1)(y/x) should be interpreted as the two-argument inverse tangent which takes the signs of and into account to determine in which quadrant lies.)
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 13.6s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/5 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: A company is interested in comparing the mean sales revenue per salesperson at two different locations. The manager takes a random sample of 10 salespeople from each location independently and records the sales revenue generated by each person during the last four weeks. He decides to use a t-test to compare the mean sales revenue at the two locations. Which of the following assumptions is necessary for the validity of the t-test?
+OPTIONS:
+  0: The population standard deviations at both locations are not equal.
+  1: The population standard deviations at both locations are equal.
+  2: The population of the sales records at each location is normally distributed.
+  3: The population standard deviations at both locations are known.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+The Bernoulli distribution is implemented in the Wolfram Language as BernoulliDistribution[p]. The performance of a fixed number of trials with fixed probability of success on each trial is known as a Bernoulli trial. Comprehensive encyclopedia of mathematics with 13,000 detailed entries. Continually updated, extensively illustrated, and with interactive examples.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 15.6s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/6 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: Find all c in Z_3 such that Z_3[x]/(x^3 + cx^2 + 1) is a field.
+OPTIONS:
+  0: 0
+  1: 1
+  2: 2
+  3: 3
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+General Integral Transforms Unilateral Z-Transform A one-sided (singly infinite) Z-Transform, This is the most common variety of Z-transform since it is essentially equivalent to a generating function, and it what is usually meant by "the" Z-transform. The unilateral -transform is implemented in the Wolfram Language as ZTransform [a, n, z]. The (unilateral) Z-transform of a sequence {a_k}_(k=0)^infty is defined as Z[{a_k}_(k=0)^infty](z)=sum_(k=0)^infty(a_k)/(z^k). (1) This definition is implemented in the Wolfram Language as ZTransform[a, n, z]. Similarly, the inverse Z-transform is implemented as InverseZTransform[A, z, n]. "The" Z-transform generally refers to the unilateral Z-transform. Unfortunately, there are a number of ...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.5s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/7 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: A newspaper reporter examined police reports of accidents during the past 12 months to collect data about the speed of a car and its stopping distance. The reporter then constructed a scatterplot and computed a correlation coefficient to show the relation between a car's speed and its stopping distance. This is an example of
+OPTIONS:
+  0: an observational study
+  1: a study involving no blinding at all
+  2: a double-blind study
+  3: a single-blind study
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Mar 25, 2026 · The mathematical study of the likelihood and probability of events occurring based on known information and inferred by taking a limited number of samples. Statistics plays an extremely important role in many aspects of economics and science, allowing educated guesses to be made with a minimum of expensive or difficult-to-obtain data. A joke told about statistics (or, more precisely, about ... Mar 25, 2026 · References Kiefer, J. and Wolfowitz, J. "Stochastic Estimation of the Maximum of a Regression Function." Ann. Math. Stat. 23, 462-466, 1952. Robbins, H. and Munro, S ...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.1s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 1/8 (12.5%)
+================================================================================
+
+================================================================================
+QUESTION: A relative maximum value of the function y = (ln x) / x is
+OPTIONS:
+  0: 1/e
+  1: 1
+  2: 2/e
+  3: e
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+September 13, 2005 - TOPICS · Relative Maximum · Local Maximum · About MathWorld · MathWorld Classroom · Contribute · MathWorld Book · wolfram.com · 13,278 Entries · Last Updated: Wed Sep 24 2025 September 13, 2005 - A local maximum, also called a relative maximum, is a maximum within some neighborhood that need not be (but may be) a global maximum. Global Maximum, Local Minimum, Maximum, Peano Surface · More things to try: local maximum x^5 - 10x^3 + 30x ...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.2s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 2/9 (22.2%)
+================================================================================
+
+================================================================================
+QUESTION: A group of people have the number 12345.6789 written on a piece of paper. Alice rounds to the nearest ten-thousand, Bob to the nearest thousand, Carol to the nearest hundred, Devon to the nearest ten, and Eugene to the nearest whole number. Felicity rounds to the nearest tenth, Gerald to the nearest hundredth, Harry to the nearest thousandth, and Irene to the nearest ten-thousandth. Who wins by getting the highest value?
+OPTIONS:
+  0: Alice
+  1: Devon
+  2: Bob
+  3: Gerald
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Due to lack of standard terminology, the following terms are recommended in preference to...Whole Number. One of the numbers 1, 2, 3, ... (OEIS A000027), also called the counting numbers or natural numbers. round 44.479 to the nearest 100th. round to nearest tenth 9.33. References.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.6s
+RESULT: WRONG ✗  |  RUNNING SCORE: 2/10 (20.0%)
+================================================================================
+
+================================================================================
+QUESTION: For which value of n are there exactly two abelian groups of order n up to isomorphism?
+OPTIONS:
+  0: 4
+  1: 7
+  2: 12
+  3: 8
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+July 30, 2008 - It is simple to determine the number of Abelian groups using the Kronecker decomposition theorem, and there is at least one Abelian group for every finite order . The number of Abelian groups of group order , 2, ... are given by 1, 1, 1, 2, 1, 1, 1, 3, ... (OEIS A000688). April 4, 2013 - If the group order is a prime squared , then there are two Abelian groups (denoted and . If the group order is a prime cubed , then there are three Abelian groups (denoted , , and ), and five groups total.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.5s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 3/11 (27.3%)
+================================================================================
+
+================================================================================
+QUESTION: The financial aid office at a state university conducts a study to determine the total student costs per semester. All students are charged $4500 for tuition. The mean cost for books is $350 with a standard deviation of $65. The mean outlay for room and board is $2800 with a standard deviation of $380. The mean personal expenditure is $675 with a standard deviation of $125. Assuming independence among categories, what is the standard deviation of the total student costs?
+OPTIONS:
+  0: $24
+  1: $91
+  2: $190
+  3: $405
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Standard deviation can be defined for any distribution with finite first two moments, but it is most common to assume that the underlying distribution is normal. Under this assumption, the variate value producing a confidence interval CI is often denoted x_(CI) , and. The mean deviation of a list of numbers is implemented in the Wolfram Language as MeanDeviation[data].
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.4s
+RESULT: WRONG ✗  |  RUNNING SCORE: 3/12 (25.0%)
+================================================================================
+
+================================================================================
+QUESTION: What are the mean and standard deviation of a binomial experiment that occurs with probability of success 0.76 and is repeated 150 times?
+OPTIONS:
+  0: 114, 5.23
+  1: The mean is 114, but there is not enough information given to determine the standard deviation.
+  2: 114, 27.35
+  3: 100.5, 5.23
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+The binomial distribution gives the discrete probability distribution P_p(n|N) of obtaining exactly n successes out of N Bernoulli trials (where the result of each Bernoulli trial is true with probability p and false with probability q=1-p). The binomial coefficient (n; k) is the number of ways of picking k unordered outcomes from n possibilities, also known as a combination or combinatorial number. The symbols _nC_k and are used to denote a binomial coefficient, and are sometimes read as " choose ."
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 15.3s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 4/13 (30.8%)
+================================================================================
+
+================================================================================
+QUESTION: Mr. Bee's statistics class had a standard deviation of 11.2 on a standardized test, while Mr. Em's class had a standard deviation of 5.6 on the same test. Which of the following is the most reasonable conclusion concerning the two classes' performance on the test?
+OPTIONS:
+  0: Mr. Bee's class is less heterogeneous than Mr. Em's.
+  1: Mr. Em's class is more homogeneous than Mr. Bee's.
+  2: Mr. Em's class did not do as well as Mr. Bee's.
+  3: Mr. Bee's class performed twice as well as Mr. Em's.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Standard deviation can be defined for any distribution with finite first two moments, but it is most common to assume that the underlying distribution is normal. Under this assumption, the variate value producing a confidence interval CI is often denoted x_(CI) , and. Standard Deviation Distribution. DOWNLOAD Mathematica Notebook Download Wolfram Notebook.Romanovsky, V. "On the Moments of the Standard Deviation and of the Correlation Coefficient in Samples from Normal."
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 16.2s
+RESULT: WRONG ✗  |  RUNNING SCORE: 4/14 (28.6%)
+================================================================================
+
+================================================================================
+QUESTION: Mr. Cleary's class and Ms. Ntuala's class go to use the computer lab. There are 20 computers available, two of which do not work. Mr. Cleary's class has 14 kids, and Ms. Ntuala's class has 12 kids. If every student must use a computer and there can only be 2 students on a computer at most, what is the maximum number of students who can have a computer to themselves?
+OPTIONS:
+  0: 10
+  1: 14
+  2: 6
+  3: 2
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Using extensive computations, Watkins (2004) has solved the problem for all m<=100 . See also. Class Number, Gauss's Class Number Conjecture, Heegner Number. Finding the class number is a computationally difficult problem. The Wolfram Language function NumberFieldClassNumber[Sqrt[d]] gives the class number h(d) for d a fundamental discriminant.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 13.6s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 5/15 (33.3%)
+================================================================================
+
+================================================================================
+QUESTION: A 2008 survey of 500 households concluded that 82% of the population uses grocery coupons. Which of the following best describes what is meant by the poll having a margin of error of 3%?
+OPTIONS:
+  0: Between 395 and 425 of the 500 households surveyed responded that they used grocery coupons.
+  1: It is likely that between 79% and 85% of the population use grocery coupons.
+  2: It would not be unexpected for 3% of the population to begin using coupons or stop using coupons.
+  3: Three percent of those surveyed refused to participate in the poll.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+The margin of error is an estimate of a confidence interval for a given measurement, result, etc. and is frequently cited in statistics. While phrases such as, "The poll has a margin of error of plus or minus 3.1 percentage points" are commonly heard... The standard error of a sample of sample size n is the sample's standard deviation divided by sqrt(n). It therefore estimates the standard deviation of the sample mean based on the population mean (Press et al. 1992, p. 465). Note that while this definition makes no reference to a normal...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 14.0s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/16 (31.2%)
+================================================================================
+
+================================================================================
+QUESTION: How many square units are in the region satisfying the inequalities y >= |x| and y <= -|x| + 3? Express your answer as a decimal.
+OPTIONS:
+  0: 3.3
+  1: 2.25
+  2: 6.6
+  3: 4.5
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+A square with side lengths 1. The unit square usually means the one with coordinates (0, 0), (1, 0), (1, 1), (0, 1) in the real plane, or 0, 1, 1+i, and i in the complex plane. January 23, 2010 - A square number, also called a perfect square, is a figurate number of the form S_n=n^2, where n is an integer. The square numbers for n=0, 1, ... are 0, 1, 4, 9, 16, 25, 36, 49, ... (OEIS A000290). A plot of the first few square numbers represented as a sequence of binary bits is shown above.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 16.2s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/17 (29.4%)
+================================================================================
+
+================================================================================
+QUESTION: 3 cards are chosen at random from a standard 52-card deck. What is the probability that they form a pair? (A 3-card hand is a pair if two of the cards match in rank but the third card is different.)
+OPTIONS:
+  0: \frac{1}{36}
+  1: \frac{1}{78}
+  2: \frac{72}{425}
+  3: \frac{1}{8}
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Mar 25, 2026 · In common usage, the word "probability" is used to mean the chance that a particular event (or set of events) will occur expressed on a linear scale from 0 (impossibility) to 1 (certainty), also expressed as a percentage between 0 and 100%. Mar 25, 2026 · Probability and Statistics Probability Foundations of Mathematics Axioms Algebra of Random Variables See Probability Axioms
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 15.2s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/18 (27.8%)
+================================================================================
+
+================================================================================
+QUESTION: Simplify (5x+3) - 2(2x-4).
+OPTIONS:
+  0: 5x+3
+  1: 7+2x
+  2: 10+x
+  3: x+11
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+10 - 9 + 8 - 7 + 6 - 5 + 4 - 3 + 2 - 1 · cos x · integrate sqrt( (1+x^2)/(1+x^4) ) dx, x=0..1 · Weisstein, Eric W. "Unique." From MathWorld--A Wolfram Resource. https://mathworld.wolfram.com/Unique.html · A simplicial complex is a space with a triangulation. Formally, a simplicial complex K in R^n is a collection of simplices in R^n such that 1. Every face of a simplex of K is in K, and 2. The intersection of any two simplices of K is a face of each of them (Munkres 1993, p. 7). Objects in the ...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.5s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/19 (26.3%)
+================================================================================
+
+================================================================================
+QUESTION: The curve defined by x^3 + xy - y^2 = 10 has a vertical tangent line when x =
+OPTIONS:
+  0: 2.096
+  1: 1.037
+  2: 2.074
+  3: 0 or -1/3
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+probability curve. A parabola (plural "parabolas"; Gray 1997, p. 45) is the set of all points in the plane equidistant from a given line L (the conic section directrix) and a given point F not on the line (the focus).
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 13.1s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/20 (25.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the volume of the solid in xyz-space bounded by the surfaces y = x^2, y = 2 - x^2, z = 0, and z = y + 3?
+OPTIONS:
+  0: 16/3
+  1: 32/3
+  2: 8/3
+  3: 104/105
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+A volume element is the differential element dV whose volume integral over some range in a given coordinate system gives the volume of a solid, V=intintint_(G)dxdydz. (1) In R^n, the volume of the infinitesimal n-hypercube bounded by dx_1, ..., ... September 18, 2014 - Volume has units of length cubed (i.e., cm^3, m^3, in^3, etc.) For example, the volume of a box (cuboid) of length L, width W, and height H is given by V=L×W×H. The volume can also be computed for irregularly-shaped and curved ...
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 17.1s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/21 (23.8%)
+================================================================================
+
+================================================================================
+QUESTION: A meteorologist reports that there is a 30% probability of rain and no sun. If there is a 40% probability of no rain, then the probability of both rain and sun is
+OPTIONS:
+  0: 0.16
+  1: 0.24
+  2: 0.5
+  3: 0.3
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Probability is the branch of mathematics that studies the possible outcomes of given events together with the outcomes' relative likelihoods and distributions. In common usage, the word "probability" is used to mean the chance that a particular event (or set of events)... Probability Axioms. Given an event E in a sample space S which is either finite with N elements or countably infinite with N=infty elements, then we can write.Papoulis, A. Probability, Random Variables, and Stochastic Processes, 2nd ed.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 14.1s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/22 (22.7%)
+================================================================================
+
+================================================================================
+QUESTION: When the expression -2x^2 - 20x - 53 is written in the form a(x+d)^2 + e, what is the sum a+d+e?
+OPTIONS:
+  0: 6
+  1: 53
+  2: 0
+  3: -80
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+For example, the above sum could be written sum_(k=1)^4k=10. (2) The sum of a list of numbers is implemented as Total[list].Conditions for convergence of a series can be determined in the Wolfram Language using SumConvergence[a, n]. The general finite power sum. The number of representations of as the sum of two squares ignoring order and signs is then given by.In 1636, Fermat stated that no integer of the form 8k+7 is the sum of three rational squares, and in 1638, Descartes proved this for integer squares.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 13.1s
+RESULT: WRONG ✗  |  RUNNING SCORE: 5/23 (21.7%)
+================================================================================
+
+================================================================================
+QUESTION: Which of these explains why t should be used instead of z for inference procedures for means.
+OPTIONS:
+  0: When using the sample standard deviation to estimate the population standard deviation, more variability is introduced into the sampling distribution of the statistic.
+  1: The Central Limit Theorem applies to proportions but not means.
+  2: We use z for proportions because the sampling distribution of sample proportions is approximately normal, but that is not the case for the sampling distribution of sample means.
+  3: We use z for proportions because proportions are approximately normal. Means are not.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+The arithmetic mean of a set of values is the quantity commonly called "the" mean or the average. Given a set of samples {x_i}, the arithmetic mean is x^_=1/Nsum_(i=1)^Nx_i. (1) It can be computed in the Wolfram Language using Mean[list]. In such cases, it is appropriate to use a Student's t-distribution instead of a normal distribution as a model since, very loosely speaking, Student's t-distribution is the "best" that can be done without knowing .These equations can be expressed using the covariance matrix.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 15.0s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 6/24 (25.0%)
+================================================================================
+
+================================================================================
+QUESTION: Let K be a nonempty subset of R^n, where n > 1. Which of the following statements must be true? I. If K is compact, then every continuous real-valued function defined on K is bounded. II. If every continuous real-valued function defined on K is bounded, then K is compact. III. If K is compact, then K is connected.
+OPTIONS:
+  0: I only
+  1: I and II only
+  2: III only
+  3: II only
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Equicontinuous. In real and functional analysis, equicontinuity is a concept which extends the notion of uniform continuity from a single function to collection of functions. Let X be a locally convex topological vector space and let K be a compact subset of . In functional analysis, Milman's theorem is a result which says that if the closed convex hull co^_(K) of is also compact, then contains all the extreme points of .
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 16.5s
+RESULT: WRONG ✗  |  RUNNING SCORE: 6/25 (24.0%)
+================================================================================
+
+================================================================================
+QUESTION: A teacher's union and a school district are negotiating salaries. The district has many moderately paid teachers and a few highly paid administrators. Which of the following would the teachers' union be most likely to quote during negotiations to argue for higher pay?
+OPTIONS:
+  0: The median of all the salaries.
+  1: The mean of all the salaries.
+  2: The mode of all the salaries.
+  3: The standard deviation of all the salaries.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+The union of two sets A and B is the set obtained by combining the members of each. This is written A union B, and is pronounced "A union B" or "A cup B." The union of sets A_1 through A_n is written union _ (i=1)^nA_i. The union of a list may be computed in the Wolfram Language as Union [l]. 
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.8s
+RESULT: CORRECT ✓  |  RUNNING SCORE: 7/26 (26.9%)
+================================================================================
+
+================================================================================
+QUESTION: Let F be a constant unit force parallel to the vector (-1, 0, 1) in xyz-space. What is the work done by F on a particle moving along (t, t^2, t^3) between t=0 and t=1?
+OPTIONS:
+  0: -1/(4sqrt(2))
+  1: 0
+  2: sqrt(2)
+  3: -1/4
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+November 30, 2013 - In addition to the above definition, some literature defines parallel transport in a more function analytic way. Indeed, given an interval and a point , a parallel transport of along is nothing more than a linear transformation · which maps to . November 15, 2003 - Absolute Geometry, Antiparallel, Hyperparallel, Line, Non-Euclidean Geometry, Parallel Class, Parallel Computing, Parallel Curves, Parallel Line and Plane, Parallel Lines, Parallel Planes, Parallel Postulate, Parallel Transport, Parallel Vectors, Perpendicular, Plane, Series-Parallel Graph, Skew Lines, Surface of Revolution Parallel Explore this topic in the MathWorld classroom ... Honsberger, R. "Parallels and Antiparallels." §9.1 in Episodes in Nineteenth and Twentieth Century Euclidean Geometry. Washington
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 13.0s
+RESULT: WRONG ✗  |  RUNNING SCORE: 7/27 (25.9%)
+================================================================================
+
+================================================================================
+QUESTION: In a study on the effect of music on worker productivity, employees were told that a different genre of background music would be played each day and the corresponding production outputs noted. Every change in music resulted in an increase in production. This is an example of
+OPTIONS:
+  0: the control group effect.
+  1: the placebo effect.
+  2: sampling error.
+  3: the effect of a treatment unit.
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+These points cross the sides AB and AC at Q_(AB) and Q_(AC), respectively, resulting in an inscribed square Q_(A,BC)Q_(A,CB)Q_(AB)Q_(AC).The Lucas circles are pairwise tangent, although this fact seems to have been noted first only by Yiu and Hatzipolakis (2001). An inner product is a generalization of the dot product. In a vector space, it is a way to multiply vectors together, with the result of this multiplication being a scalar.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 14.6s
+RESULT: WRONG ✗  |  RUNNING SCORE: 7/28 (25.0%)
+================================================================================
+
+================================================================================
+QUESTION: Statement 1 | 4x - 2 is irreducible over Z. Statement 2 | 4x - 2 is irreducible over Q.
+OPTIONS:
+  0: True, False
+  1: False, True
+  2: True, True
+  3: False, False
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+While many computations admit shortcuts that allow them to be performed more rapidly, others cannot be sped up. Computations that cannot be sped up by means of any shortcut are called computationally irreducible. The principle of computational irredu... A statement is in disjunctive normal form if it is a disjunction (sequence of ORs) consisting of one or more disjuncts, each of which is a conjunction (AND) of one or more literals (i.e., statement letters and negations of statement letters; Mendelson 1997, p. 30).
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 15.3s
+RESULT: WRONG ✗  |  RUNNING SCORE: 7/29 (24.1%)
+================================================================================
+

@@ -157,17 +157,26 @@ class MathLLMModel(LLMModel):
             pass
         try:
             import scipy.stats as scipy_stats
-            namespace["stats"] = scipy_stats
-            namespace["norm"]  = scipy_stats.norm
+            import scipy.integrate as scipy_integrate
+            namespace["stats"]   = scipy_stats
+            namespace["norm"]    = scipy_stats.norm
+            namespace["dblquad"] = scipy_integrate.dblquad
+            namespace["quad"]    = scipy_integrate.quad
         except ImportError:
             pass
+
+        # stdlib functions commonly used without import
+        namespace["comb"]    = math.comb
+        namespace["perm"]    = math.perm
+        namespace["gcd"]     = math.gcd
+        namespace["lcm"]     = math.lcm if hasattr(math, "lcm") else None
         captured  = io.StringIO()
         error: list = []
 
         def _run():
             try:
                 with contextlib.redirect_stdout(captured):
-                    exec(code, namespace, {})  # noqa: S102
+                    exec(code, namespace)  # noqa: S102
             except Exception as e:
                 error.append(e)
 
