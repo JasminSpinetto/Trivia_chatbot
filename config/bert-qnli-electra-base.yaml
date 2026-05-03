@@ -1,0 +1,4 @@
+model_class: Bert
+model_name: "cross-encoder/qnli-electra-base"
+package_name: "CrossEncoder"
+model_type: "crossencoder"

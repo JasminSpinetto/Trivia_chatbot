@@ -105,6 +105,8 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 | Config file | Model | Notes |
 |-------------|-------|-------|
 | `random.yaml` | Random baseline | Picks a uniformly random answer |
+| `bert-mpnet-base-v2.yaml` | Biencoder BERT | Sentence embeddings + cosine similarity |
+| `bert-qnli-electra-base.yaml` | Crossencoder BERT | Pretrained QNLI head, single-logit entailment score |
 | `llama-1b.yaml` | Meta LLaMA 3.2 1B Instruct | Requires re-download |
 | `llama-3b.yaml` | Meta LLaMA 3.2 3B Instruct | Requires re-download |
 | `llama-8b.yaml` | Meta LLaMA 3.1 8B Instruct | 4-bit quantized, ~15 GB disk |
