@@ -23,6 +23,7 @@ venv.bak/
 *.bin
 *.safetensors
 *.gguf
+data/
 
 # HuggingFace cache
 .cache/
