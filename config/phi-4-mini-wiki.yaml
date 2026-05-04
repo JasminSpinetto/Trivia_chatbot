@@ -1,0 +1,8 @@
+model_class: MathLLMModel
+model_name: "microsoft/Phi-4-mini-instruct"
+do_sample: true
+temperature: 0.15
+max_new_tokens: 10
+system_prompt: "default"
+search_reversed: false
+use_retrieval: true

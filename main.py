@@ -1,15 +1,19 @@
 import torch  # must be imported before utils/requests to avoid DLL conflicts on Windows
 import os
 import json
+import time
 import argparse
 import yaml
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
-ONLINE       = False
-RESULTS_FILE = "results/Math/local-math-results.csv"
-CONFIG_DIR   = "config"
+ONLINE            = False
+RESULTS_FILE      = "results/Math/local-math-results.csv"
+CONFIG_DIR        = "config"
+ONLINE_TIMEOUT_S  = 30   # hard limit imposed by the quiz server
+OFFLINE_TIMEOUT_S = 180  # generous limit for local runs (DeepSeek-R1 needs time to think)
 
 
 def load_model(config_path: str):
@@ -100,6 +104,7 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
     competitions     = client.competitions.list_all()
     num_competitions = len(competitions)
     play_history     = {i: {"num_games": 0, "level": [], "score": []} for i in range(num_competitions)}
+    seen_questions   = []   # collects every question seen this session
 
     print("\n=== Available Competitions ===")
     for comp in competitions:
@@ -165,6 +170,16 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
             if hasattr(model, "log_result"):
                 model.log_result(result.correct)
 
+            if "math" in competitions[comp_id].name.lower():
+                seen_questions.append({
+                    "competition": competitions[comp_id].name,
+                    "question":    question.text,
+                    "options":     options,
+                    "our_answer":  answer_id,
+                    "correct":     result.correct,
+                    "answer":      answer_id if result.correct else None,
+                })
+
             if print_cond:
                 if result.correct:
                     print("\n CORRECT!")
@@ -205,6 +220,15 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
     if output_csv:
         save_results(model_key, model, competitions, play_history, math_only)
 
+    if seen_questions:
+        os.makedirs("data/online_sessions", exist_ok=True)
+        timestamp   = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_path    = f"data/online_sessions/session_{timestamp}.json"
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(seen_questions, f, ensure_ascii=False, indent=2)
+        correct_count = sum(1 for q in seen_questions if q["correct"])
+        print(f"\nSaved {len(seen_questions)} questions ({correct_count} with known correct answer) → {out_path}")
+
 
 def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only, dataset):
     """
@@ -226,21 +250,39 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
         if multiplicity > 1:
             print(f"\n--- Run {run + 1} / {multiplicity} ---")
         for i, q in enumerate(questions):
-            options   = {str(k): v for k, v in q["options"].items()}
-            answer_id = model.answer(q["question"], options)
-            correct   = answer_id == q["answer"]
+            options = {str(k): v for k, v in q["options"].items()}
+
+            if verbose:
+                print(f"\nQ{i+1}: {q['question'][:80]}...")
+                for k, v in options.items():
+                    print(f"  [{k}] {v}")
+
+            t0 = time.time()
+            timed_out = False
+            with ThreadPoolExecutor(max_workers=1) as ex:
+                future = ex.submit(model.answer, q["question"], options)
+                try:
+                    answer_id = future.result(timeout=OFFLINE_TIMEOUT_S)
+                except FuturesTimeoutError:
+                    answer_id = None
+                    timed_out = True
+            elapsed = time.time() - t0
+
+            correct = (answer_id == q["answer"]) and not timed_out
 
             if hasattr(model, "log_result"):
                 model.log_result(correct)
 
             total         += 1
             correct_count += int(correct)
-            verdict        = "CORRECT" if correct else f"WRONG (correct: {q['answer']})"
 
-            if verbose:
-                print(f"\nQ{i+1}: {q['question'][:80]}...")
-                for k, v in options.items():
-                    print(f"  [{k}] {v}")
+            if timed_out:
+                verdict = f"TIMEOUT after {elapsed:.1f}s"
+            elif correct:
+                verdict = f"CORRECT ({elapsed:.1f}s)"
+            else:
+                verdict = f"WRONG → correct: {q['answer']} ({elapsed:.1f}s)"
+
             print(f"  Q{i+1:02d} → answered {answer_id} | {verdict}")
 
     accuracy = correct_count / total * 100 if total else 0

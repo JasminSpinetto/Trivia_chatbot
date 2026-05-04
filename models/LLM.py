@@ -8,6 +8,15 @@ from typing import Optional
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, GenerationConfig, pipeline
 from utils.HF_login import HF_login
 
+# Compatibility stub: some models' custom code imports LossKwargs from
+# transformers.utils, but it was removed in newer transformers versions.
+import transformers.utils as _tu
+if not hasattr(_tu, "LossKwargs"):
+    from typing import TypedDict
+    class _LossKwargs(TypedDict, total=False):
+        pass
+    _tu.LossKwargs = _LossKwargs
+
 SYSTEM_PROMPTS = {
     "default": (
         "You are a quiz contestant. Given a multiple choice question, "
@@ -169,7 +178,7 @@ class LLMModel:
             "max_new_tokens": self._max_new_tokens,
         }
         if self._retriever:
-            info["retrieval"] = "Wikipedia → DuckDuckGo fallback"
+            info["retrieval"] = getattr(self._retriever, "description", "Wikipedia → DuckDuckGo")
         return info
 
     def answer(self, question_text: str, options: dict) -> int:

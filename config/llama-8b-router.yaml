@@ -1,14 +1,16 @@
 model_class: MathLLMModel
-model_name: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
-do_sample: false
-temperature: null
+model_name: "meta-llama/Llama-3.1-8B-Instruct"
+do_sample: true
+temperature: 0.15
 max_new_tokens: 256
 system_prompt: "code"
-search_reversed: true
+search_reversed: false
 quantization:
   load_in_4bit: true
   quant_type: "nf4"
   compute_dtype: "bfloat16"
   double_quant: true
-use_code_executor: true
+use_retrieval: true
+use_code_executor: false
+use_router: true
 log_dir: "AgenticAI_scripts"

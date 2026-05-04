@@ -12,7 +12,12 @@
   },
   {
     "question": "Six positive integers are written on the faces of a cube. Each vertex is labeled with the product of the three numbers on the faces adjacent to the vertex. If the sum of the numbers on the vertices is equal to 1001, then what is the sum of the numbers written on the faces?",
-    "options": {"0": "1001", "1": "18", "2": "13", "3": "31"},
+    "options": {
+      "0": "1001",
+      "1": "18",
+      "2": "13",
+      "3": "31"
+    },
     "answer": 3,
     "note": "Sum of vertices = (a+b)(c+d)(e+f) = 1001 = 7x11x13, so sum of faces = 7+11+13 = 31"
   },
@@ -29,7 +34,12 @@
   },
   {
     "question": "What is the area, in square units, of a square whose sides are the same length as the radius of a circle with a circumference of 12*pi units?",
-    "options": {"0": "12", "1": "10", "2": "36", "3": "11"},
+    "options": {
+      "0": "12",
+      "1": "10",
+      "2": "36",
+      "3": "11"
+    },
     "answer": 2,
     "note": "C=12pi=2pi*r -> r=6, area=r^2=36. CORRECT confirmed by server."
   },
@@ -57,7 +67,12 @@
   },
   {
     "question": "Find all c in Z_3 such that Z_3[x]/(x^3 + cx^2 + 1) is a field.",
-    "options": {"0": "0", "1": "1", "2": "2", "3": "3"},
+    "options": {
+      "0": "0",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
     "answer": 2,
     "note": "Field iff polynomial irreducible over Z_3 (no roots). c=1: f(1)=1+1+1=3=0 -> root. c=2: f(0)=1, f(1)=4=1, f(2)=8+8+1=17=2, no roots -> irreducible -> field."
   },
@@ -74,25 +89,45 @@
   },
   {
     "question": "A relative maximum value of the function y = (ln x) / x is",
-    "options": {"0": "1/e", "1": "1", "2": "2/e", "3": "e"},
+    "options": {
+      "0": "1/e",
+      "1": "1",
+      "2": "2/e",
+      "3": "e"
+    },
     "answer": 0,
     "note": "f'=0 at x=e, f(e)=(ln e)/e=1/e. CORRECT confirmed by server."
   },
   {
     "question": "A group of people have the number 12345.6789 written on a piece of paper. Alice rounds to the nearest ten-thousand, Bob to the nearest thousand, Carol to the nearest hundred, Devon to the nearest ten, and Eugene to the nearest whole number. Felicity rounds to the nearest tenth, Gerald to the nearest hundredth, Harry to the nearest thousandth, and Irene to the nearest ten-thousandth. Who wins by getting the highest value?",
-    "options": {"0": "Alice", "1": "Devon", "2": "Bob", "3": "Gerald"},
+    "options": {
+      "0": "Alice",
+      "1": "Devon",
+      "2": "Bob",
+      "3": "Gerald"
+    },
     "answer": 1,
     "note": "Devon: 12350 is the highest. Alice: 10000, Bob: 12000, Carol: 12300, Devon: 12350, rest are lower. Model answered 0 Alice (WRONG)."
   },
   {
     "question": "For which value of n are there exactly two abelian groups of order n up to isomorphism?",
-    "options": {"0": "4", "1": "7", "2": "12", "3": "8"},
+    "options": {
+      "0": "4",
+      "1": "7",
+      "2": "12",
+      "3": "8"
+    },
     "answer": 0,
     "note": "n=4: Z_4 and Z_2xZ_2 (two groups). n=7: one (prime). n=8: three. n=12: two or more. CORRECT confirmed by server."
   },
   {
     "question": "The financial aid office at a state university conducts a study to determine the total student costs per semester. All students are charged $4500 for tuition. The mean cost for books is $350 with a standard deviation of $65. The mean outlay for room and board is $2800 with a standard deviation of $380. The mean personal expenditure is $675 with a standard deviation of $125. Assuming independence among categories, what is the standard deviation of the total student costs?",
-    "options": {"0": "$24", "1": "$91", "2": "$190", "3": "$405"},
+    "options": {
+      "0": "$24",
+      "1": "$91",
+      "2": "$190",
+      "3": "$405"
+    },
     "answer": 3,
     "note": "sqrt(65^2 + 380^2 + 125^2) = sqrt(164250) ~ 405. Tuition has std=0. CORRECT confirmed by server."
   },
@@ -120,7 +155,12 @@
   },
   {
     "question": "Mr. Cleary's class and Ms. Ntuala's class go to use the computer lab. There are 20 computers available, two of which do not work. Mr. Cleary's class has 14 kids, and Ms. Ntuala's class has 12 kids. If every student must use a computer and there can only be 2 students on a computer at most, what is the maximum number of students who can have a computer to themselves?",
-    "options": {"0": "10", "1": "14", "2": "6", "3": "2"},
+    "options": {
+      "0": "10",
+      "1": "14",
+      "2": "6",
+      "3": "2"
+    },
     "answer": 0,
     "note": "18 working computers x 2 = 36 slots. 26 students need slots. 36-26=10 students solo. CORRECT confirmed."
   },
@@ -137,7 +177,12 @@
   },
   {
     "question": "How many square units are in the region satisfying the inequalities y >= |x| and y <= -|x| + 3? Express your answer as a decimal.",
-    "options": {"0": "3.3", "1": "2.25", "2": "6.6", "3": "4.5"},
+    "options": {
+      "0": "3.3",
+      "1": "2.25",
+      "2": "6.6",
+      "3": "4.5"
+    },
     "answer": 3,
     "note": "Diamond with diagonals 3 (vertical) and 3 (horizontal). Area = 0.5*3*3 = 4.5. CORRECT confirmed."
   },
@@ -154,31 +199,56 @@
   },
   {
     "question": "Simplify (5x+3) - 2(2x-4).",
-    "options": {"0": "5x+3", "1": "7+2x", "2": "10+x", "3": "x+11"},
+    "options": {
+      "0": "5x+3",
+      "1": "7+2x",
+      "2": "10+x",
+      "3": "x+11"
+    },
     "answer": 3,
     "note": "5x+3-4x+8 = x+11. CORRECT confirmed."
   },
   {
     "question": "The curve defined by x^3 + xy - y^2 = 10 has a vertical tangent line when x =",
-    "options": {"0": "2.096", "1": "1.037", "2": "2.074", "3": "0 or -1/3"},
+    "options": {
+      "0": "2.096",
+      "1": "1.037",
+      "2": "2.074",
+      "3": "0 or -1/3"
+    },
     "answer": 2,
     "note": "Vertical tangent when x-2y=0, substitute y=x/2: x^3+x^2/4=10, numeric root ~2.074. Model answered 0 (WRONG)."
   },
   {
     "question": "What is the volume of the solid in xyz-space bounded by the surfaces y = x^2, y = 2 - x^2, z = 0, and z = y + 3?",
-    "options": {"0": "16/3", "1": "32/3", "2": "8/3", "3": "104/105"},
+    "options": {
+      "0": "16/3",
+      "1": "32/3",
+      "2": "8/3",
+      "3": "104/105"
+    },
     "answer": 1,
     "note": "V = integral over region of (y+3) dA. CORRECT confirmed."
   },
   {
     "question": "A meteorologist reports that there is a 30% probability of rain and no sun. If there is a 40% probability of no rain, then the probability of both rain and sun is",
-    "options": {"0": "0.16", "1": "0.24", "2": "0.5", "3": "0.3"},
+    "options": {
+      "0": "0.16",
+      "1": "0.24",
+      "2": "0.5",
+      "3": "0.3"
+    },
     "answer": 3,
     "note": "P(rain)=0.6, P(rain and no sun)=0.3, P(rain and sun)=0.6-0.3=0.3. Model answered 2 (WRONG)."
   },
   {
     "question": "When the expression -2x^2 - 20x - 53 is written in the form a(x+d)^2 + e, what is the sum a+d+e?",
-    "options": {"0": "6", "1": "53", "2": "0", "3": "-80"},
+    "options": {
+      "0": "6",
+      "1": "53",
+      "2": "0",
+      "3": "-80"
+    },
     "answer": 2,
     "note": "-2(x+5)^2 - 3, so a=-2, d=5, e=-3, sum=0. Model answered 0 (WRONG)."
   },
@@ -195,7 +265,12 @@
   },
   {
     "question": "Let K be a nonempty subset of R^n, where n > 1. Which of the following statements must be true? I. If K is compact, then every continuous real-valued function defined on K is bounded. II. If every continuous real-valued function defined on K is bounded, then K is compact. III. If K is compact, then K is connected.",
-    "options": {"0": "I only", "1": "I and II only", "2": "III only", "3": "II only"},
+    "options": {
+      "0": "I only",
+      "1": "I and II only",
+      "2": "III only",
+      "3": "II only"
+    },
     "answer": 1,
     "note": "I: true (Heine-Cantor). II: true (converse also holds in R^n). III: false (compact need not be connected). Model answered 0 (WRONG)."
   },
@@ -212,7 +287,12 @@
   },
   {
     "question": "Let F be a constant unit force parallel to the vector (-1, 0, 1) in xyz-space. What is the work done by F on a particle moving along (t, t^2, t^3) between t=0 and t=1?",
-    "options": {"0": "-1/(4sqrt(2))", "1": "0", "2": "sqrt(2)", "3": "-1/4"},
+    "options": {
+      "0": "-1/(4sqrt(2))",
+      "1": "0",
+      "2": "sqrt(2)",
+      "3": "-1/4"
+    },
     "answer": 1,
     "note": "W = (1/sqrt(2)) * integral_0^1 (-1 + 3t^2) dt = (1/sqrt(2))[t^3-t]_0^1 = 0. Model answered 0 (WRONG)."
   },
@@ -237,5 +317,345 @@
     },
     "answer": 1,
     "note": "Over Z: 4x-2=2(2x-1), not irreducible (2 is not a unit in Z). Over Q: degree 1, always irreducible over a field. Model answered 2 (WRONG)."
+  },
+  {
+    "question": "Suppose H0: p = 0.6, and the power of the test for Ha: p = 0.7 is 0.8. Which of the following is a valid conclusion?",
+    "options": {
+      "0": "All of the above are valid conclusions.",
+      "1": "The probability of committing a Type I error is 0.1.",
+      "2": "The probability of committing a Type II error is 0.3.",
+      "3": "If Ha is true, the probability of failing to reject H0 is 0.2."
+    },
+    "answer": 3
+  },
+  {
+    "question": "A manufacturer of ready-bake cake mixes is interested in designing an experiment to test the effects of four different temperature levels (300, 325, 350, and 375F), two different types of pans (glass and metal), and three different types of ovens (gas, electric, and microwave) on the texture of its cakes, in all combinations. Which of the following below is the best description of the design of the necessary experiment?",
+    "options": {
+      "0": "A randomized block design, blocked on temperature, with six treatment groups",
+      "1": "A completely randomized design with 24 treatment groups",
+      "2": "A randomized block design, blocked on type of pan, with 12 treatment groups",
+      "3": "A completely randomized design with nine treatment groups"
+    },
+    "answer": 1
+  },
+  {
+    "question": "Solve for $x$:$$\\left(\\frac{1}{25}\\right)^{x + 2} = 125^{-x}.$$",
+    "options": {
+      "0": "2",
+      "1": "4",
+      "2": "3",
+      "3": "1"
+    },
+    "answer": 1
+  },
+  {
+    "question": "Statement 1 | Every element of a group generates a cyclic subgroup of the group. Statement 2 | The symmetric group S_10 has 10 elements.",
+    "options": {
+      "0": "True, False",
+      "1": "False, False",
+      "2": "False, True",
+      "3": "True, True"
+    },
+    "answer": 0
+  },
+  {
+    "question": "Jane's quiz scores were 98, 97, 92, 85 and 93. What was her mean score?",
+    "options": {
+      "0": "93",
+      "1": "95",
+      "2": "94.5",
+      "3": "92"
+    },
+    "answer": 0
+  },
+  {
+    "question": "Statement 1 | A permutation that is a product of m even permutations and n odd permutations is an even permutation if and only if n is even. Statement 2 | Every group is isomorphic to a group of permutations.",
+    "options": {
+      "0": "False, False",
+      "1": "True, False",
+      "2": "True, True",
+      "3": "False, True"
+    },
+    "answer": 2
+  },
+  {
+    "question": "A drug company will conduct a randomized controlled study on the effectiveness of a new heart disease medication called Heartaid. Heartaid is more expensive than the currently used medication. The analysis will include a significance test with H0: Heartaid and the current medication are equally effective at preventing heart disease and HA: Heartaid is more effective than the current medication at preventing heart disease. Which of these would be a potential consequence of a Type II error?",
+    "options": {
+      "0": "Patients will continue to use the current medication, even though Heartaid is actually more effective.",
+      "1": "Doctors will begin to prescribe Heartaid to patients, even though it is actually not any more effective than the current medication.",
+      "2": "Patients will spend more money on Heartaid, even though it is actually not any more effective than the current medication.",
+      "3": "Researchers will calculate the wrong P-value, making their advice to doctors invalid."
+    },
+    "answer": 0
+  },
+  {
+    "question": "Which of the following is least likely to reduce bias in a sample survey?",
+    "options": {
+      "0": "Asking questions in a neutral manner to avoid influencing the responses",
+      "1": "Using stratified random sampling rather than simple random sampling",
+      "2": "Following up with those who did not respond to the survey the first time",
+      "3": "Selecting samples randomly"
+    },
+    "answer": 1
+  },
+  {
+    "question": "Find all positive values of $c$ so that the inequality $x^2-6x+c<0$ has real solutions for $x$. Express your answer in interval notation.",
+    "options": {
+      "0": "(6, 0)",
+      "1": "(6, 6)",
+      "2": "(0, 9)",
+      "3": "(1, 1)"
+    },
+    "answer": 2
+  },
+  {
+    "question": "Suppose X and Y are random variables with μx = 32, σx = 5, μy = 44, and σy = 12. Given that X and Y are independent, what are the mean and standard deviation of the random variable X + Y?",
+    "options": {
+      "0": "μx+y = 76, σx+y = 13",
+      "1": "μx+y = 76, σx+y = 17",
+      "2": "μx+y = 76, σx+y = 8.5",
+      "3": "μx+y = 38, σx+y = 17"
+    },
+    "answer": 0
+  },
+  {
+    "question": "If all the values of a data set are the same, all of the following must equal zero except for which one?",
+    "options": {
+      "0": "Range",
+      "1": "Variance",
+      "2": "Standard deviation",
+      "3": "Mean"
+    },
+    "answer": 3
+  },
+  {
+    "question": "A customer is not certain if the advertised width of a 48-inch television is along the horizontal length of the screen or along the diagonal of the screen. If the ratio of the length to the height of the television screen is 5 to 3, how much shorter, to the nearest inch, will the horizontal length of the television screen be if the measure is made along the diagonal of the television screen rather than along the horizontal length?",
+    "options": {
+      "0": "3",
+      "1": "8",
+      "2": "7",
+      "3": "9"
+    },
+    "answer": 2
+  },
+  {
+    "question": "The waiting times for a new roller coaster ride are normally distributed with a mean of 35 minutes and a standard deviation of 10 minutes. If there are 150,000 riders the first summer, which of the following is the shortest time interval associated with 100,000 riders?",
+    "options": {
+      "0": "0 to 31.7 minutes",
+      "1": "31.7 to 39.3 minutes",
+      "2": "25.3 to 35 minutes",
+      "3": "25.3 to 44.7 minutes"
+    },
+    "answer": 3
+  },
+  {
+    "question": "What is the greatest possible area of a triangular region with one vertex at the center of a circle of radius 1 and the other two vertices on the circle?",
+    "options": {
+      "0": "1",
+      "1": "1/2",
+      "2": "sqrt(2)",
+      "3": "pi"
+    },
+    "answer": 1
+  },
+  {
+    "question": "A researcher plans a study to examine long-term confidence in the U.S. economy among the adult population. She obtains a simple random sample of 30 adults as they leave a Wall Street office building one weekday afternoon. All but two of the adults agree to participate in the survey. Which of the following conclusions is correct?",
+    "options": {
+      "0": "Proper use of chance as evidenced by the simple random sample makes this a well-designed survey.",
+      "1": "Selection bias makes this a poorly designed survey.",
+      "2": "The high response rate makes this a well-designed survey.",
+      "3": "A voluntary response study like this gives too much emphasis to persons with strong opinions."
+    },
+    "answer": 1
+  },
+  {
+    "question": "How many arithmetic sequences of consecutive odd integers sum to 240?",
+    "options": {
+      "0": "10",
+      "1": "12",
+      "2": "4",
+      "3": "8"
+    },
+    "answer": 1
+  },
+  {
+    "question": "In Canada in 2014, the average wholesale price of soybeans was $0.24 per pound. In 2015, the average wholesale price of soybeans was $0.16 per pound. If a retailer purchased 20,000 pounds of soybeans in 2014 and in 2015, what was the percent change in the retailer’s expenses from 2014 to 2015?",
+    "options": {
+      "0": "–33%",
+      "1": "–8%",
+      "2": "8%",
+      "3": "–50%"
+    },
+    "answer": 0
+  },
+  {
+    "question": "Let V be a finite-dimensional real vector space and let P be a linear transformation of V such that P^2 = P. Which of the following must be true?\nI. P is invertible.\nII. P is diagonalizable.\nIII. P is either the identity transformation or the zero transformation.",
+    "options": {
+      "0": "III only",
+      "1": "II only",
+      "2": "None",
+      "3": "I only"
+    },
+    "answer": 1
+  },
+  {
+    "question": "Simplify $(5x+3) - 2(2x-4)$.",
+    "options": {
+      "0": "x+11",
+      "1": "7+2x",
+      "2": "10+x",
+      "3": "5x+3"
+    },
+    "answer": 0
+  },
+  {
+    "question": "Let $n$ be the product of the two smallest 3-digit prime numbers. Find the sum of the digits of $n$.",
+    "options": {
+      "0": "9",
+      "1": "3",
+      "2": "6",
+      "3": "8"
+    },
+    "answer": 3
+  },
+  {
+    "question": "The mean daily demand for bread at a popular bakery is 2,500 loaves, with a standard deviation of 225 loaves. Every morning the bakery bakes 3,000 loaves. What is the probability that today it will run out of bread? Assume that the mean daily demand for bread at this bakery is normally distributed.",
+    "options": {
+      "0": "0.0132",
+      "1": "0.1667",
+      "2": "0.8333",
+      "3": "0.9869"
+    },
+    "answer": 0
+  },
+  {
+    "question": "As the tides change, the water level in a bay varies sinusoidally. At high tide today at 8 A.M., the water level was 15 feet; at low tide, 6 hours later at 2 P.M., it was 3 feet. How fast, in feet per hour, was the water level dropping at noon today?",
+    "options": {
+      "0": "π\\sqrt{3}",
+      "1": "3",
+      "2": "3\\sqrt{3}",
+      "3": "π\\sqrt{3}/2"
+    },
+    "answer": 3
+  },
+  {
+    "question": "What is the sum of all integer solutions to $|n| < |n-3| < 9$?",
+    "options": {
+      "0": "14",
+      "1": "-9",
+      "2": "-14",
+      "3": "9"
+    },
+    "answer": 2
+  },
+  {
+    "question": "If A is a subset of the real line R and A contains each rational number, which of the following must be true?",
+    "options": {
+      "0": "If A is closed, then A = R.",
+      "1": "If A is uncountable, then A = R.",
+      "2": "If A is uncountable, then A is open.",
+      "3": "If A is open, then A = R."
+    },
+    "answer": 0
+  },
+  {
+    "question": "If $f(x) = 8x^3 - 6x^2 - 4x + 5$, find the value of $f( -2)$.",
+    "options": {
+      "0": "-64",
+      "1": "5",
+      "2": "-24",
+      "3": "-75"
+    },
+    "answer": 3
+  },
+  {
+    "question": "The area bounded by the parabola y = x^2 and the lines y = 1 and y = 9 equals",
+    "options": {
+      "0": "64\\sqrt{2}/3",
+      "1": "84/3",
+      "2": "8",
+      "3": "104/3"
+    },
+    "answer": 3
+  },
+  {
+    "question": "What is the smallest positive integer with factors of 16, 15, and 12?",
+    "options": {
+      "0": "840",
+      "1": "240",
+      "2": "12",
+      "3": "22"
+    },
+    "answer": 1
+  },
+  {
+    "question": "Three points are chosen randomly and independently on a circle. What is the probability that all three pairwise distances between the points are less than the radius of the circle?",
+    "options": {
+      "0": "\\frac{1}{32}",
+      "1": "\\frac{1}{12}",
+      "2": "\\frac{1}{20}",
+      "3": "\\frac{1}{16}"
+    },
+    "answer": 1
+  },
+  {
+    "question": "A point $(x,y)$ is randomly picked from inside the rectangle with vertices $(0,0)$, $(3,0)$, $(3,2)$, and $(0,2)$. What is the probability that $x < y$?",
+    "options": {
+      "0": "\\frac{1}{3}",
+      "1": "\\frac{2}{3}",
+      "2": "\\frac{1}{12}",
+      "3": "\\frac{1}{6}"
+    },
+    "answer": 0
+  },
+  {
+    "question": "The shortest distance from the curve xy = 8 to the origin is",
+    "options": {
+      "0": "8",
+      "1": "2sqrt(2)",
+      "2": "16",
+      "3": "4"
+    },
+    "answer": 3
+  },
+  {
+    "question": "Water drips out of a hole at the vertex of an upside down cone at a rate of 3 cm^3 per minute. The\ncone’s height and radius are 2 cm and 1 cm, respectively. At what rate does the height of the water change\nwhen the water level is half a centimeter below the top of the cone? The volume of a cone is V = (π/3)*r^2*h,\nwhere r is the radius and h is the height of the cone.",
+    "options": {
+      "0": "−4/(3π) cm/min",
+      "1": "−8/(3π) cm/min",
+      "2": "−48/π cm/min",
+      "3": "−16/(3π) cm/min"
+    },
+    "answer": 3
+  },
+  {
+    "question": "Bob rolls a fair six-sided die each morning. If Bob rolls a composite number, he eats sweetened cereal. If he rolls a prime number, he eats unsweetened cereal. If he rolls a 1, then he rolls again. In a non-leap year, what is the expected number of times Bob will roll his die?",
+    "options": {
+      "0": "\\frac{5}{4}",
+      "1": "438",
+      "2": "\\frac{1825}{4}",
+      "3": "\\frac{5}{8}"
+    },
+    "answer": 1
+  },
+  {
+    "question": "There are three real numbers $x$ that are not in the domain of$$f(x) = \\frac{1}{1+\\frac{1}{1+\\frac 1x}}.$$ What is the sum of those three numbers?",
+    "options": {
+      "0": "1",
+      "1": "-1",
+      "2": "-1.5",
+      "3": "0"
+    },
+    "answer": 2
+  },
+  {
+    "question": "Suppose A and B are n × n matrices with real entries. Which of the follow are TRUE?\nI. The trace of A^2 is nonnegative.\nII. If A^2 = A, then the trace of A is nonnegative.\nIII. The trace of AB is the product of the traces of A and B.",
+    "options": {
+      "0": "II only",
+      "1": "III only",
+      "2": "II and III only",
+      "3": "I and II only"
+    },
+    "answer": 0
   }
 ]

@@ -1,0 +1,488 @@
+
+================================================================================
+OFFLINE | phi-4-mini-router | 2026-05-04 12:53:16
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+retrieval: MathWorld → Wikipedia → DuckDuckGo fallback
+code_executor: False
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,63,27,42.9%
+  [ROUTER] → code path
+  [AGENTIC FAIL] None → text fallback
+  Q01 → answered 0 | WRONG → correct: 3 (10.7s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q02 → answered 0 | WRONG → correct: 3 (15.3s)
+  [ROUTER] → text path
+  Q03 → answered 2 | WRONG → correct: 3 (0.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '36.0' → option 2
+  Q04 → answered 2 | CORRECT (6.9s)
+  [ROUTER] → text path
+  Q05 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → text path
+  Q06 → answered 2 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'c = 2 makes the polynomial irreducible over Z_3' → option 3
+  Q07 → answered 3 | WRONG → correct: 2 (12.0s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q08 → answered 0 | CORRECT (6.1s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] TypeError: Cannot convert expression to float → text fallback
+  Q09 → answered 0 | CORRECT (10.6s)
+  [ROUTER] → text path
+  Q10 → answered 3 | WRONG → correct: 1 (0.1s)
+  [ROUTER] → text path
+  Q11 → answered 2 | WRONG → correct: 0 (0.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '405.2776825831889' → option 3
+  Q12 → answered 3 | CORRECT (9.0s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '114.0 5.230678732248808' → option 0
+  Q13 → answered 0 | CORRECT (4.5s)
+  [ROUTER] → text path
+  Q14 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q15 → answered 2 | WRONG → correct: 0 (13.6s)
+  [ROUTER] → text path
+  Q16 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q17 → answered 3 | CORRECT (6.7s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q18 → answered 3 | WRONG → correct: 2 (13.8s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '12' → option 3
+  Q19 → answered 3 | CORRECT (2.8s)
+  [ROUTER] → text path
+  Q20 → answered 3 | WRONG → correct: 2 (0.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '32/3' → option 0
+  Q21 → answered 0 | WRONG → correct: 1 (13.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '3' → option 3
+  Q22 → answered 3 | CORRECT (5.9s)
+  [ROUTER] → text path
+  Q23 → answered 3 | WRONG → correct: 2 (0.1s)
+  [ROUTER] → text path
+  Q24 → answered 2 | WRONG → correct: 0 (0.1s)
+  [ROUTER] → text path
+  Q25 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → text path
+  Q26 → answered 1 | WRONG → correct: 0 (0.1s)
+  [ROUTER] → text path
+  Q27 → answered 3 | WRONG → correct: 1 (0.1s)
+  [ROUTER] → text path
+  Q28 → answered 3 | WRONG → correct: 1 (0.1s)
+  [ROUTER] → text path
+  Q29 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → text path
+  Q30 → answered 3 | CORRECT (0.1s)
+  [ROUTER] → text path
+  Q31 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q32 → answered 2 | WRONG → correct: 1 (5.6s)
+  [ROUTER] → text path
+  Q33 → answered 2 | WRONG → correct: 0 (0.1s)
+  [ROUTER] → text path
+  Q34 → answered 2 | WRONG → correct: 0 (0.1s)
+  [ROUTER] → text path
+  Q35 → answered 3 | WRONG → correct: 2 (0.1s)
+  [ROUTER] → text path
+  Q36 → answered 0 | CORRECT (0.1s)
+  [ROUTER] → text path
+  Q37 → answered 0 | WRONG → correct: 1 (0.4s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q38 → answered 0 | WRONG → correct: 2 (13.2s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '76 13.0' → option 0
+  Q39 → answered 0 | CORRECT (5.4s)
+  [ROUTER] → text path
+  Q40 → answered 3 | CORRECT (0.1s)
+  [ROUTER] → text path
+  Q41 → answered 2 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] NameError: name 'erfinv' is not defined → text fallback
+  Q42 → answered 0 | WRONG → correct: 3 (13.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.5' → option 0
+  Q43 → answered 0 | WRONG → correct: 1 (9.8s)
+  [ROUTER] → text path
+  Q44 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q45 → answered 2 | WRONG → correct: 1 (13.5s)
+  [ROUTER] → text path
+  Q46 → answered 1 | WRONG → correct: 0 (0.1s)
+  [ROUTER] → text path
+  Q47 → answered 0 | WRONG → correct: 1 (0.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'x + 11' → option 0
+  Q48 → answered 0 | CORRECT (4.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '8' → option 3
+  Q49 → answered 3 | CORRECT (6.8s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.013134145691021115' → option 0
+  Q50 → answered 0 | CORRECT (6.3s)
+  [ROUTER] → text path
+  Q51 → answered 2 | WRONG → correct: 3 (0.1s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q52 → answered 0 | WRONG → correct: 2 (13.3s)
+  [ROUTER] → text path
+  Q53 → answered 0 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '-75' → option 3
+  Q54 → answered 3 | CORRECT (4.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '65.3333333333333' → option 2
+  Q55 → answered 2 | WRONG → correct: 3 (11.1s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q56 → answered 3 | WRONG → correct: 1 (13.8s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q57 → answered 0 | WRONG → correct: 1 (11.8s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q58 → answered 1 | WRONG → correct: 0 (14.2s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] TypeError: Cannot convert expression to float → text fallback
+  Q59 → answered 0 | WRONG → correct: 3 (11.0s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] NameError: name 't' is not defined → text fallback
+  Q60 → answered 2 | WRONG → correct: 3 (13.1s)
+  [ROUTER] → text path
+  Q61 → answered 1 | CORRECT (0.1s)
+  [ROUTER] → code path
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q62 → answered 1 | WRONG → correct: 2 (11.1s)
+  [ROUTER] → text path
+  Q63 → answered 3 | WRONG → correct: 0 (0.1s)
+================================================================================
+
+================================================================================
+OFFLINE | phi-4-mini-wiki-code | 2026-05-04 13:06:13
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+retrieval: Wikipedia → DuckDuckGo fallback
+code_executor: True
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,63,32,50.8%
+  [AGENTIC FAIL] None → text fallback
+  Q01 → answered 0 | WRONG → correct: 3 (21.2s)
+  [STANDARD    ] no code generated → text parsing
+  Q02 → answered 0 | WRONG → correct: 3 (25.1s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q03 → answered 2 | WRONG → correct: 3 (8.7s)
+  [AGENTIC OK  ] code ran → output: '36.0' → option 2
+  Q04 → answered 2 | CORRECT (12.0s)
+  [STANDARD    ] no code generated → text parsing
+  Q05 → answered 0 | WRONG → correct: 1 (22.7s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q06 → answered 2 | CORRECT (3.1s)
+  [AGENTIC OK  ] code ran → output: 'c = 2 makes the polynomial irreducible over Z_3' → option 3
+  Q07 → answered 3 | WRONG → correct: 2 (18.1s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q08 → answered 0 | CORRECT (5.9s)
+  [AGENTIC FAIL] TypeError: Cannot convert expression to float → text fallback
+  Q09 → answered 0 | CORRECT (20.8s)
+  [STANDARD    ] no code generated → text parsing
+  Q10 → answered 1 | CORRECT (23.5s)
+  [STANDARD    ] no code generated → text parsing
+  Q11 → answered 0 | CORRECT (24.5s)
+  [AGENTIC OK  ] code ran → output: '405.2776825831889' → option 3
+  Q12 → answered 3 | CORRECT (15.4s)
+  [AGENTIC OK  ] code ran → output: '114.0 5.230678732248808' → option 0
+  Q13 → answered 0 | CORRECT (7.7s)
+  [AGENTIC OK  ] code ran → output: '1' → option 1
+  Q14 → answered 1 | CORRECT (9.4s)
+  [AGENTIC OK  ] code ran → output: '9' → option 0
+  Q15 → answered 0 | CORRECT (5.3s)
+  [AGENTIC OK  ] code ran → output: 'Between 395.0 and 425.0 of the 500 households surveyed responded that they used grocery coupons.' → option 0
+  Q16 → answered 0 | WRONG → correct: 1 (10.5s)
+  [STANDARD    ] no code generated → text parsing
+  Q17 → answered 3 | CORRECT (21.9s)
+  [STANDARD    ] no code generated → text parsing
+  Q18 → answered 3 | WRONG → correct: 2 (24.2s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q19 → answered 3 | CORRECT (12.5s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q20 → answered 0 | WRONG → correct: 2 (8.7s)
+  [AGENTIC FAIL] NameError: name 'nquad' is not defined → text fallback
+  Q21 → answered 1 | CORRECT (20.1s)
+  [AGENTIC OK  ] code ran → output: '3' → option 3
+  Q22 → answered 3 | CORRECT (5.1s)
+  [AGENTIC OK  ] code ran → output: '-10.0' → option 2
+  Q23 → answered 2 | CORRECT (22.6s)
+  [STANDARD    ] no code generated → text parsing
+  Q24 → answered 2 | WRONG → correct: 0 (4.7s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q25 → answered 0 | WRONG → correct: 1 (11.7s)
+  [STANDARD    ] no code generated → text parsing
+  Q26 → answered 0 | CORRECT (12.0s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q27 → answered 0 | WRONG → correct: 1 (6.4s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q28 → answered 0 | WRONG → correct: 1 (2.8s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q29 → answered 2 | WRONG → correct: 1 (11.0s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q30 → answered 1 | WRONG → correct: 3 (9.4s)
+  [AGENTIC OK  ] code ran → output: '3' → option 3
+  Q31 → answered 3 | WRONG → correct: 1 (6.8s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q32 → answered 2 | WRONG → correct: 1 (4.9s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q33 → answered 1 | WRONG → correct: 0 (5.7s)
+  [AGENTIC OK  ] code ran → output: '93.0' → option 0
+  Q34 → answered 0 | CORRECT (4.0s)
+  [AGENTIC FAIL] SyntaxError: illegal target for annotation (<string>, line 11) → text fallback
+  Q35 → answered 1 | WRONG → correct: 2 (7.7s)
+  [STANDARD    ] no code generated → text parsing
+  Q36 → answered 0 | CORRECT (3.8s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q37 → answered 2 | WRONG → correct: 1 (6.6s)
+  [STANDARD    ] no code generated → text parsing
+  Q38 → answered 0 | WRONG → correct: 2 (12.2s)
+  [AGENTIC OK  ] code ran → output: '76 13.0' → option 0
+  Q39 → answered 0 | CORRECT (4.9s)
+  [AGENTIC FAIL] NameError: name 'next' is not defined → text fallback
+  Q40 → answered 0 | WRONG → correct: 3 (10.8s)
+  [AGENTIC OK  ] code ran → output: '18' → option 3
+  Q41 → answered 3 | WRONG → correct: 2 (8.3s)
+  [AGENTIC OK  ] code ran → output: '3' → option 3
+  Q42 → answered 3 | CORRECT (10.5s)
+  [STANDARD    ] no code generated → text parsing
+  Q43 → answered 1 | CORRECT (17.8s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q44 → answered 0 | WRONG → correct: 1 (3.3s)
+  [AGENTIC OK  ] code ran → output: '2 59.0\n4 27.0\n6 15.0\n10 3.0' → option 2
+  Q45 → answered 2 | WRONG → correct: 1 (24.7s)
+  [AGENTIC OK  ] code ran → output: '-33.33333333333333' → option 1
+  Q46 → answered 1 | WRONG → correct: 0 (15.1s)
+  [AGENTIC OK  ] code ran → output: '1' → option 1
+  Q47 → answered 1 | CORRECT (17.7s)
+  [AGENTIC OK  ] code ran → output: '12' → option 0
+  Q48 → answered 0 | CORRECT (5.6s)
+  [AGENTIC OK  ] code ran → output: '8' → option 3
+  Q49 → answered 3 | CORRECT (10.3s)
+  [AGENTIC OK  ] code ran → output: '0.013134145691021115' → option 0
+  Q50 → answered 0 | CORRECT (6.8s)
+  [STANDARD    ] no code generated → text parsing
+  Q51 → answered 3 | CORRECT (21.4s)
+  [STANDARD    ] no code generated → text parsing
+  Q52 → answered 0 | WRONG → correct: 2 (25.9s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q53 → answered 0 | CORRECT (8.5s)
+  [AGENTIC OK  ] code ran → output: '-75' → option 3
+  Q54 → answered 3 | CORRECT (4.9s)
+  [AGENTIC FAIL] TypeError: Cannot convert expression to float → text fallback
+  Q55 → answered 1 | WRONG → correct: 3 (4.6s)
+  [AGENTIC OK  ] code ran → output: '240' → option 1
+  Q56 → answered 1 | CORRECT (4.4s)
+  [STANDARD    ] no code generated → text parsing
+  Q57 → answered 3 | WRONG → correct: 1 (13.5s)
+  [STANDARD    ] no code generated → text parsing
+  Q58 → answered 1 | WRONG → correct: 0 (13.1s)
+  [AGENTIC OK  ] code ran → output: '4.47213595499958' → option 3
+  Q59 → answered 3 | CORRECT (10.9s)
+  [STANDARD    ] no code generated → text parsing
+  Q60 → answered 0 | WRONG → correct: 3 (14.8s)
+  [STANDARD    ] no code generated → text parsing
+  Q61 → answered 1 | CORRECT (12.8s)
+  [AGENTIC OK  ] code ran → output: '-1/2' → option 0
+  Q62 → answered 0 | WRONG → correct: 2 (7.2s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q63 → answered 0 | CORRECT (9.4s)
+================================================================================
+
+================================================================================
+OFFLINE | llama-8b-router | 2026-05-04 13:52:22
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.15)
+max_new_tokens: 256
+retrieval: MathWorld → Wikipedia → DuckDuckGo
+code_executor: False
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,63,30,47.6%
+  [ROUTER] → code path
+  [AGENTIC FAIL] OptionError: expected a valid domain specification, got ZZ/5 → text fallback
+  Q01 → answered 0 | WRONG → correct: 3 (7.4s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q02 → answered 0 | WRONG → correct: 3 (27.0s)
+  [ROUTER] → text path
+  Q03 → answered 3 | CORRECT (0.6s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '36.0' → option 2
+  Q04 → answered 2 | CORRECT (13.5s)
+  [ROUTER] → text path
+  Q05 → answered 2 | WRONG → correct: 1 (0.5s)
+  [ROUTER] → text path
+  Q06 → answered 1 | WRONG → correct: 2 (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'c = 0 is a solution\nc = 1 is a solution\nc = 2 is a solution\nThe correct answer is:' → option 2
+  Q07 → answered 2 | CORRECT (53.8s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0' → option 0
+  Q08 → answered 0 | CORRECT (12.9s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'exp(-1)' → option 0
+  Q09 → answered 0 | CORRECT (28.8s)
+  [ROUTER] → text path
+  Q10 → answered 3 | WRONG → correct: 1 (0.5s)
+  [ROUTER] → text path
+  Q11 → answered 3 | WRONG → correct: 0 (0.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '405.2776825831889' → option 3
+  Q12 → answered 3 | CORRECT (28.3s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'Mean: 114.0\nStandard Deviation: 5.230678732248808\n3' → option 0
+  Q13 → answered 0 | CORRECT (16.1s)
+  [ROUTER] → text path
+  Q14 → answered 1 | CORRECT (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0' → option 0
+  Q15 → answered 0 | CORRECT (27.1s)
+  [ROUTER] → text path
+  Q16 → answered 1 | CORRECT (0.5s)
+  [ROUTER] → code path
+  [STANDARD    ] no code generated → text parsing
+  Q17 → answered 2 | WRONG → correct: 3 (43.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.16941176470588235' → option 3
+  Q18 → answered 3 | WRONG → correct: 2 (21.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'x + 11' → option 3
+  Q19 → answered 3 | CORRECT (14.1s)
+  [ROUTER] → text path
+  Q20 → answered 3 | WRONG → correct: 2 (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '16*sqrt(2)/3' → option 0
+  Q21 → answered 0 | WRONG → correct: 1 (26.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.12' → option 0
+  Q22 → answered 0 | WRONG → correct: 3 (18.5s)
+  [ROUTER] → text path
+  Q23 → answered 2 | CORRECT (0.5s)
+  [ROUTER] → text path
+  Q24 → answered 2 | WRONG → correct: 0 (0.4s)
+  [ROUTER] → text path
+  Q25 → answered 2 | WRONG → correct: 1 (0.4s)
+  [ROUTER] → text path
+  Q26 → answered 1 | WRONG → correct: 0 (0.4s)
+  [ROUTER] → text path
+  Q27 → answered 3 | WRONG → correct: 1 (0.4s)
+  [ROUTER] → text path
+  Q28 → answered 3 | WRONG → correct: 1 (0.4s)
+  [ROUTER] → text path
+  Q29 → answered 2 | WRONG → correct: 1 (0.5s)
+  [ROUTER] → text path
+  Q30 → answered 3 | CORRECT (0.5s)
+  [ROUTER] → text path
+  Q31 → answered 1 | CORRECT (0.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '4.00000000000000' → option 1
+  Q32 → answered 1 | CORRECT (14.8s)
+  [ROUTER] → text path
+  Q33 → answered 3 | WRONG → correct: 0 (0.7s)
+  [ROUTER] → text path
+  Q34 → answered 2 | WRONG → correct: 0 (0.4s)
+  [ROUTER] → text path
+  Q35 → answered 2 | CORRECT (0.5s)
+  [ROUTER] → text path
+  Q36 → answered 0 | CORRECT (0.5s)
+  [ROUTER] → text path
+  Q37 → answered 2 | WRONG → correct: 1 (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'c < -x**2 + 6*x' → option 1
+  Q38 → answered 1 | WRONG → correct: 2 (16.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'Mean of X + Y: 76\nStandard deviation of X + Y: 13.0' → option 0
+  Q39 → answered 0 | CORRECT (26.5s)
+  [ROUTER] → text path
+  Q40 → answered 0 | WRONG → correct: 3 (0.5s)
+  [ROUTER] → text path
+  Q41 → answered 2 | CORRECT (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'The shortest time interval associated with 100,000 riders is 39.3 to 43.6 minutes\nThe correct option is not 2' → option 0
+  Q42 → answered 0 | WRONG → correct: 3 (28.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '1.5707963267948966' → option 1
+  Q43 → answered 1 | CORRECT (15.5s)
+  [ROUTER] → text path
+  Q44 → answered 1 | CORRECT (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '11' → option 0
+  Q45 → answered 0 | WRONG → correct: 1 (17.9s)
+  [ROUTER] → text path
+  Q46 → answered 0 | CORRECT (0.5s)
+  [ROUTER] → text path
+  Q47 → answered 0 | WRONG → correct: 1 (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: 'x + 11' → option 0
+  Q48 → answered 0 | CORRECT (14.8s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '15' → option 0
+  Q49 → answered 0 | WRONG → correct: 3 (29.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.013134145691021115' → option 0
+  Q50 → answered 0 | CORRECT (18.3s)
+  [ROUTER] → text path
+  Q51 → answered 2 | WRONG → correct: 3 (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '-14' → option 2
+  Q52 → answered 2 | CORRECT (13.9s)
+  [ROUTER] → text path
+  Q53 → answered 0 | CORRECT (0.5s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '-75' → option 3
+  Q54 → answered 3 | CORRECT (10.0s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '7.26794919243112' → option 2
+  Q55 → answered 2 | WRONG → correct: 3 (14.6s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '2880' → option 0
+  Q56 → answered 0 | WRONG → correct: 1 (13.2s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.125' → option 1
+  Q57 → answered 1 | CORRECT (8.2s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '0.3333333333333333' → option 0
+  Q58 → answered 0 | CORRECT (15.1s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '2.8284271247461903' → option 1
+  Q59 → answered 1 | WRONG → correct: 3 (10.3s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '-0.6366197723675814' → option 0
+  Q60 → answered 0 | WRONG → correct: 3 (18.5s)
+  [ROUTER] → text path
+  Q61 → answered 2 | WRONG → correct: 1 (0.4s)
+  [ROUTER] → code path
+  [AGENTIC OK  ] code ran → output: '-1.5' → option 2
+  Q62 → answered 2 | CORRECT (11.3s)
+  [ROUTER] → text path
+  Q63 → answered 3 | WRONG → correct: 0 (0.4s)
+================================================================================
+
+
+
+

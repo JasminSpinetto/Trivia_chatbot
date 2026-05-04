@@ -1,0 +1,14 @@
+================================================================================
+OFFLINE | llama-8b-wiki-code | 2026-05-04 13:36:03
+model_name: meta-llama/Llama-3.1-8B-Instruct
+parameters: ~8.0B
+quantization: 4-bit
+decoding: sampling (temperature=0.15)
+max_new_tokens: 256
+retrieval: MathWorld → Wikipedia → DuckDuckGo
+code_executor: True
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,63,24,38.1%
+================================================================================
+

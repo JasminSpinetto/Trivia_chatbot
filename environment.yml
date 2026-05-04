@@ -23,5 +23,7 @@ dependencies:
       - sympy #for symbolic math in code executor
       - scipy #for stats/integration in code executor
       - pyyaml #for loading model config files
+      - beautifulsoup4 #for parsing full MathWorld pages in RAG
+      - requests #for fetching MathWorld pages in RAG
       - wikipedia
       - duckduckgo-search

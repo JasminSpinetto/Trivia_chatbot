@@ -1,0 +1,226 @@
+================================================================================
+OFFLINE | phi-4-mini | 2026-05-04 11:29:38
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: sampling (temperature=0.15)
+max_new_tokens: 10
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,29,13,44.8%
+  Q01 → answered 1 | WRONG → correct: 3 (3.2s)
+  Q02 → answered 3 | CORRECT (0.2s)
+  Q03 → answered 2 | WRONG → correct: 3 (0.1s)
+  Q04 → answered 2 | CORRECT (0.1s)
+  Q05 → answered 1 | CORRECT (0.1s)
+  Q06 → answered 2 | CORRECT (0.1s)
+  Q07 → answered 1 | WRONG → correct: 2 (0.1s)
+  Q08 → answered 0 | CORRECT (0.1s)
+  Q09 → answered 1 | WRONG → correct: 0 (0.1s)
+  Q10 → answered 3 | WRONG → correct: 1 (0.1s)
+  Q11 → answered 2 | WRONG → correct: 0 (0.1s)
+  Q12 → answered 2 | WRONG → correct: 3 (0.1s)
+  Q13 → answered 0 | CORRECT (0.4s)
+  Q14 → answered 1 | CORRECT (0.1s)
+  Q15 → answered 2 | WRONG → correct: 0 (0.1s)
+  Q16 → answered 1 | CORRECT (0.1s)
+  Q17 → answered 3 | CORRECT (0.1s)
+  Q18 → answered 2 | CORRECT (0.1s)
+  Q19 → answered 2 | WRONG → correct: 3 (0.1s)
+  Q20 → answered 3 | WRONG → correct: 2 (0.1s)
+  Q21 → answered 1 | CORRECT (0.1s)
+  Q22 → answered 1 | WRONG → correct: 3 (0.1s)
+  Q23 → answered 3 | WRONG → correct: 2 (0.1s)
+  Q24 → answered 2 | WRONG → correct: 0 (0.1s)
+  Q25 → answered 1 | CORRECT (0.1s)
+  Q26 → answered 1 | WRONG → correct: 0 (0.1s)
+  Q27 → answered 3 | WRONG → correct: 1 (0.1s)
+  Q28 → answered 3 | WRONG → correct: 1 (0.1s)
+  Q29 → answered 1 | CORRECT (0.1s)
+================================================================================
+
+================================================================================
+OFFLINE | phi-4-mini-wiki | 2026-05-04 11:31:51
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: sampling (temperature=0.15)
+max_new_tokens: 10
+retrieval: Wikipedia → DuckDuckGo fallback
+code_executor: False
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,29,11,37.9%
+  Q01 → answered 1 | WRONG → correct: 3 (2.6s)
+  Q02 → answered 3 | CORRECT (4.6s)
+  Q03 → answered 0 | WRONG → correct: 3 (2.7s)
+  Q04 → answered 2 | CORRECT (3.2s)
+  Q05 → answered 1 | CORRECT (4.4s)
+  Q06 → answered 0 | WRONG → correct: 2 (4.4s)
+  Q07 → answered 1 | WRONG → correct: 2 (2.3s)
+  Q08 → answered 0 | CORRECT (1.9s)
+  Q09 → answered 1 | WRONG → correct: 0 (2.4s)
+  Q10 → answered 0 | WRONG → correct: 1 (2.5s)
+  Q11 → answered 3 | WRONG → correct: 0 (2.8s)
+  Q12 → answered 2 | WRONG → correct: 3 (2.2s)
+  Q13 → answered 0 | CORRECT (4.2s)
+  Q14 → answered 1 | CORRECT (3.8s)
+  Q15 → answered 3 | WRONG → correct: 0 (3.9s)
+  Q16 → answered 0 | WRONG → correct: 1 (3.2s)
+  Q17 → answered 3 | CORRECT (3.3s)
+  Q18 → answered 2 | CORRECT (2.7s)
+  Q19 → answered 0 | WRONG → correct: 3 (3.1s)
+  Q20 → answered 3 | WRONG → correct: 2 (2.3s)
+  Q21 → answered 1 | CORRECT (3.3s)
+  Q22 → answered 1 | WRONG → correct: 3 (3.2s)
+  Q23 → answered 3 | WRONG → correct: 2 (2.8s)
+  Q24 → answered 2 | WRONG → correct: 0 (3.4s)
+  Q25 → answered 0 | WRONG → correct: 1 (2.5s)
+  Q26 → answered 0 | CORRECT (2.5s)
+  Q27 → answered 3 | WRONG → correct: 1 (3.0s)
+  Q28 → answered 0 | WRONG → correct: 1 (3.5s)
+  Q29 → answered 1 | CORRECT (3.6s)
+================================================================================
+
+================================================================================
+OFFLINE | phi-4-mini-code | 2026-05-04 11:35:39
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+code_executor: True
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,29,12,41.4%
+  [STANDARD    ] no code generated → text parsing
+  Q01 → answered 2 | WRONG → correct: 3 (10.5s)
+  [STANDARD    ] no code generated → text parsing
+  Q02 → answered 0 | WRONG → correct: 3 (10.8s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q03 → answered 2 | WRONG → correct: 3 (2.9s)
+  [STANDARD    ] no code generated → text parsing
+  Q04 → answered 2 | CORRECT (8.6s)
+  [STANDARD    ] no code generated → text parsing
+  Q05 → answered 0 | WRONG → correct: 1 (10.5s)
+  [STANDARD    ] no code generated → text parsing
+  Q06 → answered 2 | CORRECT (2.8s)
+  [AGENTIC OK  ] code ran → output: '2' → option 2
+  Q07 → answered 2 | CORRECT (10.6s)
+  [STANDARD    ] no code generated → text parsing
+  Q08 → answered 0 | CORRECT (2.3s)
+  [AGENTIC FAIL] NameError: name 'log' is not defined → text fallback
+  Q09 → answered 1 | WRONG → correct: 0 (10.8s)
+  [AGENTIC FAIL] None → text fallback
+  Q10 → answered 1 | CORRECT (7.0s)
+  [STANDARD    ] no code generated → text parsing
+  Q11 → answered 1 | WRONG → correct: 0 (10.1s)
+  [AGENTIC OK  ] code ran → output: '405.2776825831889' → option 3
+  Q12 → answered 3 | CORRECT (9.1s)
+  [AGENTIC OK  ] code ran → output: '114.0 5.23067873224881' → option 0
+  Q13 → answered 0 | CORRECT (2.9s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q14 → answered 0 | WRONG → correct: 1 (6.3s)
+  [AGENTIC OK  ] code ran → output: '13' → option 1
+  Q15 → answered 1 | WRONG → correct: 0 (3.4s)
+  [AGENTIC OK  ] code ran → output: 'Between 395.0 and 425.0 households surveyed responded that they used grocery coupons.' → option 0
+  Q16 → answered 0 | WRONG → correct: 1 (5.3s)
+  [STANDARD    ] no code generated → text parsing
+  Q17 → answered 3 | CORRECT (14.7s)
+  [STANDARD    ] no code generated → text parsing
+  Q18 → answered 1 | WRONG → correct: 2 (15.8s)
+  [AGENTIC OK  ] code ran → output: 'x + 11' → option 3
+  Q19 → answered 3 | CORRECT (1.7s)
+  [STANDARD    ] no code generated → text parsing
+  Q20 → answered 0 | WRONG → correct: 2 (9.6s)
+  [AGENTIC OK  ] code ran → output: '32/3' → option 0
+  Q21 → answered 0 | WRONG → correct: 1 (9.1s)
+  [STANDARD    ] no code generated → text parsing
+  Q22 → answered 1 | WRONG → correct: 3 (9.6s)
+  [AGENTIC OK  ] code ran → output: '0' → option 2
+  Q23 → answered 2 | CORRECT (9.2s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q24 → answered 0 | CORRECT (0.3s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q25 → answered 0 | WRONG → correct: 1 (1.2s)
+  [AGENTIC FAIL] None → text fallback
+  Q26 → answered 1 | WRONG → correct: 0 (6.2s)
+  [AGENTIC OK  ] code ran → output: '-0.24974974974974976' → option 1
+  Q27 → answered 1 | CORRECT (6.0s)
+  [STANDARD    ] no code generated → text parsing
+  Q28 → answered 3 | WRONG → correct: 1 (1.1s)
+  [STANDARD    ] no code generated → text parsing
+  Q29 → answered 2 | WRONG → correct: 1 (6.6s)
+================================================================================
+
+================================================================================
+OFFLINE | phi-4-mini-wiki-code | 2026-05-04 11:41:17
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+retrieval: Wikipedia → DuckDuckGo fallback
+code_executor: True
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,29,14,48.3%
+  [AGENTIC FAIL] None → text fallback
+  Q01 → answered 0 | WRONG → correct: 3 (14.8s)
+  [STANDARD    ] no code generated → text parsing
+  Q02 → answered 0 | WRONG → correct: 3 (15.6s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q03 → answered 2 | WRONG → correct: 3 (5.3s)
+  [AGENTIC OK  ] code ran → output: '36' → option 2
+  Q04 → answered 2 | CORRECT (7.3s)
+  [STANDARD    ] no code generated → text parsing
+  Q05 → answered 0 | WRONG → correct: 1 (14.6s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q06 → answered 0 | WRONG → correct: 2 (4.0s)
+  [AGENTIC OK  ] code ran → output: 'c = 2 makes the polynomial irreducible over Z_3' → option 3
+  Q07 → answered 3 | WRONG → correct: 2 (12.7s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q08 → answered 0 | CORRECT (3.8s)
+  [AGENTIC FAIL] NameError: name 'ln' is not defined → text fallback
+  Q09 → answered 0 | CORRECT (11.5s)
+  [AGENTIC FAIL] None → text fallback
+  Q10 → answered 1 | CORRECT (8.7s)
+  [STANDARD    ] no code generated → text parsing
+  Q11 → answered 0 | CORRECT (13.7s)
+  [AGENTIC OK  ] code ran → output: '405.2776825831889' → option 3
+  Q12 → answered 3 | CORRECT (12.3s)
+  [AGENTIC OK  ] code ran → output: '114.0 5.230678732248808' → option 0
+  Q13 → answered 0 | CORRECT (5.3s)
+  [AGENTIC FAIL] None → text fallback
+  Q14 → answered 1 | CORRECT (6.9s)
+  [AGENTIC OK  ] code ran → output: '9' → option 0
+  Q15 → answered 0 | CORRECT (5.2s)
+  [AGENTIC OK  ] code ran → output: 'Between 395.0 and 425.0 of the 500 households surveyed responded that they used grocery coupons.' → option 0
+  Q16 → answered 0 | WRONG → correct: 1 (7.6s)
+  [STANDARD    ] no code generated → text parsing
+  Q17 → answered 3 | CORRECT (14.1s)
+  [STANDARD    ] no code generated → text parsing
+  Q18 → answered 2 | CORRECT (14.3s)
+  [AGENTIC OK  ] code ran → output: 'x + 11' → option 3
+  Q19 → answered 3 | CORRECT (5.3s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q20 → answered 0 | WRONG → correct: 2 (10.0s)
+  [AGENTIC OK  ] code ran → output: '32/3' → option 0
+  Q21 → answered 0 | WRONG → correct: 1 (11.1s)
+  [AGENTIC OK  ] code ran → output: '0.42' → option 2
+  Q22 → answered 2 | WRONG → correct: 3 (10.0s)
+  [AGENTIC OK  ] code ran → output: '-10.0' → option 2
+  Q23 → answered 2 | CORRECT (12.0s)
+  [STANDARD    ] no code generated → text parsing
+  Q24 → answered 2 | WRONG → correct: 0 (4.2s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q25 → answered 1 | CORRECT (5.4s)
+  [AGENTIC FAIL] None → text fallback
+  Q26 → answered 1 | WRONG → correct: 0 (6.6s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q27 → answered 0 | WRONG → correct: 1 (6.2s)
+  [AGENTIC FAIL] NO OUTPUT (code ran but nothing was printed) → text fallback
+  Q28 → answered 0 | WRONG → correct: 1 (3.0s)
+  [AGENTIC FAIL] None → text fallback
+  Q29 → answered 2 | WRONG → correct: 1 (10.7s)
+================================================================================
