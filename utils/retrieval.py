@@ -5,6 +5,15 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+try:
+    from duckduckgo_search import DDGS
+    _DDGS_AVAILABLE = True
+except ImportError:
+    _DDGS_AVAILABLE = False
+
+# Extract Wikipedia article title from a Wikipedia URL
+_WIKI_URL_RE = re.compile(r"en\.wikipedia\.org/wiki/([^#?&]+)")
+
 _PARALLEL_TIMEOUT = 5.0   # per search-phase budget; extract batch is one extra call
 _MAX_CONTEXT_LEN  = 3000
 _WIKI_SENTENCES   = 15    # sentences per article summary
@@ -221,6 +230,19 @@ class Retriever:
         self._log(f"WIKI TITLES      : {ordered_titles}")
         return self._fetch_extracts(ordered_titles)
 
+    def _search_ddgs(self, query: str, max_results: int = 6) -> list:
+        """DuckDuckGo text search — no API key, no hard rate limit.
+
+        Returns raw result dicts: [{"title": ..., "href": ..., "body": ...}]
+        """
+        if not _DDGS_AVAILABLE:
+            return []
+        try:
+            return list(DDGS().text(query, max_results=max_results)) or []
+        except Exception as e:
+            self._log(f"DDGS ERROR       : {e}")
+            return []
+
     def get_context(self, question: str, options: dict = None) -> str:
         if options is None:
             options = {}
@@ -300,6 +322,45 @@ class Retriever:
                             self._log(f"FALLBACK ACCEPTED: [{title}]")
                         else:
                             self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
+
+        # Last resort: DuckDuckGo.
+        # Strategy: DDGS finds Wikipedia article URLs (no search-API rate limit) →
+        # extract titles → fetch full Wikipedia extracts in one batch call.
+        # If no Wikipedia URLs appear, use raw DDGS snippets instead.
+        if not unique and _DDGS_AVAILABLE:
+            ddgs_query = focused or proper_only or " ".join(keywords[:4])
+            self._log(f"DDGS SEARCH      : {ddgs_query!r}")
+            ddgs_results = self._search_ddgs(ddgs_query)
+
+            wiki_titles = []
+            seen_wiki = set()
+            for r in ddgs_results:
+                m = _WIKI_URL_RE.search(r.get("href", ""))
+                if m:
+                    title = m.group(1).replace("_", " ")
+                    if title not in seen_wiki:
+                        seen_wiki.add(title)
+                        wiki_titles.append(title)
+
+            if wiki_titles:
+                self._log(f"DDGS WIKI TITLES : {wiki_titles}")
+                ddgs_extracts = self._fetch_extracts(wiki_titles)
+                for title, ctx in ddgs_extracts.items():
+                    if ctx[:80] not in seen_text and _is_relevant(question, ctx):
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"DDGS WIKI ACCEPT : [{title}]")
+                    elif ctx:
+                        self._log(f"DDGS WIKI REJECT : [{title}] (relevance too low)")
+
+            # If Wikipedia URLs gave nothing, use raw DDGS snippets as context
+            if not unique:
+                for r in ddgs_results:
+                    snippet = r.get("body", "").strip()
+                    if snippet and snippet[:80] not in seen_text and _is_relevant(question, snippet):
+                        seen_text.add(snippet[:80])
+                        unique.append(snippet)
+                        self._log(f"DDGS SNIP ACCEPT : [{r.get('title', '')}]")
 
         if not unique:
             self._log("SEARCH COMBINED  : (none)")
