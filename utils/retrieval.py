@@ -142,13 +142,17 @@ class Retriever:
 
     def __init__(self, log_fn=None):
         self._log = log_fn or (lambda msg: None)
-        # Session with automatic retry on 429/5xx — backoff: 0.5s, 1s, 2s
+        # Retry only on HTTP status errors (429/5xx), never on connection errors.
+        # connect=0 makes connection failures fast-fail so we fall through to
+        # the next retrieval stage immediately instead of wasting seconds.
         self._session = requests.Session()
         _retry = Retry(
-            total=3,
-            backoff_factor=0.5,
+            total=1,
+            connect=0,               # fail fast on connection errors
+            read=1,
+            backoff_factor=0.2,      # one retry after 0.2s
             status_forcelist=[429, 500, 502, 503, 504],
-            respect_retry_after_header=True,
+            respect_retry_after_header=False,
         )
         self._session.mount("https://", HTTPAdapter(max_retries=_retry))
         self._session.headers.update(_WIKI_HDRS)
@@ -160,7 +164,7 @@ class Retriever:
                 _WIKI_API,
                 params={"action": "query", "list": "search",
                         "srsearch": query, "srlimit": 5, "format": "json"},
-                timeout=5,
+                timeout=3,
             )
             r.raise_for_status()
             return [hit["title"] for hit in r.json()["query"]["search"]]
@@ -183,7 +187,7 @@ class Retriever:
                         "exintro": True, "exsentences": _WIKI_SENTENCES,
                         "titles": "|".join(titles[:50]),
                         "redirects": 1, "format": "json"},
-                timeout=8,
+                timeout=6,
             )
             r.raise_for_status()
             out = {}
