@@ -1,0 +1,4 @@
+model_class: SwitchModel
+general_model: "llama-8b-wiki"
+math_model: "math-dual"
+math_comp_id: 3

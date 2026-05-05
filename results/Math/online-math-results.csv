@@ -76,17 +76,5 @@ Competition,Games,Avg Correct / 15,Accuracy %
 Maths,20,0.40,2.7%
 ================================================================================
 
-================================================================================
-OFFLINE | phi-4-mini-wiki-code | 2026-05-04 13:06:13
-model_name: microsoft/Phi-4-mini-instruct
-parameters: ~3.8B
-quantization: none
-decoding: greedy
-max_new_tokens: 256
-retrieval: Wikipedia → DuckDuckGo fallback
-code_executor: True
---------------------------------------------------------------------------------
-Dataset,Questions,Correct,Accuracy %
-data/math_questions.json,63,32,50.8%
-================================================================================
+
 

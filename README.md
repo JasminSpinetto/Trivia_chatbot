@@ -113,16 +113,41 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 
 ### Available configs
 
-| Config file | Model | Notes |
-|-------------|-------|-------|
-| `random.yaml` | Random baseline | Picks a uniformly random answer |
-| `llama-1b.yaml` | Meta LLaMA 3.2 1B Instruct | Requires re-download |
-| `llama-3b.yaml` | Meta LLaMA 3.2 3B Instruct | Requires re-download |
-| `llama-8b.yaml` | Meta LLaMA 3.1 8B Instruct | 4-bit quantized, ~15 GB disk |
-| `qwen-7b.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit, math-focused, CoT |
-| `qwen-7b-code.yaml` | Qwen 2.5 Math 7B + code executor | Agentic AI: generates and runs Python to solve computation problems |
-| `llama-3b-wiki.yaml` | Meta LLaMA 3.2 3B Instruct | Wikipedia → DuckDuckGo RAG retrieval |
-| `llama-8b-wiki.yaml` | Meta LLaMA 3.1 8B Instruct (4-bit) | Wikipedia → DuckDuckGo RAG retrieval |
+| Config file | Model | Quant | RAG | Code | Notes |
+|-------------|-------|:-----:|:---:|:----:|-------|
+| `random.yaml` | Random baseline | — | — | — | Uniformly random answer, lower bound |
+| **Meta LLaMA** |||||
+| `llama-1b.yaml` | LLaMA 3.2 1B Instruct | — | — | — | Smallest, requires re-download |
+| `llama-3b.yaml` | LLaMA 3.2 3B Instruct | — | — | — | Requires re-download |
+| `llama-3b-wiki.yaml` | LLaMA 3.2 3B Instruct | — | ✓ | — | Wikipedia → DuckDuckGo retrieval |
+| `llama-8b.yaml` | LLaMA 3.1 8B Instruct | 4-bit | — | — | |
+| `llama-8b-code.yaml` | LLaMA 3.1 8B Instruct | 4-bit | — | ✓ | Agentic AI code executor |
+| `llama-8b-wiki.yaml` | LLaMA 3.1 8B Instruct | 4-bit | ✓ | — | |
+| `llama-8b-wiki-code.yaml` | LLaMA 3.1 8B Instruct | 4-bit | ✓ | ✓ | RAG + code executor |
+| `llama-8b-router.yaml` | LLaMA 3.1 8B Instruct | 4-bit | ✓ | ✓ | Keyword router selects code vs text path per question |
+| **Qwen 2.5 Math** |||||
+| `qwen-7b.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit | — | — | Math-focused, chain-of-thought |
+| `qwen-7b-code.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit | — | ✓ | Code executor |
+| `qwen-7b-wiki.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit | ✓ | — | RAG retrieval |
+| `qwen-7b-wiki-code.yaml` | Qwen 2.5 Math 7B Instruct | 4-bit | ✓ | ✓ | RAG + code executor |
+| **DeepSeek R1** |||||
+| `deepseek-r1-7b-wiki.yaml` | DeepSeek-R1-Distill 7B | 4-bit | ✓ | — | Long reasoning chains; experimental, slow |
+| `deepseek-r1-7b-wiki-code.yaml` | DeepSeek-R1-Distill 7B | 4-bit | ✓ | ✓ | Long reasoning chains + code; experimental, slow |
+| **Microsoft Phi-4-mini** |||||
+| `phi-4-mini.yaml` | Phi-4-mini-instruct (3.8B) | — | — | — | Fast, no quantization |
+| `phi-4-mini-code.yaml` | Phi-4-mini-instruct (3.8B) | — | — | ✓ | Code executor |
+| `phi-4-mini-wiki.yaml` | Phi-4-mini-instruct (3.8B) | — | ✓ | — | RAG retrieval |
+| `phi-4-mini-wiki-code.yaml` | Phi-4-mini-instruct (3.8B) | — | ✓ | ✓ | **Best single model (50.8% on 63Q)** |
+| `phi-4-mini-wiki-code-4bit.yaml` | Phi-4-mini-instruct (3.8B) | 4-bit | ✓ | ✓ | Colab T4 compatible version of the above |
+| `phi-4-mini-router.yaml` | Phi-4-mini-instruct (3.8B) | — | ✓ | ✓ | Keyword router selects code vs text path per question |
+| **Mistral / Mathstral** |||||
+| `mathstral-7b.yaml` | Mathstral-7B-v0.1 | 4-bit | — | — | Math-specialized Mistral fine-tune; baseline |
+| `mathstral-7b-wiki-code.yaml` | Mathstral-7B-v0.1 | 4-bit | ✓ | ✓ | RAG + code executor |
+| **Google Gemma 3** |||||
+| `gemma-3-12b.yaml` | Gemma-3-12B-IT | 4-bit | — | — | Requires HF license acceptance |
+| `gemma-3-12b-wiki-code.yaml` | Gemma-3-12B-IT | 4-bit | ✓ | ✓ | RAG + code executor; requires HF license acceptance |
+| **Ensemble** |||||
+| `ensemble.yaml` | Phi-4-mini-wiki-code-4bit + LLaMA-8B-router | 4-bit | ✓ | ✓ | Runs both models, tiebreaker favours code-executor success |
 
 ### Adding a new experiment
 

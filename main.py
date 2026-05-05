@@ -9,8 +9,9 @@ from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
-ONLINE            = False
-RESULTS_FILE      = "results/Math/local-math-results.csv"
+ONLINE            = True
+#RESULTS_FILE      = "results/Math/local-math-results.csv"
+RESULTS_FILE      = "results/results.csv"
 CONFIG_DIR        = "config"
 ONLINE_TIMEOUT_S  = 30   # hard limit imposed by the quiz server
 OFFLINE_TIMEOUT_S = 180  # generous limit for local runs (DeepSeek-R1 needs time to think)
@@ -30,6 +31,29 @@ def load_model(config_path: str):
     elif model_class_name == "MathLLMModel":
         from models.MATH import MathLLMModel
         return MathLLMModel(**config), model_key
+    elif model_class_name == "EnsembleModel":
+        from models.ENSEMBLE import EnsembleModel
+        primary_path   = os.path.join(CONFIG_DIR, config["primary"]   + ".yaml")
+        secondary_path = os.path.join(CONFIG_DIR, config["secondary"] + ".yaml")
+        log_dir        = config.get("log_dir", "AgenticAI_scripts")
+        model_a, _     = load_model(primary_path)
+        model_b, _     = load_model(secondary_path)
+        return EnsembleModel(model_a, model_b, log_dir=log_dir), model_key
+    elif model_class_name == "MathDualModel":
+        from models.MATHDUAL import MathDualModel
+        phi_path       = os.path.join(CONFIG_DIR, config["phi_model"]       + ".yaml")
+        mathstral_path = os.path.join(CONFIG_DIR, config["mathstral_model"] + ".yaml")
+        phi_model, _       = load_model(phi_path)
+        mathstral_model, _ = load_model(mathstral_path)
+        return MathDualModel(phi_model, mathstral_model), model_key
+    elif model_class_name == "SwitchModel":
+        from models.SWITCH import SwitchModel
+        general_path = os.path.join(CONFIG_DIR, config["general_model"] + ".yaml")
+        math_path    = os.path.join(CONFIG_DIR, config["math_model"]    + ".yaml")
+        math_comp_id = config.get("math_comp_id", 3)
+        general_model, _ = load_model(general_path)
+        math_model, _    = load_model(math_path)
+        return SwitchModel(general_model, math_model, math_comp_id=math_comp_id), model_key
     else:
         from models.LLM import LLMModel
         return LLMModel(**config), model_key
@@ -140,6 +164,9 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
                 comp_id = int(input("Enter competition ID:"))
             play_history[comp_id]["num_games"] += 1
 
+        if hasattr(model, "set_competition"):
+            model.set_competition(comp_id)
+
         game = client.game.start(competition_id=comp_id)
         if print_cond:
             print(f"\n=== Starting Game ===\nSession ID: {game.session_id}")
@@ -211,7 +238,7 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
     for comp_id, data in play_history.items():
         n = data["num_games"]
         if n == 0: continue
-        print(f"\nCOMPETITION {competitions[comp_id]}:")
+        print(f"\nCOMPETITION {competitions[comp_id].name}:")
         print(f"Number of games: {n}")
         print(f"Average correct answers: {sum(data['level'])/n:,.2f}")
         print(f"Average earnings: {sum(data['score'])/n:,.2f}")

@@ -59,3 +59,40 @@ OVERALL,80,3.79,25.2%
 ================================================================================
 
 
+================================================================================
+MODEL: mathstral-7b | 2026-05-05 14:16:29
+model_name: mistralai/Mathstral-7B-v0.1
+parameters: ~7.2B
+quantization: 4-bit
+decoding: greedy
+max_new_tokens: 10
+code_executor: False
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,3.25,21.7%
+Ancient History and Politics,20,4.35,29.0%
+Science and Nature,20,4.15,27.7%
+Maths,20,0.35,2.3%
+OVERALL,80,3.02,20.2%
+================================================================================
+
+================================================================================
+MODEL: mathstral-7b-wiki-code | 2026-05-05 14:56:50
+model_name: mistralai/Mathstral-7B-v0.1
+parameters: ~7.2B
+quantization: 4-bit
+decoding: greedy
+max_new_tokens: 150
+retrieval: MathWorld → Wikipedia → DuckDuckGo
+code_executor: True
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,20,2.00,13.3%
+Ancient History and Politics,20,2.55,17.0%
+Science and Nature,20,2.00,13.3%
+Maths,20,0.55,3.7%
+OVERALL,80,1.77,11.8%
+================================================================================
+
+
+

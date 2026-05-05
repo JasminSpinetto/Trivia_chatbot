@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as
 # Suppress BeautifulSoup parser warning from the wikipedia package
 warnings.filterwarnings("ignore", category=UserWarning, module="wikipedia")
 
-_SEARCH_TIMEOUT     = 8   # total seconds for retrieval (leaves ~14s for inference)
+_SEARCH_TIMEOUT     = 8   # total seconds for retrieval (leaves ~18s for inference)
 _PAGE_FETCH_TIMEOUT = 4   # seconds for a single HTTP page fetch
 _MAX_CONTEXT        = 3000  # max chars of combined context sent to the model
 
@@ -174,14 +174,17 @@ class Retriever:
         with ThreadPoolExecutor(max_workers=len(sources)) as ex:
             futures   = {ex.submit(fn, query): pri for pri, fn in sources}
             remaining = deadline - time.time()
-            for future in as_completed(futures, timeout=max(0.1, remaining)):
-                priority = futures[future]
-                try:
-                    ctx = future.result()
-                    if ctx:
-                        results[priority] = ctx
-                except Exception:
-                    pass
+            try:
+                for future in as_completed(futures, timeout=max(0.1, remaining)):
+                    priority = futures[future]
+                    try:
+                        ctx = future.result()
+                        if ctx:
+                            results[priority] = ctx
+                    except Exception:
+                        pass
+            except FuturesTimeoutError:
+                pass  # use whatever results arrived before the deadline
 
         for pri in sorted(results):
             if _is_relevant(results[pri], original_question):
@@ -191,8 +194,14 @@ class Retriever:
                 return results[pri]
         return ""
 
-    def get_context(self, question: str) -> str:
-        queries = _decompose_question(question)
+    def get_context(self, question: str, options: dict = None) -> str:
+        if options:
+            # Enrich query with option text to capture proper nouns / entities
+            q_part   = _build_query(question)
+            opt_part = _build_query(' '.join(options.values()))
+            queries  = [f"{q_part[:100]} {opt_part[:100]}".strip()]
+        else:
+            queries = _decompose_question(question)
 
         if len(queries) == 1:
             return self._search_single(queries[0], question)
@@ -204,13 +213,16 @@ class Retriever:
         with ThreadPoolExecutor(max_workers=len(queries)) as ex:
             futures   = [ex.submit(self._search_single, q, question) for q in queries]
             remaining = deadline - time.time()
-            for future in as_completed(futures, timeout=max(0.1, remaining)):
-                try:
-                    ctx = future.result()
-                    if ctx:
-                        contexts.append(ctx)
-                except Exception:
-                    pass
+            try:
+                for future in as_completed(futures, timeout=max(0.1, remaining)):
+                    try:
+                        ctx = future.result()
+                        if ctx:
+                            contexts.append(ctx)
+                    except Exception:
+                        pass
+            except FuturesTimeoutError:
+                pass  # use whatever results arrived before the deadline
 
         combined = "\n\n[—]\n\n".join(contexts)
         return combined[:_MAX_CONTEXT]
@@ -242,11 +254,6 @@ class MathRetriever(Retriever):
             return ""
 
     def _sources(self) -> list:
-        srcs = []
         if _DDGS_AVAILABLE:
-            srcs.append((0, self._search_mathworld))
-        if _WIKIPEDIA_AVAILABLE:
-            srcs.append((1, self._search_wikipedia))
-        if _DDGS_AVAILABLE:
-            srcs.append((2, self._search_duckduckgo))
-        return srcs
+            return [(0, self._search_mathworld)]
+        return []

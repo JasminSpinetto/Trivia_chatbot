@@ -1,8 +1,8 @@
 model_class: MathLLMModel
-model_name: "meta-llama/Llama-3.1-8B-Instruct"
-do_sample: true
-temperature: 0.15
-max_new_tokens: 256
+model_name: "mistralai/Mathstral-7B-v0.1"
+do_sample: false
+temperature: null
+max_new_tokens: 150
 system_prompt: "code"
 search_reversed: false
 quantization:
@@ -10,5 +10,6 @@ quantization:
   quant_type: "nf4"
   compute_dtype: "bfloat16"
   double_quant: true
+use_retrieval: true
 use_code_executor: true
 log_dir: "AgenticAI_scripts"

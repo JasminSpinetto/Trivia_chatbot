@@ -18,8 +18,25 @@ from transformers import GenerationConfig
 from models.LLM import LLMModel, SYSTEM_PROMPTS
 
 SYSTEM_PROMPTS["math"] = (
-    "You are a math expert. Reason step by step, "
+    "You are a math expert. Take a deep breath and reason step by step, "
     "then reply with ONLY the number of the correct option."
+)
+
+SYSTEM_PROMPTS["mathstral"] = (
+    "You are a math competition expert. For each question:\n"
+    "1. Identify the mathematical domain and the relevant framework or theorem.\n"
+    "2. Show your reasoning step by step, being precise about definitions.\n"
+    "3. Compute or derive the answer carefully.\n"
+    "4. Reply with ONLY the option number on the last line."
+)
+
+SYSTEM_PROMPTS["mathstral_reason"] = (
+    "You are a math competition expert. Reason step by step through the problem.\n"
+    "DO NOT compute any numerical values yourself.\n"
+    "Identify the correct mathematical framework, set up the equations, and simplify as far as possible analytically.\n"
+    "End your response with EXACTLY one of:\n"
+    "  COMPUTE: [the precise expression, equation, or system to evaluate numerically]\n"
+    "  ANSWER: [option number]  (only when the answer follows from pure reasoning, no numbers needed)"
 )
 
 SYSTEM_PROMPTS["code"] = (
@@ -44,12 +61,43 @@ SYSTEM_PROMPTS["code"] = (
 
 
 _CODE_QUESTION_KEYWORDS = [
-    "compute", "calculate", "find the value", "evaluate", "simplify", "factor",
-    "solve for", "what is the area", "what is the volume", "what is the length",
-    "standard deviation", "variance", "probability that", "probability of",
-    "expected value", "find all", "how many", "sum of", "integral", "derivative",
-    "maximum value", "minimum value", "distance", "area", "volume", "remainder",
-    "rearranging", "binomial", "roots of", "eigenvalue",
+    # generic computation triggers
+    "compute", "calculate", "evaluate", "determine the value", "find the value",
+    "what is the value", "what is the sum", "what is the product", "what is the ratio", "what is the probability",
+    "find all", "find the", "how many", "total number of",
+    # algebra
+    "simplify", "expand", "factor", "solve for", "solve the equation",
+    "system of equations", "quadratic", "polynomial", "roots of", "zeros of",
+    "remainder", "rearranging", "inverse of", "determinant", "matrix",
+    "eigenvalue", "eigenvector",
+    # calculus
+    "derivative", "differentiate", "integral", "integrate", "antiderivative",
+    "find the limit", "limit of", "limit as", "converges", "diverges",
+    "rate of change", "tangent line", "critical point", "inflection point",
+    "maximum value", "minimum value", "optimize",
+    # geometry
+    "area", "volume", "surface area", "perimeter", "circumference",
+    "distance", "length", "diagonal", "hypotenuse", "midpoint",
+    "slope", "coordinate", "what is the area", "what is the volume",
+    "what is the length",
+    # trigonometry
+    "sin(", "cos(", "tan(", "arcsin", "arccos", "arctan",
+    "angle between", "find the angle",
+    # statistics & probability
+    "probability that", "probability of", "what is the probability",
+    "expected value", "expected number", "expected",
+    "standard deviation", "variance", "mean of", "median",
+    "percentile", "confidence interval", "normal distribution",
+    "z-score", "correlation coefficient", "regression",
+    "binomial", "poisson distribution",
+    # number theory & combinatorics
+    "divisible", "prime factorization", "least common multiple",
+    "greatest common divisor", "modulo", "congruent mod",
+    "combinations", "permutations", "arrangements", "how many ways",
+    "sum of", "rate of",
+    # sequences & series
+    "arithmetic sequence", "geometric sequence", "common difference",
+    "common ratio", "nth term",
 ]
 
 _TEXT_QUESTION_KEYWORDS = [
@@ -80,8 +128,24 @@ Now answer the following question the same way:
 """
 
 
+_NUMBER_WORDS = {
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+    "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty",
+    "sixty", "seventy", "eighty", "ninety", "hundred", "thousand", "million",
+}
+
+def _has_numeric_content(question: str) -> bool:
+    if any(c.isdigit() for c in question):
+        return True
+    words = set(re.findall(r'\b\w+\b', question.lower()))
+    return bool(words & _NUMBER_WORDS)
+
+
 def _should_use_code(question: str) -> bool:
     """Keyword heuristic: True → use code executor, False → use plain text path."""
+    if not _has_numeric_content(question):
+        return False   # no numeric content → purely abstract, code cannot help
     q = question.lower()
     for kw in _TEXT_QUESTION_KEYWORDS:
         if kw in q:
@@ -134,10 +198,13 @@ class MathLLMModel(LLMModel):
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
         user_suffix = (
-            "Write Python code if computation is needed, then end with the option number."
+            "You MUST write a ```python``` code block that prints the answer, even when context is provided. "
+            "Read constraints carefully — only enforce what the problem explicitly states. "
+            "End with only the option number."
             if self._use_code_executor else
             "Reply with only the option number."
         )
+
         if re.search(r"statement\s*1", question_text, re.IGNORECASE):
             user_content = _STATEMENT_FEW_SHOT + f"Question: {question_text}\n\nOptions:\n{options_str}\n\n{user_suffix}"
         else:
@@ -170,7 +237,30 @@ class MathLLMModel(LLMModel):
                 self._system_prompt      = SYSTEM_PROMPTS.get("code", self._system_prompt)
                 self._max_new_tokens     = 256
                 self._use_code_executor  = True
-                print(f"  [ROUTER] → code path")
+                _MATHWORLD_TRIGGERS = {
+                    # named results
+                    "theorem", "lemma", "corollary", "proposition", "conjecture",
+                    "formula", "identity", "inequality",
+                    "law", "rule",
+                    # named constructs
+                    "series", "transform", "distribution",
+                    # combinatorics specializations
+                    "derangement", "stirling", "partition",
+                    "surjection", "injection", "bijection",
+                    "generating function", "inclusion-exclusion",
+                    "pigeonhole", "catalan", "bell number",
+                    # advanced topics
+                    "eigenvalue", "eigenvector", "diagonaliz",
+                    "convergence", "divergence", "radius of convergence",
+                    "lagrange", "fourier", "laplace", "euler",
+                    "markov", "bayes", "poisson",
+                }
+                if any(kw in question_text.lower() for kw in _MATHWORLD_TRIGGERS) and original_retriever is not None:
+                    self._retriever = original_retriever  # MathWorld-only lookup for theorem questions
+                    print(f"  [ROUTER] → code path (+MathWorld)")
+                else:
+                    self._retriever = None
+                    print(f"  [ROUTER] → code path")
             else:
                 self._system_prompt      = SYSTEM_PROMPTS.get("default", self._system_prompt)
                 self._max_new_tokens     = 10
@@ -178,20 +268,28 @@ class MathLLMModel(LLMModel):
                 self._retriever          = None   # disable wiki for conceptual questions
                 print(f"  [ROUTER] → text path")
 
-        context  = self._retriever.get_context(question_text) if self._retriever else ""
-        t0       = time.time()
-        response = self._generate(question_text, options, context)
-        elapsed  = time.time() - t0
-
-        if self._use_router:
-            # Restore all original settings
-            self._system_prompt     = original_prompt
-            self._max_new_tokens    = original_tokens
-            self._use_code_executor = original_use_code
-            self._retriever         = original_retriever
+        try:
+            retrieval_options = None if use_code else options
+            context  = self._retriever.get_context(question_text, retrieval_options) if self._retriever else ""
+            if context:
+                preview = context[:300] + ("..." if len(context) > 300 else "")
+                print(f"  [CONTEXT] {preview}")
+            t0       = time.time()
+            response = self._generate(question_text, options, context)
+            elapsed  = time.time() - t0
+        finally:
+            if self._use_router:
+                # Always restore settings, even if an exception was raised
+                self._system_prompt     = original_prompt
+                self._max_new_tokens    = original_tokens
+                self._use_code_executor = original_use_code
+                self._retriever         = original_retriever
 
         if use_code:
             return self._answer_with_code(question_text, options, response, elapsed, context)
+        if len(response) > 20:
+            preview = response[:500] + ("..." if len(response) > 500 else "")
+            print(f"  [RESPONSE] {preview}")
         return self._parse_token(response, options)
 
     # ── code extraction & preprocessing ──────────────────────────────────────
@@ -215,118 +313,300 @@ class MathLLMModel(LLMModel):
 
     def _execute_code(self, code: str) -> Optional[str]:
         code = self._preprocess_code(code)
+
+        # ── safe builtins ─────────────────────────────────────────────────────
         safe_builtins = {
             name: getattr(builtins, name)
             for name in [
-                "print", "range", "len", "sum", "abs", "min", "max", "mean", "std", "average", "round",
-                "int", "float", "str", "list", "dict", "tuple", "set", "bool",
-                "enumerate", "zip", "map", "filter", "sorted", "pow",
+                # I/O & repr
+                "print", "repr",
+                # numeric types
+                "int", "float", "complex", "bool",
+                # string / char
+                "str", "chr", "ord",
+                # base conversion
+                "bin", "oct", "hex",
+                # containers
+                "list", "dict", "tuple", "set", "frozenset",
+                # iteration
+                "range", "enumerate", "zip", "map", "filter",
+                "sorted", "reversed", "iter", "next",
+                # math builtins
+                "abs", "min", "max", "sum", "pow", "round", "divmod",
+                # logic / inspection
+                "len", "any", "all", "callable", "isinstance",
+                "type", "hasattr", "getattr", "hash",
             ]
             if hasattr(builtins, name)
         }
+
+        # ── base namespace ────────────────────────────────────────────────────
         namespace = {
             "__builtins__": safe_builtins,
-            "math":       math,
-            "cmath":      cmath,
-            "np":         np,
-            "itertools":  itertools,
-            "fractions":  fractions,
-            "Fraction":   fractions.Fraction,
-            "Counter":    collections.Counter,
-            "statistics": stats_stdlib,
+            "math":        math,
+            "cmath":       cmath,
+            "np":          np,
+            "itertools":   itertools,
+            "fractions":   fractions,
+            "Fraction":    fractions.Fraction,
+            "Counter":     collections.Counter,
+            "defaultdict": collections.defaultdict,
+            "deque":       collections.deque,
+            "OrderedDict": collections.OrderedDict,
+            "statistics":  stats_stdlib,
+            "collections": collections,
         }
-        try:
-            import sympy as sp
-            namespace["sp"] = sp
-            # Common sympy names available without sp. prefix
-            for _name in ["solve", "symbols", "Symbol", "simplify", "sqrt", "root",
-                          "Eq", "integrate", "diff", "Matrix", "pi", "E", "I", "oo",
-                          "Rational", "factor", "expand", "limit", "series", "latex"]:
-                if hasattr(sp, _name):
-                    namespace[_name] = getattr(sp, _name)
-        except ImportError:
-            pass
-        try:
-            import scipy.stats    as scipy_stats
-            import scipy.integrate as scipy_integrate
-            import scipy.special   as scipy_special
-            # Stats distributions
-            namespace["stats"]   = scipy_stats
-            namespace["norm"]    = scipy_stats.norm
-            namespace["chi2"]    = scipy_stats.chi2
-            namespace["binom"]   = scipy_stats.binom
-            namespace["poisson"] = scipy_stats.poisson
-            namespace["t_dist"]  = scipy_stats.t      # use t_dist to avoid clash with variable t
-            namespace["f_dist"]  = scipy_stats.f
-            # Integration
-            namespace["quad"]    = scipy_integrate.quad
-            namespace["dblquad"] = scipy_integrate.dblquad
-            namespace["nquad"]   = scipy_integrate.nquad
-            # Special functions
-            namespace["erf"]     = scipy_special.erf
-            namespace["erfinv"]  = scipy_special.erfinv
-            namespace["erfc"]    = scipy_special.erfc
-            namespace["gamma"]   = scipy_special.gamma
-        except ImportError:
-            pass
 
-        # ── math module: direct access without math. prefix ──────────────────
+        # ── functools ─────────────────────────────────────────────────────────
+        from functools import reduce
+        namespace["reduce"]     = reduce
+        namespace["accumulate"] = itertools.accumulate
+
+        # ── math functions (no prefix) ────────────────────────────────────────
         for _fn in [
-            # basic
             "factorial", "floor", "ceil", "trunc", "fabs",
-            # logarithms / exponentials
             "log", "log2", "log10", "exp",
-            # trig
             "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "hypot",
             "degrees", "radians",
-            # hyperbolic
             "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
-            # number theory
             "gcd", "comb", "perm",
-            # misc
-            "sqrt", "isnan", "isinf", "isfinite", "isclose", "fmod",
+            "sqrt", "isnan", "isinf", "isfinite", "isclose", "fmod", "remainder",
         ]:
             if hasattr(math, _fn):
                 namespace[_fn] = getattr(math, _fn)
 
-        # aliases and extras
-        namespace["ln"]  = math.log
+        # constants & aliases
         namespace["pi"]  = math.pi
         namespace["e"]   = math.e
+        namespace["tau"] = getattr(math, "tau", 2 * math.pi)
         namespace["inf"] = math.inf
         namespace["nan"] = math.nan
-        namespace["lcm"] = math.lcm if hasattr(math, "lcm") else None
-        if hasattr(math, "prod"):
-            namespace["prod"] = math.prod   # Python 3.8+
+        namespace["ln"]  = math.log
+        namespace["lcm"] = math.lcm if hasattr(math, "lcm") else (
+            lambda a, b: abs(a * b) // math.gcd(a, b))
+        namespace["prod"] = math.prod if hasattr(math, "prod") else (
+            lambda it: reduce(lambda a, b: a * b, it, 1))
 
-        # ── functools ─────────────────────────────────────────────────────────
-        from functools import reduce
-        namespace["reduce"] = reduce
+        # ── numpy shortcuts ───────────────────────────────────────────────────
+        namespace.update({
+            "array":    np.array,
+            "zeros":    np.zeros,
+            "ones":     np.ones,
+            "eye":      np.eye,
+            "linspace": np.linspace,
+            "arange":   np.arange,
+            "dot":      np.dot,
+            "cross":    np.cross,
+            "linalg":   np.linalg,
+        })
 
-        # ── collections extras ────────────────────────────────────────────────
-        namespace["defaultdict"] = collections.defaultdict
-        namespace["deque"]       = collections.deque
-
-        # ── sympy extras ──────────────────────────────────────────────────────
+        # ── sympy ─────────────────────────────────────────────────────────────
         try:
+            import sympy as sp
+            namespace["sp"] = sp
             for _name in [
+                # core algebra
+                "symbols", "Symbol", "Function", "Wild", "Dummy",
+                "solve", "solveset", "linsolve", "nonlinsolve", "nsolve",
+                "dsolve",
+                "Eq", "Ne", "Lt", "Le", "Gt", "Ge",
+                "And", "Or", "Not", "Implies", "Equivalent",
+                # simplification
+                "simplify", "expand", "factor", "cancel", "together", "apart",
+                "collect", "radsimp", "trigsimp", "powsimp", "combsimp",
+                "nsimplify", "refine",
+                # polynomials
+                "Poly", "div", "roots", "real_roots", "nroots", "discriminant",
+                # calculus
+                "diff", "integrate", "Derivative", "Integral",
+                "limit", "series", "summation",
+                # linear algebra
+                "Matrix", "det", "trace",
+                # types & constants
+                "sqrt", "root", "Pow", "Rational", "Integer", "Float",
+                "pi", "E", "I", "oo", "zoo",
+                "Sum", "Product",
+                # numeric eval
+                "N",
+                # complex
+                "Abs", "sign", "re", "im", "conjugate", "arg",
+                # rounding
+                "floor", "ceiling", "frac",
+                # special
+                "Piecewise", "Heaviside", "DiracDelta",
+                # combinatorics
+                "factorial", "factorial2", "subfactorial", "binomial",
+                "rf", "ff", "RisingFactorial", "FallingFactorial",
+                "necklaces", "lyndon",
+                # sequences
+                "fibonacci", "lucas", "catalan", "bell", "bernoulli",
+                "euler", "harmonic", "genocchi",
                 # number theory
                 "factorint", "isprime", "nextprime", "prevprime", "primerange",
-                "totient", "mod_inverse", "binomial",
-                # symbolic
-                "N", "Sum", "Product", "Piecewise", "Abs", "conjugate",
-                "re", "im", "sign", "floor", "ceiling",
-                # additional trig
-                "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",
+                "primepi", "totient", "mod_inverse", "primitive_root",
+                "divisor_count", "divisor_sigma", "mobius",
+                "jacobi_symbol", "legendre_symbol",
+                # sets
+                "Interval", "FiniteSet", "Union", "Intersection",
+                "Complement", "EmptySet", "UniversalSet",
+                # geometry
+                "Point", "Line", "Segment", "Circle", "Triangle", "Ellipse",
+                # trig
+                "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
+                "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
+                "cot", "csc", "sec", "sinc",
+                # exp & log
+                "exp", "log", "ln",
+                # special functions
+                "gamma", "loggamma", "beta", "polygamma", "digamma",
+                "zeta", "erf", "erfc", "erfinv",
+                "Ei", "Si", "Ci",
+                # output
+                "latex", "pretty",
             ]:
                 if hasattr(sp, _name) and _name not in namespace:
                     namespace[_name] = getattr(sp, _name)
-        except NameError:
-            pass  # sympy not imported
+        except ImportError:
+            pass
+
+        # ── sympy deep-path shortcuts (not accessible via sp. prefix) ─────────
+        try:
+            from sympy.functions.combinatorial.numbers import (
+                stirling as _stirling,
+                nC as _nC,   # combinations C(n,k)
+                nP as _nP,   # permutations P(n,k)
+                nT as _nT,   # multisets (combinations with repetition)
+            )
+            namespace["stirling"] = _stirling
+            namespace["nC"] = _nC
+            namespace["nP"] = _nP
+            namespace["nT"] = _nT
+        except ImportError:
+            pass
+        try:
+            from sympy.utilities.iterables import partitions as _partitions
+            namespace["partitions"] = _partitions
+        except ImportError:
+            pass
+
+        # ── scipy ─────────────────────────────────────────────────────────────
+        try:
+            import scipy.stats    as scipy_stats
+            import scipy.integrate as scipy_integrate
+            import scipy.special   as scipy_special
+            import scipy.optimize  as scipy_optimize
+            import scipy.linalg    as scipy_linalg
+
+            namespace["stats"]  = scipy_stats
+            namespace["linalg"] = scipy_linalg
+
+            # distributions
+            namespace.update({
+                "norm":               scipy_stats.norm,
+                "t_dist":             scipy_stats.t,
+                "f_dist":             scipy_stats.f,
+                "chi2":               scipy_stats.chi2,
+                "binom":              scipy_stats.binom,
+                "poisson":            scipy_stats.poisson,
+                "geom":               scipy_stats.geom,
+                "hypergeom":          scipy_stats.hypergeom,
+                "nbinom":             scipy_stats.nbinom,
+                "beta_dist":          scipy_stats.beta,
+                "gamma_dist":         scipy_stats.gamma,
+                "expon":              scipy_stats.expon,
+                "uniform_dist":       scipy_stats.uniform,
+                "lognorm":            scipy_stats.lognorm,
+                "multinomial":        scipy_stats.multinomial,
+                "multivariate_normal": scipy_stats.multivariate_normal,
+            })
+
+            # integration
+            namespace.update({
+                "quad":      scipy_integrate.quad,
+                "dblquad":   scipy_integrate.dblquad,
+                "nquad":     scipy_integrate.nquad,
+                "odeint":    scipy_integrate.odeint,
+                "solve_ivp": scipy_integrate.solve_ivp,
+            })
+
+            # special functions (use _func suffix to avoid clash with sympy)
+            namespace.update({
+                "erf":        scipy_special.erf,
+                "erfc":       scipy_special.erfc,
+                "erfinv":     scipy_special.erfinv,
+                "gamma_func": scipy_special.gamma,
+                "gammaln":    scipy_special.gammaln,
+                "beta_func":  scipy_special.beta,
+                "betaln":     scipy_special.betaln,
+                "digamma":    scipy_special.digamma,
+                "polygamma":  scipy_special.polygamma,
+                "zeta_func":  scipy_special.zeta,
+                "comb_f":     scipy_special.comb,
+            })
+
+            # optimization
+            namespace.update({
+                "brentq":          scipy_optimize.brentq,
+                "bisect":          scipy_optimize.bisect,
+                "fsolve":          scipy_optimize.fsolve,
+                "minimize_scalar": scipy_optimize.minimize_scalar,
+                "minimize":        scipy_optimize.minimize,
+                "linprog":         scipy_optimize.linprog,
+            })
+
+            # linalg extras
+            namespace.update({
+                "linalg_solve": scipy_linalg.solve,
+                "expm":         scipy_linalg.expm,
+                "logm":         scipy_linalg.logm,
+            })
+
+        except ImportError:
+            pass
+
+        # ── statistics stdlib shortcuts ───────────────────────────────────────
+        for _fn in ["mean", "median", "mode", "stdev", "variance",
+                    "geometric_mean", "harmonic_mean", "quantiles",
+                    "pstdev", "pvariance", "median_low", "median_high"]:
+            if hasattr(stats_stdlib, _fn):
+                namespace.setdefault(f"stat_{_fn}", getattr(stats_stdlib, _fn))
+        # ── SymPy-aware wrappers ─────────────────────────────────────────────
+        def _evalf_if_sympy(val):
+            if hasattr(val, "evalf"):
+                try:
+                    val = val.evalf()
+                except Exception:
+                    pass
+            return val
+
+        def _smart_print(*args, **kwargs):
+            builtins.print(*[_evalf_if_sympy(a) for a in args], **kwargs)
+
+        def _safe_float(x):
+            try:
+                return builtins.float(x)
+            except TypeError:
+                return builtins.float(_evalf_if_sympy(x))
+
+        def _safe_int(x):
+            try:
+                return builtins.int(x)
+            except TypeError:
+                return builtins.int(_evalf_if_sympy(x))
+
+        namespace["print"] = _smart_print
+        namespace["float"] = _safe_float
+        namespace["int"]   = _safe_int
+
+        import sys
+        namespace["sys"] = sys  # allow models to call sys.setrecursionlimit() if needed
+
         captured  = io.StringIO()
         error: list = []
 
         def _run():
+            old_limit = sys.getrecursionlimit()
+            sys.setrecursionlimit(3000)
             try:
                 with contextlib.redirect_stdout(captured):
                     exec(code, namespace)  # noqa: S102
@@ -341,12 +621,15 @@ class MathLLMModel(LLMModel):
                             try:
                                 val = eval(last, namespace)  # noqa: S307
                                 if val is not None:
+                                    val = _evalf_if_sympy(val)
                                     with contextlib.redirect_stdout(captured):
                                         print(val)
                             except Exception:
                                 pass
             except Exception as e:
                 error.append(e)
+            finally:
+                sys.setrecursionlimit(old_limit)
 
         thread = threading.Thread(target=_run, daemon=True)
         thread.start()
@@ -427,7 +710,7 @@ class MathLLMModel(LLMModel):
 
     def log_result(self, correct: bool):
         """Append the server verdict and running accuracy to the last open log entry."""
-        if not self._use_code_executor:
+        if not hasattr(self, "_log_path"):
             return
         self._log_total   += 1
         self._log_correct += int(correct)
@@ -441,7 +724,7 @@ class MathLLMModel(LLMModel):
         Prepend the final score and rename the log file with a LOCAL_ prefix.
         Called from play_offline() after all questions are answered.
         """
-        if not self._use_code_executor or not hasattr(self, "_log_path"):
+        if not hasattr(self, "_log_path") or not os.path.exists(self._log_path):
             return
 
         with open(self._log_path, "r", encoding="utf-8") as f:

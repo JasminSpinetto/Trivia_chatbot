@@ -1,10 +1,10 @@
 model_class: MathLLMModel
-model_name: "meta-llama/Llama-3.1-8B-Instruct"
-do_sample: true
-temperature: 0.15
+model_name: "Qwen/Qwen2.5-Math-7B-Instruct"
+do_sample: false
+temperature: null
 max_new_tokens: 150
 system_prompt: "code"
-search_reversed: false
+search_reversed: true
 quantization:
   load_in_4bit: true
   quant_type: "nf4"

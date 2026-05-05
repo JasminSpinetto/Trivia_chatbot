@@ -1,0 +1,4 @@
+model_class: EnsembleModel
+primary: "phi-4-mini-wiki-code"
+secondary: "llama-8b-router"
+log_dir: "AgenticAI_scripts"
