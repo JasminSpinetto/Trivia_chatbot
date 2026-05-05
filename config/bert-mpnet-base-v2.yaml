@@ -1,0 +1,4 @@
+model_class: Bert
+model_name: "sentence-transformers/all-mpnet-base-v2"
+package_name: "SentenceTransformer"
+model_type: "biencoder"
