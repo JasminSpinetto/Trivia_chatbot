@@ -249,6 +249,17 @@ class Retriever:
             self._log("SEARCH COMBINED  : (none)")
             return ""
 
+        # Sort so the most on-topic article leads — proper nouns weighted 2×
+        # over generic keywords so the most specific match gets the first (and
+        # largest) slice of the context window before the char limit truncates.
+        q_kw     = set(_keywords(question))
+        q_proper = set(_proper_nouns(question))
+        def _score(ctx: str) -> int:
+            lower = ctx.lower()
+            return (sum(1 for kw in q_kw if kw in lower)
+                    + sum(2 for p in q_proper if p in lower))
+        unique.sort(key=_score, reverse=True)
+
         combined = "\n\n---\n\n".join(unique)[:_MAX_CONTEXT_LEN]
         self._log(f"SEARCH COMBINED  : {len(unique)} source(s), {len(combined)} chars")
         return combined
