@@ -61,7 +61,7 @@ class LLMModel:
 
         if use_retrieval:
             from utils.retrieval import Retriever
-            self._retriever     = Retriever()
+            self._retriever     = Retriever(log_fn=self._log)
             self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt) if system_prompt != "default" else SYSTEM_PROMPTS["retrieval"]
         else:
             self._retriever     = None
