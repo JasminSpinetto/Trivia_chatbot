@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer, CrossEncoder
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 package_map = {
-    "SentenceTransformer" : [SentenceTransformer, lambda m: m.get_sentence_embedding_dimension()],
+    "SentenceTransformer" : [SentenceTransformer, lambda m: m.get_embedding_dimension()],
     "CrossEncoder" : [CrossEncoder, lambda m: m.model.config.hidden_size],
     "transformers" : [AutoModelForSequenceClassification.from_pretrained, lambda m: m.config.hidden_size]
 }
@@ -37,6 +37,7 @@ class Bert(nn.Module):
         model_class, embed_dim_fn = package_map[package_name]
         self.encoder = model_class(model_name)
         self.embed_dim = embed_dim_fn(self.encoder)
+        self.encoder.eval()
 
         # Tokenizer in case of 'transformers' BERT
         if self.package_name == "transformers":
@@ -48,7 +49,7 @@ class Bert(nn.Module):
         For biencoder: returns the sentence embedding.
         For crossencoder: returns the logits from the pretrained classification head.
         """
-
+        
         # SentenceTransformer biencoder: a single string -> sentence embedding
         if self.package_name == "SentenceTransformer":
             features = self.encoder.tokenize([x])
@@ -57,7 +58,7 @@ class Bert(nn.Module):
 
         # CrossEncoder: a single [text_a, text_b] pair -> classification logits
         if self.package_name == "CrossEncoder":
-            tok = self.encoder.tokenizer([x], padding=True, truncation=True, return_tensors="pt")
+            tok = self.encoder.tokenizer(x[0], x[1], padding=True, truncation=True, return_tensors="pt")
             tok = {k: v.to(next(self.encoder.model.parameters()).device) for k, v in tok.items()}
             outputs = self.encoder.model(**tok)
             return outputs.logits[0]
@@ -80,14 +81,15 @@ class Bert(nn.Module):
         #   - biencoder: [str_a, str_b] -> returns cosine similarity (scalar)
         #   - crossencoder: [str_a, str_b] -> returns logits (num_classes,) from pretrained head
 
-        # Biencoder: encode both texts separately and compute cosine similarity
-        if self.model_type == "biencoder":
-            emb_a = self._encode(x[0])
-            emb_b = self._encode(x[1])
-            return F.cosine_similarity(emb_a.unsqueeze(0), emb_b.unsqueeze(0))[0]
+        with torch.no_grad():
+            # Biencoder: encode both texts separately and compute cosine similarity
+            if self.model_type == "biencoder":
+                emb_a = self._encode(x[0])
+                emb_b = self._encode(x[1])
+                return F.cosine_similarity(emb_a.unsqueeze(0), emb_b.unsqueeze(0))[0]
 
-        # Crossencoder: encode the pair and return the pretrained head's logits
-        return self._encode(x)
+            # Crossencoder: encode the pair and return the pretrained head's logits
+            return self._encode(x)
 
     def answer(self, question_text, options):
 
@@ -101,7 +103,8 @@ class Bert(nn.Module):
             return option_ids[int(torch.argmax(scores).item())]
 
         # Crossencoder: binary classification per pair, pick best "true" logit
-        scores = torch.stack([self.forward([question_text, opt])[0] for opt in opts])
+        POSITIVE_CLASS = -1
+        scores = torch.stack([self.forward([question_text, opt])[POSITIVE_CLASS] for opt in opts])
         return option_ids[int(torch.argmax(scores).item())]
 
 
