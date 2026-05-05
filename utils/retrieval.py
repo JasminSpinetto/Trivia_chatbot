@@ -1,5 +1,9 @@
 import re
+import warnings
 from concurrent.futures import ThreadPoolExecutor, wait
+
+warnings.filterwarnings("ignore", category=UserWarning, module="wikipedia")
+warnings.filterwarnings("ignore", message=".*duckduckgo_search.*renamed.*ddgs.*", category=RuntimeWarning)
 
 _PARALLEL_TIMEOUT = 6.0
 _MAX_CONTEXT_LEN  = 1500
@@ -33,10 +37,14 @@ except ImportError:
     _WIKIPEDIA_AVAILABLE = False
 
 try:
-    from duckduckgo_search import DDGS
+    from ddgs import DDGS
     _DDGS_AVAILABLE = True
 except ImportError:
-    _DDGS_AVAILABLE = False
+    try:
+        from duckduckgo_search import DDGS
+        _DDGS_AVAILABLE = True
+    except ImportError:
+        _DDGS_AVAILABLE = False
 
 
 def _keywords(question: str) -> list:
