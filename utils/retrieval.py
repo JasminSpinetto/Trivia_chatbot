@@ -2,10 +2,13 @@ import html
 import re
 import requests
 from concurrent.futures import ThreadPoolExecutor, wait
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-_PARALLEL_TIMEOUT = 6.0
+_PARALLEL_TIMEOUT = 12.0  # longer to accommodate retry backoff delays
 _MAX_CONTEXT_LEN  = 3000
-_WIKI_SENTENCES   = 15  # sentences per article summary
+_WIKI_SENTENCES   = 15    # sentences per article summary
+_MAX_WORKERS      = 2     # max concurrent Wikipedia requests — stay under rate limit
 
 _WIKI_API  = "https://en.wikipedia.org/w/api.php"
 _WIKI_HDRS = {"User-Agent": "PoliMillionaire-quiz/1.0 (educational NLP project)"}
@@ -130,11 +133,21 @@ class Retriever:
 
     def __init__(self, log_fn=None):
         self._log = log_fn or (lambda msg: None)
+        # Session with automatic retry on 429/5xx — backoff: 0.5s, 1s, 2s
+        self._session = requests.Session()
+        _retry = Retry(
+            total=3,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            respect_retry_after_header=True,
+        )
+        self._session.mount("https://", HTTPAdapter(max_retries=_retry))
+        self._session.headers.update(_WIKI_HDRS)
 
     def _search_wikipedia(self, query: str) -> tuple[str, str]:
         """Return (title, intro_text) for the best matching Wikipedia article."""
         try:
-            r = requests.get(
+            r = self._session.get(
                 _WIKI_API,
                 params={"action": "query", "list": "search",
                         "srsearch": query, "srlimit": 5, "format": "json"},
@@ -209,7 +222,7 @@ class Retriever:
         tasks = [(q, lambda q=q: self._search_wikipedia(q)) for q in queries]
         self._log(f"SEARCH SOURCES   : {[f'wikipedia({q!r})' for q, _ in tasks]}")
 
-        with ThreadPoolExecutor(max_workers=len(tasks)) as ex:
+        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
             future_map = {ex.submit(fn): q for q, fn in tasks}
             done, _    = wait(future_map.keys(), timeout=_PARALLEL_TIMEOUT)
 
@@ -256,7 +269,7 @@ class Retriever:
                 if combo_queries:
                     self._log(f"FALLBACK COMBOS  : {combo_queries}")
                 fb_tasks = [(q, lambda q=q: self._search_wikipedia(q)) for q in fallback_queries]
-                with ThreadPoolExecutor(max_workers=max(1, len(fb_tasks))) as ex:
+                with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
                     fb_future_map = {ex.submit(fn): q for q, fn in fb_tasks}
                     fb_done, _    = wait(fb_future_map.keys(), timeout=_PARALLEL_TIMEOUT)
                 for fut in fb_done:
