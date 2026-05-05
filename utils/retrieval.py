@@ -5,10 +5,10 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-_PARALLEL_TIMEOUT = 12.0  # longer to accommodate retry backoff delays
+_PARALLEL_TIMEOUT = 5.0   # per-phase budget (primary + fallback = ~10s total)
 _MAX_CONTEXT_LEN  = 3000
 _WIKI_SENTENCES   = 15    # sentences per article summary
-_MAX_WORKERS      = 2     # max concurrent Wikipedia requests — stay under rate limit
+_MAX_WORKERS      = 4     # I/O-bound threads; 4 keeps us under Wikipedia rate limits
 
 _WIKI_API  = "https://en.wikipedia.org/w/api.php"
 _WIKI_HDRS = {"User-Agent": "PoliMillionaire-quiz/1.0 (educational NLP project)"}
