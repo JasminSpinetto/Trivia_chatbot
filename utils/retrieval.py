@@ -5,10 +5,10 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-_PARALLEL_TIMEOUT = 5.0   # per-phase budget (primary + fallback = ~10s total)
+_PARALLEL_TIMEOUT = 5.0   # per search-phase budget; extract batch is one extra call
 _MAX_CONTEXT_LEN  = 3000
 _WIKI_SENTENCES   = 15    # sentences per article summary
-_MAX_WORKERS      = 4     # I/O-bound threads; 4 keeps us under Wikipedia rate limits
+_MAX_WORKERS      = 4     # concurrent search calls (I/O-bound, safe for Colab)
 
 _WIKI_API  = "https://en.wikipedia.org/w/api.php"
 _WIKI_HDRS = {"User-Agent": "PoliMillionaire-quiz/1.0 (educational NLP project)"}
@@ -101,8 +101,7 @@ def _proper_noun_phrases(question: str) -> list:
 
 def _is_relevant(question: str, context: str) -> bool:
     """Accept if ≥50% of question proper nouns appear in context, OR if any
-    content keyword overlaps.  The OR fallback prevents false rejections when
-    a proper noun happens to be absent from the article's opening sentences.
+    content keyword overlaps.
     """
     c_lower = context.lower()
     proper  = _proper_nouns(question)
@@ -122,13 +121,14 @@ def _strip_html(raw: str) -> str:
 
 
 class Retriever:
-    """Wikipedia retrieval via the MediaWiki REST API (no third-party library).
+    """Wikipedia retrieval via the MediaWiki REST API.
 
-    Uses requests directly to avoid the silent failures and rate-limit
-    fragility of the wikipedia Python library.  Each call:
-      1. Searches for up to 5 candidate page titles.
-      2. Fetches the intro extract (up to _WIKI_SENTENCES sentences) for
-         the first title that returns content, following redirects automatically.
+    API call pattern (minimises total requests to avoid 429s):
+      Phase 1 — search: N queries run in parallel, each returns up to 5
+                candidate page titles  →  N search API calls
+      Phase 2 — extract: all unique titles fetched in ONE batched call
+                (MediaWiki accepts up to 50 titles per request)
+      Total: N + 1 calls instead of 2N.
     """
 
     def __init__(self, log_fn=None):
@@ -144,46 +144,82 @@ class Retriever:
         self._session.mount("https://", HTTPAdapter(max_retries=_retry))
         self._session.headers.update(_WIKI_HDRS)
 
-    def _search_wikipedia(self, query: str) -> tuple[str, str]:
-        """Return (title, intro_text) for the best matching Wikipedia article."""
+    def _search_titles(self, query: str) -> list:
+        """Return up to 5 Wikipedia page titles matching the query."""
         try:
             r = self._session.get(
                 _WIKI_API,
                 params={"action": "query", "list": "search",
                         "srsearch": query, "srlimit": 5, "format": "json"},
-                headers=_WIKI_HDRS,
                 timeout=5,
             )
             r.raise_for_status()
-            hits = r.json()["query"]["search"]
+            return [hit["title"] for hit in r.json()["query"]["search"]]
         except Exception as e:
             self._log(f"WIKI SEARCH ERR  : {query!r} → {e}")
-            return "", ""
+            return []
 
-        for hit in hits:
-            title = hit["title"]
+    def _fetch_extracts(self, titles: list) -> dict:
+        """Fetch intro extracts for all titles in ONE batched API call.
+
+        Returns {title: text} for every title that has content.
+        MediaWiki follows redirects automatically via redirects=1.
+        """
+        if not titles:
+            return {}
+        try:
+            r = self._session.get(
+                _WIKI_API,
+                params={"action": "query", "prop": "extracts",
+                        "exintro": True, "exsentences": _WIKI_SENTENCES,
+                        "titles": "|".join(titles[:50]),
+                        "redirects": 1, "format": "json"},
+                timeout=8,
+            )
+            r.raise_for_status()
+            out = {}
+            for pid, page in r.json()["query"]["pages"].items():
+                if pid == "-1":
+                    continue
+                text = _strip_html(page.get("extract", ""))
+                if text:
+                    out[page.get("title", titles[0])] = text
+            return out
+        except Exception as e:
+            self._log(f"WIKI EXTRACT ERR : {e}")
+            return {}
+
+    def _run_queries(self, queries: list) -> dict:
+        """Run search queries in parallel, then batch-fetch all extracts.
+
+        Returns {title: text} with all successful results.
+        Total API calls = len(queries) searches + 1 extract batch.
+        """
+        if not queries:
+            return {}
+
+        # Phase 1: parallel searches → candidate title lists
+        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
+            future_map = {ex.submit(self._search_titles, q): q for q in queries}
+            done, _    = wait(future_map.keys(), timeout=_PARALLEL_TIMEOUT)
+
+        seen_titles, ordered_titles = set(), []
+        for fut in done:
+            q = future_map[fut]
             try:
-                r2 = requests.get(
-                    _WIKI_API,
-                    params={"action": "query", "prop": "extracts",
-                            "exintro": True, "exsentences": _WIKI_SENTENCES,
-                            "titles": title, "redirects": 1, "format": "json"},
-                    headers=_WIKI_HDRS,
-                    timeout=5,
-                )
-                r2.raise_for_status()
-                pages = r2.json()["query"]["pages"]
-                for pid, page in pages.items():
-                    if pid == "-1":
-                        continue
-                    raw = page.get("extract", "")
-                    text = _strip_html(raw)
-                    if text:
-                        return page.get("title", title), text
-            except Exception:
-                continue
+                for title in fut.result():
+                    if title not in seen_titles:
+                        seen_titles.add(title)
+                        ordered_titles.append(title)
+            except Exception as e:
+                self._log(f"SEARCH ERROR     : {e}")
 
-        return "", ""
+        if not ordered_titles:
+            return {}
+
+        # Phase 2: one batch extract call for all unique titles
+        self._log(f"WIKI TITLES      : {ordered_titles}")
+        return self._fetch_extracts(ordered_titles)
 
     def get_context(self, question: str, options: dict = None) -> str:
         if options is None:
@@ -208,7 +244,7 @@ class Retriever:
         self._log(f"SEARCH OPTIONS   : {opts_query!r}")
         self._log(f"SEARCH KEYWORDS  : {keywords}")
 
-        # Deduplicated query list
+        # Deduplicated primary query list
         seen_q, queries = set(), []
         for q in [proper_only, focused, opts_query]:
             if q and q.lower() not in seen_q:
@@ -219,35 +255,22 @@ class Retriever:
             self._log("SEARCH SOURCES   : no queries generated")
             return ""
 
-        tasks = [(q, lambda q=q: self._search_wikipedia(q)) for q in queries]
-        self._log(f"SEARCH SOURCES   : {[f'wikipedia({q!r})' for q, _ in tasks]}")
+        self._log(f"SEARCH SOURCES   : {[f'wikipedia({q!r})' for q in queries]}")
+        extracts = self._run_queries(queries)
 
-        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
-            future_map = {ex.submit(fn): q for q, fn in tasks}
-            done, _    = wait(future_map.keys(), timeout=_PARALLEL_TIMEOUT)
-
-        seen, unique = set(), []
-        for fut in done:
-            q = future_map[fut]
-            try:
-                title, ctx = fut.result()
-                if ctx:
-                    self._log(f"WIKI RESULT      : [{title}] {ctx[:120]}{'...' if len(ctx) > 120 else ''}")
-                    if _is_relevant(question, ctx) and ctx[:80] not in seen:
-                        seen.add(ctx[:80])
-                        unique.append(ctx)
-                        self._log(f"WIKI ACCEPTED    : [{title}]")
-                    elif ctx:
-                        self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+        # Relevance filter and deduplication
+        seen_text, unique = set(), []
+        for title, ctx in extracts.items():
+            if ctx[:80] not in seen_text:
+                if _is_relevant(question, ctx):
+                    seen_text.add(ctx[:80])
+                    unique.append(ctx)
+                    self._log(f"WIKI ACCEPTED    : [{title}]")
                 else:
-                    self._log(f"WIKI RESULT      : (no article found for {q!r})")
-            except Exception as e:
-                self._log(f"SEARCH ERROR     : {e}")
+                    self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
 
-        # Fallback: individual proper-noun phrases + phrase×keyword combos in one
-        # parallel batch.  Bare phrases handle "Ancient Greek / Koine Greek" splits;
-        # combos handle generic nouns like "Greek" that need a content word to
-        # disambiguate — e.g. "Greek" + "architecture" → "Ancient Greek architecture".
+        # Fallback: individual proper-noun phrases + phrase×keyword combos.
+        # Only triggered when primary queries found nothing.
         if not unique:
             phrase_list = [
                 p for p in _proper_noun_phrases(question)
@@ -268,26 +291,15 @@ class Retriever:
                 self._log(f"FALLBACK PHRASES : {phrase_list}")
                 if combo_queries:
                     self._log(f"FALLBACK COMBOS  : {combo_queries}")
-                fb_tasks = [(q, lambda q=q: self._search_wikipedia(q)) for q in fallback_queries]
-                with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
-                    fb_future_map = {ex.submit(fn): q for q, fn in fb_tasks}
-                    fb_done, _    = wait(fb_future_map.keys(), timeout=_PARALLEL_TIMEOUT)
-                for fut in fb_done:
-                    q = fb_future_map[fut]
-                    try:
-                        title, ctx = fut.result()
-                        if ctx:
-                            self._log(f"FALLBACK RESULT  : [{title}] {ctx[:120]}{'...' if len(ctx) > 120 else ''}")
-                            if _is_relevant(question, ctx) and ctx[:80] not in seen:
-                                seen.add(ctx[:80])
-                                unique.append(ctx)
-                                self._log(f"FALLBACK ACCEPTED: [{title}]")
-                            else:
-                                self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
+                fb_extracts = self._run_queries(fallback_queries)
+                for title, ctx in fb_extracts.items():
+                    if ctx[:80] not in seen_text:
+                        if _is_relevant(question, ctx):
+                            seen_text.add(ctx[:80])
+                            unique.append(ctx)
+                            self._log(f"FALLBACK ACCEPTED: [{title}]")
                         else:
-                            self._log(f"FALLBACK RESULT  : (no article found for {q!r})")
-                    except Exception as e:
-                        self._log(f"FALLBACK ERROR   : {e}")
+                            self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
 
         if not unique:
             self._log("SEARCH COMBINED  : (none)")
