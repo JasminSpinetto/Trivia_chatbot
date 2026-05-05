@@ -67,15 +67,22 @@ class Retriever:
         self._log = log_fn or (lambda msg: None)
 
     def _search_wikipedia(self, query: str) -> tuple[str, str]:
-        """Returns (title, summary) or ('', '')."""
+        """Returns (title, summary) or ('', '').
+        Tries each candidate title in order so a DisambiguationError or
+        PageError on the first result doesn't silently kill the search.
+        """
         try:
             titles = wikipedia.search(query, results=3)
-            if not titles:
-                return "", ""
-            summary = wikipedia.summary(titles[0], sentences=4, auto_suggest=False)
-            return titles[0], summary
         except Exception:
             return "", ""
+        for title in titles:
+            try:
+                summary = wikipedia.summary(title, sentences=4, auto_suggest=False)
+                if summary:
+                    return title, summary
+            except Exception:
+                continue
+        return "", ""
 
     def _search_duckduckgo(self, query: str) -> str:
         try:
@@ -89,13 +96,24 @@ class Retriever:
         focused  = _focused_query(question)
         keywords = _keywords(question)
 
+        # Proper-nouns-only query — cleanest signal for Wikipedia
+        words = re.findall(r"\b[a-zA-Z']+\b", question)
+        proper_only = " ".join(
+            re.sub(r"'s?$", "", w) for i, w in enumerate(words)
+            if i > 0 and w[0].isupper() and len(w) > 2
+        )
+
         self._log(f"SEARCH FOCUSED   : {focused!r}")
+        self._log(f"SEARCH PROPER    : {proper_only!r}")
         self._log(f"SEARCH KEYWORDS  : {keywords}")
 
-        # Two query formulations; deduplicated
-        queries = [focused] if focused else []
-        if question.lower() != focused.lower():
-            queries.append(question)
+        # Three query formulations; deduplicated, most specific first
+        seen_q: set = set()
+        queries = []
+        for q in [proper_only, focused, question]:
+            if q and q.lower() not in seen_q:
+                seen_q.add(q.lower())
+                queries.append(q)
 
         # Tasks: Wikipedia for each query + DuckDuckGo for focused only
         tasks = []
