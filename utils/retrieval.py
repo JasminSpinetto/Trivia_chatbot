@@ -8,6 +8,16 @@ _PARALLEL_TIMEOUT = 6.0
 _MAX_CONTEXT_LEN  = 1500
 _WIKI_SENTENCES   = 8   # richer summaries than the default 4
 
+# Questions that refer to a specific competition passage — Wikipedia can't help
+_ARTICLE_PATTERN = re.compile(
+    r"\b(according to (the |this )?(article|passage|text|excerpt)|"
+    r"(the|this) (article|passage|text) (states?|says?|mentions?|describes?|claims?)|"
+    r"(as|as described|as stated) in (the|this) (article|passage|text)|"
+    r"based on (the|this) (article|passage|text)|"
+    r"(from|in) (the|this) (following |above )?(article|passage|text|excerpt))\b",
+    re.IGNORECASE,
+)
+
 _STOP_WORDS = frozenset({
     "what", "which", "how", "where", "when", "why", "who", "whom", "whose",
     "the", "a", "an",
@@ -76,6 +86,26 @@ def _options_query(question: str, options: dict) -> str:
     return " ".join((proper + opt_terms)[:8])
 
 
+def _proper_noun_phrases(question: str) -> list:
+    """Extract sequences of consecutive capitalised words as distinct phrases.
+
+    'In Ancient Greek, the loss … in Koine Greek' → ['Ancient Greek', 'Koine Greek']
+    Used as fallback queries when the combined proper-noun search returns nothing.
+    """
+    words = re.findall(r"\b[a-zA-Z']+\b", question)
+    phrases, current = [], []
+    for i, w in enumerate(words):
+        if i > 0 and w[0].isupper() and len(w) > 2:
+            current.append(re.sub(r"'s?$", "", w))
+        else:
+            if current:
+                phrases.append(" ".join(current))
+                current = []
+    if current:
+        phrases.append(" ".join(current))
+    return phrases
+
+
 def _is_relevant(question: str, context: str) -> bool:
     """At least 50% of proper nouns from the question must appear in the
     context.  Filters obviously off-topic articles (e.g. a Greece geography
@@ -129,6 +159,11 @@ class Retriever:
         if options is None:
             options = {}
 
+        # Questions about a specific competition passage — Wikipedia can't help
+        if _ARTICLE_PATTERN.search(question):
+            self._log("PASSAGE QUESTION : skipping retrieval (passage not publicly available)")
+            return ""
+
         proper_only  = " ".join(
             re.sub(r"'s?$", "", w)
             for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
@@ -178,6 +213,37 @@ class Retriever:
                     self._log(f"WIKI RESULT      : (no article found for {q!r})")
             except Exception as e:
                 self._log(f"SEARCH ERROR     : {e}")
+
+        # Fallback: search each proper-noun phrase individually.
+        # Handles cases like "Ancient Greek Koine Greek" where the combined
+        # query matches no Wikipedia title but each phrase has its own article.
+        if not unique:
+            fallback_phrases = [
+                p for p in _proper_noun_phrases(question)
+                if p.lower() not in seen_q and len(p) > 2
+            ]
+            if fallback_phrases:
+                self._log(f"FALLBACK PHRASES : {fallback_phrases}")
+                fb_tasks = [(p, lambda p=p: self._search_wikipedia(p)) for p in fallback_phrases]
+                with ThreadPoolExecutor(max_workers=max(1, len(fb_tasks))) as ex:
+                    fb_future_map = {ex.submit(fn): p for p, fn in fb_tasks}
+                    fb_done, _   = wait(fb_future_map.keys(), timeout=_PARALLEL_TIMEOUT)
+                for fut in fb_done:
+                    p = fb_future_map[fut]
+                    try:
+                        title, ctx = fut.result()
+                        if ctx:
+                            self._log(f"FALLBACK RESULT  : [{title}] {ctx[:120]}{'...' if len(ctx) > 120 else ''}")
+                            if _is_relevant(question, ctx) and ctx[:80] not in seen:
+                                seen.add(ctx[:80])
+                                unique.append(ctx)
+                                self._log(f"FALLBACK ACCEPTED: [{title}]")
+                            else:
+                                self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
+                        else:
+                            self._log(f"FALLBACK RESULT  : (no article found for {p!r})")
+                    except Exception as e:
+                        self._log(f"FALLBACK ERROR   : {e}")
 
         if not unique:
             self._log("SEARCH COMBINED  : (none)")
