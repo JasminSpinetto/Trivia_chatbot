@@ -5,8 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, wait
 warnings.filterwarnings("ignore", category=UserWarning, module="wikipedia")
 
 _PARALLEL_TIMEOUT = 6.0
-_MAX_CONTEXT_LEN  = 1500
-_WIKI_SENTENCES   = 8   # richer summaries than the default 4
+_MAX_CONTEXT_LEN  = 3000
+_WIKI_SENTENCES   = 15  # more sentences → better relevance matching + richer context
 
 # Questions that refer to a specific competition passage — Wikipedia can't help
 _ARTICLE_PATTERN = re.compile(
@@ -107,18 +107,18 @@ def _proper_noun_phrases(question: str) -> list:
 
 
 def _is_relevant(question: str, context: str) -> bool:
-    """At least 50% of proper nouns from the question must appear in the
-    context.  Filters obviously off-topic articles (e.g. a Greece geography
-    article returned for a Greek phonology question) while keeping anything
-    with a genuine topical overlap.  Falls back to keyword overlap when the
-    question has no proper nouns.
+    """Accept if ≥50% of question proper nouns appear in context, OR if any
+    content keyword overlaps.  The OR fallback prevents false rejections when
+    a proper noun happens to be absent from the article's opening sentences
+    (e.g. 'Roman' not yet mentioned in the Italian Renaissance summary intro).
     """
     c_lower = context.lower()
     proper  = _proper_nouns(question)
     if proper:
         matches = sum(1 for p in proper if p in c_lower)
-        return matches / len(proper) >= 0.5
-    # No proper nouns — accept if any content keyword matches
+        if matches / len(proper) >= 0.5:
+            return True
+        # Proper-noun threshold not met — fall through to keyword overlap
     q_kw = set(_keywords(question))
     c_kw = set(_keywords(context))
     return bool(q_kw & c_kw)
@@ -142,7 +142,7 @@ class Retriever:
     def _search_wikipedia(self, query: str) -> tuple[str, str]:
         """Try each candidate title until one returns a summary."""
         try:
-            titles = wikipedia.search(query, results=3)
+            titles = wikipedia.search(query, results=5)
         except Exception:
             return "", ""
         for title in titles:
