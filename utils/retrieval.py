@@ -214,22 +214,37 @@ class Retriever:
             except Exception as e:
                 self._log(f"SEARCH ERROR     : {e}")
 
-        # Fallback: search each proper-noun phrase individually.
-        # Handles cases like "Ancient Greek Koine Greek" where the combined
-        # query matches no Wikipedia title but each phrase has its own article.
+        # Fallback: individual proper-noun phrases + phrase×keyword combos in one
+        # parallel batch.  Bare phrases handle "Ancient Greek / Koine Greek" splits;
+        # combos handle generic nouns like "Greek" that need a content word to
+        # disambiguate — e.g. "Greek" + "architecture" → "Ancient Greek architecture".
         if not unique:
-            fallback_phrases = [
+            phrase_list = [
                 p for p in _proper_noun_phrases(question)
                 if p.lower() not in seen_q and len(p) > 2
             ]
-            if fallback_phrases:
-                self._log(f"FALLBACK PHRASES : {fallback_phrases}")
-                fb_tasks = [(p, lambda p=p: self._search_wikipedia(p)) for p in fallback_phrases]
+            # Content keywords not already covered by the phrase words
+            kw_exclude  = {w for p in phrase_list for w in p.lower().split()}
+            extra_kw    = [k for k in keywords if k not in kw_exclude][:3]
+            combo_queries = []
+            for p in phrase_list:
+                for k in extra_kw:
+                    q = f"{p} {k}"
+                    if q.lower() not in seen_q:
+                        seen_q.add(q.lower())
+                        combo_queries.append(q)
+
+            fallback_queries = phrase_list + combo_queries
+            if fallback_queries:
+                self._log(f"FALLBACK PHRASES : {phrase_list}")
+                if combo_queries:
+                    self._log(f"FALLBACK COMBOS  : {combo_queries}")
+                fb_tasks = [(q, lambda q=q: self._search_wikipedia(q)) for q in fallback_queries]
                 with ThreadPoolExecutor(max_workers=max(1, len(fb_tasks))) as ex:
-                    fb_future_map = {ex.submit(fn): p for p, fn in fb_tasks}
+                    fb_future_map = {ex.submit(fn): q for q, fn in fb_tasks}
                     fb_done, _   = wait(fb_future_map.keys(), timeout=_PARALLEL_TIMEOUT)
                 for fut in fb_done:
-                    p = fb_future_map[fut]
+                    q = fb_future_map[fut]
                     try:
                         title, ctx = fut.result()
                         if ctx:
@@ -241,7 +256,7 @@ class Retriever:
                             else:
                                 self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
                         else:
-                            self._log(f"FALLBACK RESULT  : (no article found for {p!r})")
+                            self._log(f"FALLBACK RESULT  : (no article found for {q!r})")
                     except Exception as e:
                         self._log(f"FALLBACK ERROR   : {e}")
 
