@@ -165,7 +165,7 @@ class LLMModel:
         return info
 
     def answer(self, question_text: str, options: dict) -> int:
-        context = self._retriever.get_context(question_text) if self._retriever else ""
+        context = self._retriever.get_context(question_text, options) if self._retriever else ""
         response = self._generate(question_text, options, context)
         answer   = self._parse_token(response, options)
         self._log(f"ANSWER   : {answer}")
