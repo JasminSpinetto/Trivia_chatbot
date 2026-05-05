@@ -148,7 +148,7 @@ class Retriever:
         for title in titles:
             try:
                 summary = wikipedia.summary(title, sentences=_WIKI_SENTENCES,
-                                            auto_suggest=False)
+                                            auto_suggest=True)
                 if summary:
                     return title, summary
             except Exception:
