@@ -1,6 +1,6 @@
 model_name: "meta-llama/Llama-3.1-8B-Instruct"
 use_retrieval: true
-max_new_tokens: 30
+max_new_tokens: 240
 quantization:
   load_in_4bit: true
   quant_type: "nf4"
