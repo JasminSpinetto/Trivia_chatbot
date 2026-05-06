@@ -157,8 +157,12 @@ class Retriever:
         self._session.mount("https://", HTTPAdapter(max_retries=_retry))
         self._session.headers.update(_WIKI_HDRS)
 
-    def _search_titles(self, query: str) -> list:
-        """Return up to 5 Wikipedia page titles matching the query."""
+    def _search_titles(self, query: str):
+        """Return up to 5 Wikipedia page titles, or None on error.
+
+        Returning None (vs empty list) lets callers distinguish a network/
+        rate-limit failure from a query that simply matched no articles.
+        """
         try:
             r = self._session.get(
                 _WIKI_API,
@@ -170,7 +174,7 @@ class Retriever:
             return [hit["title"] for hit in r.json()["query"]["search"]]
         except Exception as e:
             self._log(f"WIKI SEARCH ERR  : {query!r} → {e}")
-            return []
+            return None  # signals error, not "no results"
 
     def _fetch_extracts(self, titles: list) -> dict:
         """Fetch intro extracts for all titles in ONE batched API call.
@@ -202,37 +206,46 @@ class Retriever:
             self._log(f"WIKI EXTRACT ERR : {e}")
             return {}
 
-    def _run_queries(self, queries: list) -> dict:
+    def _run_queries(self, queries: list) -> tuple:
         """Run search queries in parallel, then batch-fetch all extracts.
 
-        Returns {title: text} with all successful results.
+        Returns (extracts: dict, had_error: bool).
+        had_error=True means at least one search hit a network/rate-limit
+        error — callers use this to skip further Wikipedia attempts and
+        fall through to DuckDuckGo immediately.
         Total API calls = len(queries) searches + 1 extract batch.
         """
         if not queries:
-            return {}
+            return {}, False
 
         # Phase 1: parallel searches → candidate title lists
         with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
             future_map = {ex.submit(self._search_titles, q): q for q in queries}
             done, _    = wait(future_map.keys(), timeout=_PARALLEL_TIMEOUT)
 
+        had_error = False
         seen_titles, ordered_titles = set(), []
         for fut in done:
             q = future_map[fut]
             try:
-                for title in fut.result():
-                    if title not in seen_titles:
-                        seen_titles.add(title)
-                        ordered_titles.append(title)
+                result = fut.result()
+                if result is None:       # _search_titles signals error with None
+                    had_error = True
+                else:
+                    for title in result:
+                        if title not in seen_titles:
+                            seen_titles.add(title)
+                            ordered_titles.append(title)
             except Exception as e:
+                had_error = True
                 self._log(f"SEARCH ERROR     : {e}")
 
         if not ordered_titles:
-            return {}
+            return {}, had_error
 
         # Phase 2: one batch extract call for all unique titles
         self._log(f"WIKI TITLES      : {ordered_titles}")
-        return self._fetch_extracts(ordered_titles)
+        return self._fetch_extracts(ordered_titles), had_error
 
     def _search_ddgs(self, query: str, max_results: int = 6) -> list:
         """DuckDuckGo text search — no API key, no hard rate limit.
@@ -282,7 +295,7 @@ class Retriever:
             return ""
 
         self._log(f"SEARCH SOURCES   : {[f'wikipedia({q!r})' for q in queries]}")
-        extracts = self._run_queries(queries)
+        extracts, wiki_error = self._run_queries(queries)
 
         # Relevance filter and deduplication
         seen_text, unique = set(), []
@@ -295,9 +308,9 @@ class Retriever:
                 else:
                     self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
 
-        # Fallback: individual proper-noun phrases + phrase×keyword combos.
-        # Only triggered when primary queries found nothing.
-        if not unique:
+        # Phrase/combo fallback — skipped when Wikipedia is erroring (429, connection
+        # refused, etc.) since those queries would also fail. Go straight to DDGS.
+        if not unique and not wiki_error:
             phrase_list = [
                 p for p in _proper_noun_phrases(question)
                 if p.lower() not in seen_q and len(p) > 2
@@ -317,7 +330,7 @@ class Retriever:
                 self._log(f"FALLBACK PHRASES : {phrase_list}")
                 if combo_queries:
                     self._log(f"FALLBACK COMBOS  : {combo_queries}")
-                fb_extracts = self._run_queries(fallback_queries)
+                fb_extracts, _ = self._run_queries(fallback_queries)
                 for title, ctx in fb_extracts.items():
                     if ctx[:80] not in seen_text:
                         if _is_relevant(question, ctx):
