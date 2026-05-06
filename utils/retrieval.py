@@ -6,7 +6,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 try:
-    from duckduckgo_search import DDGS
+    from ddgs import DDGS
     _DDGS_AVAILABLE = True
 except ImportError:
     _DDGS_AVAILABLE = False
