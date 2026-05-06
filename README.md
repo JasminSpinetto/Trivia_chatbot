@@ -107,6 +107,11 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 | `random.yaml` | Random baseline | Picks a uniformly random answer |
 | `bert-mpnet-base-v2.yaml` | Biencoder BERT | Sentence embeddings + cosine similarity |
 | `bert-qnli-electra-base.yaml` | Crossencoder BERT | Pretrained QNLI head, single-logit entailment score |
+| `gpt2.yaml` | GPT-2 (124M) | Decoder only, free text generation + cosine similarity |
+| `gpt2-medium.yaml` | GPT-2 (355M) | Decoder only, free text generation + cosine similarity |
+| `gpt2-large.yaml` | GPT-2 (774M) | Decoder only, free text generation + cosine similarity |
+| `flan-t5-base.yaml` | Flan-T5 Base (250M) | Encoder-Decoder, free text generation + cosine similarity |
+| `flan-t5-xl.yaml` | Flan-T5 XL (3B) | Encoder-Decoder, free text generation + cosine similarity |
 | `llama-1b.yaml` | Meta LLaMA 3.2 1B Instruct | Requires re-download |
 | `llama-3b.yaml` | Meta LLaMA 3.2 3B Instruct | Requires re-download |
 | `llama-8b.yaml` | Meta LLaMA 3.1 8B Instruct | 4-bit quantized, ~15 GB disk |
