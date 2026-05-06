@@ -53,6 +53,26 @@ _STOP_WORDS = frozenset({
 })
 
 
+_QUOTED_RE = re.compile(
+    r"(?:the\s+)?(?:term|word|concept|phrase|name)\s+['‘’“”]([^'‘’“”\"]+)['‘’“”]"
+    r"|['‘’“”]([^'‘’“”\"]{1,40})['‘’“”]",
+    re.IGNORECASE,
+)
+
+def _quoted_terms(question: str) -> list:
+    """Extract terms highlighted in quotes — e.g. the term 'bꜣk', 'Weltanschauung'.
+    These are usually the most important concept in a terminology question and
+    may contain non-ASCII characters that our keyword regex misses entirely.
+    """
+    seen, out = set(), []
+    for m in _QUOTED_RE.finditer(question):
+        term = (m.group(1) or m.group(2) or "").strip()
+        if term and term.lower() not in seen:
+            seen.add(term.lower())
+            out.append(term)
+    return out
+
+
 def _keywords(question: str) -> list:
     words = re.findall(r"[a-zA-Z]+", question.lower())
     return sorted({w for w in words if len(w) > 4 and w not in _STOP_WORDS})
@@ -278,14 +298,22 @@ class Retriever:
         opts_query   = _options_query(question, options)
         keywords     = _keywords(question)
 
+        quoted   = _quoted_terms(question)
+
+        self._log(f"SEARCH QUOTED    : {quoted}")
         self._log(f"SEARCH PROPER    : {proper_only!r}")
         self._log(f"SEARCH FOCUSED   : {focused!r}")
         self._log(f"SEARCH OPTIONS   : {opts_query!r}")
         self._log(f"SEARCH KEYWORDS  : {keywords}")
 
+        # Quoted terms go first — they name the exact concept being asked about.
+        # For questions like "the term 'bꜣk'" the quoted string contains
+        # non-ASCII characters invisible to the ASCII keyword/noun extractors.
+        quoted_queries = [f"{t} {' '.join(keywords[:2])}" for t in quoted] if quoted else []
+
         # Deduplicated primary query list
         seen_q, queries = set(), []
-        for q in [proper_only, focused, opts_query]:
+        for q in quoted_queries + [proper_only, focused, opts_query]:
             if q and q.lower() not in seen_q:
                 seen_q.add(q.lower())
                 queries.append(q)
