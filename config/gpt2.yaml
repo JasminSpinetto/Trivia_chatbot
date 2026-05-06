@@ -1,0 +1,3 @@
+model_class: Gpt
+generator_name: "openai-community/gpt2"
+embedder_name: "sentence-transformers/all-mpnet-base-v2"

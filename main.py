@@ -28,6 +28,12 @@ def load_model(config_path: str):
     elif model_class_name == "Bert":
         from models.encoder import Bert
         return Bert(**config), model_key
+    elif model_class_name == "Gpt":
+        from models.decoder import Gpt
+        return Gpt(**config), model_key
+    elif model_class_name == "Seq2Seq":
+        from models.seq2seq import Seq2Seq
+        return Seq2Seq(**config), model_key
     else:
         from models.LLM import LLMModel
         return LLMModel(**config), model_key
