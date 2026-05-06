@@ -16,6 +16,7 @@ _WIKI_URL_RE = re.compile(r"en\.wikipedia\.org/wiki/([^#?&]+)")
 
 _PARALLEL_TIMEOUT = 5.0   # per search-phase budget; extract batch is one extra call
 _MAX_CONTEXT_LEN  = 3000
+_MAX_ARTICLES     = 3     # keep only the top-scoring articles to avoid "lost in the middle"
 _WIKI_SENTENCES   = 15    # sentences per article summary
 _MAX_WORKERS      = 4     # concurrent search calls (I/O-bound, safe for Colab)
 
@@ -495,6 +496,7 @@ class Retriever:
             return (sum(1 for kw in q_kw if kw in lower)
                     + sum(2 for p in q_proper if p in lower))
         unique.sort(key=_score, reverse=True)
+        unique = unique[:_MAX_ARTICLES]
 
         combined = "\n\n---\n\n".join(unique)[:_MAX_CONTEXT_LEN]
         self._log(f"SEARCH COMBINED  : {len(unique)} source(s), {len(combined)} chars")
