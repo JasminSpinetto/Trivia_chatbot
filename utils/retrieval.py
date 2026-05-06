@@ -20,6 +20,7 @@ _WIKI_SENTENCES   = 15    # sentences per article summary
 _MAX_WORKERS      = 4     # concurrent search calls (I/O-bound, safe for Colab)
 
 _WIKI_API  = "https://en.wikipedia.org/w/api.php"
+_WIKT_API  = "https://en.wiktionary.org/w/api.php"
 _WIKI_HDRS = {"User-Agent": "PoliMillionaire-quiz/1.0 (educational NLP project)"}
 
 # Questions that refer to a specific competition passage — Wikipedia can't help
@@ -226,6 +227,38 @@ class Retriever:
             self._log(f"WIKI EXTRACT ERR : {e}")
             return {}
 
+    def _fetch_wiktionary(self, terms: list) -> dict:
+        """Fetch Wiktionary entries for the given terms in one batched call.
+
+        Returns {term: text}.  No relevance check needed — terms come directly
+        from the quoted-term extractor, so they are the exact concept being asked
+        about.  We skip exintro because Wiktionary pages start with POS sections,
+        not a traditional lead paragraph.
+        """
+        if not terms:
+            return {}
+        try:
+            r = self._session.get(
+                _WIKT_API,
+                params={"action": "query", "prop": "extracts",
+                        "exsentences": 8,
+                        "titles": "|".join(terms[:10]),
+                        "redirects": 1, "format": "json"},
+                timeout=4,
+            )
+            r.raise_for_status()
+            out = {}
+            for pid, page in r.json()["query"]["pages"].items():
+                if pid == "-1":
+                    continue
+                text = _strip_html(page.get("extract", ""))
+                if text:
+                    out[page.get("title", terms[0])] = text
+            return out
+        except Exception as e:
+            self._log(f"WIKT EXTRACT ERR : {e}")
+            return {}
+
     def _run_queries(self, queries: list) -> tuple:
         """Run search queries in parallel, then batch-fetch all extracts.
 
@@ -323,6 +356,16 @@ class Retriever:
             return ""
 
         self._log(f"SEARCH SOURCES   : {[f'wikipedia({q!r})' for q in queries]}")
+
+        # Launch Wiktionary in the background while Wikipedia searches run.
+        # Only for quoted terms — we know the exact page title, no search needed.
+        wikt_executor = None
+        wikt_future   = None
+        if quoted:
+            wikt_executor = ThreadPoolExecutor(max_workers=1)
+            wikt_future   = wikt_executor.submit(self._fetch_wiktionary, quoted)
+            self._log(f"WIKT LOOKUP      : {quoted}")
+
         extracts, wiki_error = self._run_queries(queries)
 
         # Relevance filter and deduplication
@@ -335,6 +378,20 @@ class Retriever:
                     self._log(f"WIKI ACCEPTED    : [{title}]")
                 else:
                     self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+
+        # Collect Wiktionary results — bypass relevance filter (exact term match)
+        if wikt_future is not None:
+            try:
+                wikt_extracts = wikt_future.result(timeout=4.0)
+                for title, ctx in wikt_extracts.items():
+                    if ctx and ctx[:80] not in seen_text:
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"WIKT ACCEPTED    : [{title}]")
+            except Exception as e:
+                self._log(f"WIKT TIMEOUT     : {e}")
+            finally:
+                wikt_executor.shutdown(wait=False)
 
         # Phrase/combo fallback — skipped when Wikipedia is erroring (429, connection
         # refused, etc.) since those queries would also fail. Go straight to DDGS.
