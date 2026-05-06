@@ -341,17 +341,35 @@ class Retriever:
                             self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
 
         # Last resort: DuckDuckGo.
-        # Strategy: DDGS finds Wikipedia article URLs (no search-API rate limit) →
-        # extract titles → fetch full Wikipedia extracts in one batch call.
-        # If no Wikipedia URLs appear, use raw DDGS snippets instead.
+        # Two parallel searches: the full question (natural language — much better
+        # than keyword soup for DDG) and proper_only (good for surfacing Wikipedia
+        # URLs). Results are merged, deduplicated, then processed in two stages:
+        #   1. Extract Wikipedia titles from result URLs → fetch full extracts.
+        #   2. If no Wikipedia URLs, fall back to raw DDG snippets.
         if not unique and _DDGS_AVAILABLE:
-            ddgs_query = focused or proper_only or " ".join(keywords[:4])
-            self._log(f"DDGS SEARCH      : {ddgs_query!r}")
-            ddgs_results = self._search_ddgs(ddgs_query)
+            ddgs_search_queries = [q for q in [question, proper_only] if q]
+            self._log(f"DDGS SEARCH      : {ddgs_search_queries}")
+
+            all_ddgs = []
+            with ThreadPoolExecutor(max_workers=2) as ex:
+                ddgs_futs = {ex.submit(self._search_ddgs, dq, 5): dq
+                             for dq in ddgs_search_queries}
+                ddgs_done, _ = wait(ddgs_futs.keys(), timeout=4.0)
+            seen_ddgs = set()
+            for fut in ddgs_done:
+                try:
+                    for r in fut.result():
+                        key = r.get("href", r.get("body", ""))[:80]
+                        if key not in seen_ddgs:
+                            seen_ddgs.add(key)
+                            all_ddgs.append(r)
+                except Exception:
+                    pass
+            self._log(f"DDGS RESULTS     : {len(all_ddgs)} result(s)")
 
             wiki_titles = []
             seen_wiki = set()
-            for r in ddgs_results:
+            for r in all_ddgs:
                 m = _WIKI_URL_RE.search(r.get("href", ""))
                 if m:
                     title = m.group(1).replace("_", " ")
@@ -372,7 +390,7 @@ class Retriever:
 
             # If Wikipedia URLs gave nothing, use raw DDGS snippets as context
             if not unique:
-                for r in ddgs_results:
+                for r in all_ddgs:
                     snippet = r.get("body", "").strip()
                     if snippet and snippet[:80] not in seen_text and _is_relevant(question, snippet):
                         seen_text.add(snippet[:80])
