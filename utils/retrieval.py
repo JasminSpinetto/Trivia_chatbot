@@ -24,15 +24,7 @@ _WIKI_API  = "https://en.wikipedia.org/w/api.php"
 _WIKT_API  = "https://en.wiktionary.org/w/api.php"
 _WIKI_HDRS = {"User-Agent": "PoliMillionaire-quiz/1.0 (educational NLP project)"}
 
-# Questions that refer to a specific competition passage — Wikipedia can't help
-_ARTICLE_PATTERN = re.compile(
-    r"\b(according to (the |this )?(article|passage|text|excerpt)|"
-    r"(the|this) (article|passage|text) (states?|says?|mentions?|describes?|claims?)|"
-    r"(as|as described|as stated) in (the|this) (article|passage|text)|"
-    r"based on (the|this) (article|passage|text)|"
-    r"(from|in) (the|this) (following |above )?(article|passage|text|excerpt))\b",
-    re.IGNORECASE,
-)
+
 
 _STOP_WORDS = frozenset({
     "what", "which", "how", "where", "when", "why", "who", "whom", "whose",
@@ -317,11 +309,6 @@ class Retriever:
     def get_context(self, question: str, options: dict = None) -> str:
         if options is None:
             options = {}
-
-        # Questions about a specific competition passage — Wikipedia can't help
-        if _ARTICLE_PATTERN.search(question):
-            self._log("PASSAGE QUESTION : skipping retrieval (passage not publicly available)")
-            return ""
 
         proper_only  = " ".join(
             re.sub(r"'s?$", "", w)
