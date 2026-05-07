@@ -7,7 +7,7 @@
 - **Professor:** Mark Carman James
 
 ### Team Members
-- Jasmine Spinetto
+- Jasmin Spinetto
 - Olga Eskarous
 - Luca Colangelo
 - Hossam Eldin Ahmed Hussien
