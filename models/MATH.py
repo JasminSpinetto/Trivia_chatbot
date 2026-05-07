@@ -128,6 +128,25 @@ Now answer the following question the same way:
 """
 
 
+_MATHWORLD_TRIGGERS = {
+    # named results
+    "theorem", "lemma", "corollary", "proposition", "conjecture",
+    "formula", "identity", "inequality",
+    "law", "rule",
+    # named constructs
+    "series", "transform", "distribution",
+    # combinatorics specializations
+    "derangement", "stirling", "partition",
+    "surjection", "injection", "bijection",
+    "generating function", "inclusion-exclusion",
+    "pigeonhole", "catalan", "bell number",
+    # advanced topics
+    "eigenvalue", "eigenvector", "diagonaliz",
+    "convergence", "divergence", "radius of convergence",
+    "lagrange", "fourier", "laplace", "euler",
+    "markov", "bayes", "poisson",
+}
+
 _NUMBER_WORDS = {
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
     "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
@@ -175,10 +194,11 @@ class MathLLMModel(LLMModel):
         self._use_code_executor = use_code_executor
         self._use_router        = use_router
 
-        # Replace the generic Retriever with MathRetriever for Wolfram MathWorld priority
+        # Replace the generic Retriever with MathRetriever — but not if already using DenseRetriever
         if self._retriever is not None:
-            from utils.retrieval import MathRetriever
-            self._retriever = MathRetriever()
+            from utils.retrieval import DenseRetriever, MathRetriever
+            if not isinstance(self._retriever, DenseRetriever):
+                self._retriever = MathRetriever()
 
         self._log_correct = 0
         self._log_total   = 0
@@ -237,24 +257,6 @@ class MathLLMModel(LLMModel):
                 self._system_prompt      = SYSTEM_PROMPTS.get("code", self._system_prompt)
                 self._max_new_tokens     = 256
                 self._use_code_executor  = True
-                _MATHWORLD_TRIGGERS = {
-                    # named results
-                    "theorem", "lemma", "corollary", "proposition", "conjecture",
-                    "formula", "identity", "inequality",
-                    "law", "rule",
-                    # named constructs
-                    "series", "transform", "distribution",
-                    # combinatorics specializations
-                    "derangement", "stirling", "partition",
-                    "surjection", "injection", "bijection",
-                    "generating function", "inclusion-exclusion",
-                    "pigeonhole", "catalan", "bell number",
-                    # advanced topics
-                    "eigenvalue", "eigenvector", "diagonaliz",
-                    "convergence", "divergence", "radius of convergence",
-                    "lagrange", "fourier", "laplace", "euler",
-                    "markov", "bayes", "poisson",
-                }
                 if any(kw in question_text.lower() for kw in _MATHWORLD_TRIGGERS) and original_retriever is not None:
                     self._retriever = original_retriever  # MathWorld-only lookup for theorem questions
                     print(f"  [ROUTER] → code path (+MathWorld)")

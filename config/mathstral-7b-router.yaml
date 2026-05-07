@@ -3,7 +3,7 @@ model_name: "mistralai/Mathstral-7B-v0.1"
 do_sample: false
 temperature: null
 max_new_tokens: 512
-system_prompt: "mathstral"
+system_prompt: "mathstral_reason"
 search_reversed: false
 quantization:
   load_in_4bit: true

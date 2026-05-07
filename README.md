@@ -146,8 +146,6 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 | **Google Gemma 3** |||||
 | `gemma-3-12b.yaml` | Gemma-3-12B-IT | 4-bit | — | — | Requires HF license acceptance |
 | `gemma-3-12b-wiki-code.yaml` | Gemma-3-12B-IT | 4-bit | ✓ | ✓ | RAG + code executor; requires HF license acceptance |
-| **Ensemble** |||||
-| `ensemble.yaml` | Phi-4-mini-wiki-code-4bit + LLaMA-8B-router | 4-bit | ✓ | ✓ | Runs both models, tiebreaker favours code-executor success |
 
 ### Adding a new experiment
 

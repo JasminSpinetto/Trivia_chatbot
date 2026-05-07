@@ -9,9 +9,9 @@ from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
-ONLINE            = True
-#RESULTS_FILE      = "results/Math/local-math-results.csv"
-RESULTS_FILE      = "results/results.csv"
+ONLINE            = False
+RESULTS_FILE      = "results/Math/63Q-local-math-results.csv"
+#RESULTS_FILE      = "results/results.csv"
 CONFIG_DIR        = "config"
 ONLINE_TIMEOUT_S  = 30   # hard limit imposed by the quiz server
 OFFLINE_TIMEOUT_S = 180  # generous limit for local runs (DeepSeek-R1 needs time to think)
@@ -31,14 +31,6 @@ def load_model(config_path: str):
     elif model_class_name == "MathLLMModel":
         from models.MATH import MathLLMModel
         return MathLLMModel(**config), model_key
-    elif model_class_name == "EnsembleModel":
-        from models.ENSEMBLE import EnsembleModel
-        primary_path   = os.path.join(CONFIG_DIR, config["primary"]   + ".yaml")
-        secondary_path = os.path.join(CONFIG_DIR, config["secondary"] + ".yaml")
-        log_dir        = config.get("log_dir", "AgenticAI_scripts")
-        model_a, _     = load_model(primary_path)
-        model_b, _     = load_model(secondary_path)
-        return EnsembleModel(model_a, model_b, log_dir=log_dir), model_key
     elif model_class_name == "MathDualModel":
         from models.MATHDUAL import MathDualModel
         phi_path       = os.path.join(CONFIG_DIR, config["phi_model"]       + ".yaml")

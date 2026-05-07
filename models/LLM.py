@@ -51,6 +51,7 @@ class LLMModel:
         search_reversed: bool = False,
         quantization: Optional[dict] = None,
         use_retrieval: bool = False,
+        use_dense_retrieval: bool = False,
     ):
         HF_login()
 
@@ -68,7 +69,11 @@ class LLMModel:
         self._max_new_tokens  = max_new_tokens
         self._search_reversed = search_reversed
 
-        if use_retrieval:
+        if use_dense_retrieval:
+            from utils.retrieval import DenseRetriever
+            self._retriever     = DenseRetriever()
+            self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt) if system_prompt != "default" else SYSTEM_PROMPTS["retrieval"]
+        elif use_retrieval:
             from utils.retrieval import Retriever
             self._retriever     = Retriever()
             self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt) if system_prompt != "default" else SYSTEM_PROMPTS["retrieval"]

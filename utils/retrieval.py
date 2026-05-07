@@ -257,3 +257,49 @@ class MathRetriever(Retriever):
         if _DDGS_AVAILABLE:
             return [(0, self._search_mathworld)]
         return []
+
+
+class DenseRetriever:
+    """
+    Dense vector retrieval over a pre-built MathWorld corpus.
+    Replaces live DDG searches with sub-100ms FAISS lookups.
+
+    Build the index once with:
+        python scripts/build_mathworld_index.py
+
+    Then use in any YAML config by setting:
+        use_dense_retrieval: true   (handled in MATH.py / LLM.py init)
+    """
+    description = "MathWorld Dense (e5-base-v2 + FAISS)"
+
+    _INDEX_PATH   = "data/mathworld/mathworld.faiss"
+    _PASSAGE_PATH = "data/mathworld/passages.npy"
+
+    def __init__(self):
+        import faiss
+        import numpy as np
+        from sentence_transformers import SentenceTransformer
+
+        # Run encoder on CPU to avoid CUDA conflicts with the LLM on the same device
+        self._encoder  = SentenceTransformer("intfloat/e5-base-v2", device="cpu")
+        self._index    = faiss.read_index(self._INDEX_PATH)
+        self._passages = list(np.load(self._PASSAGE_PATH, allow_pickle=True))
+        print(f"[DenseRetriever] loaded {self._index.ntotal} passages (encoder on CPU)")
+
+    def get_context(self, question: str, options: dict = None) -> str:
+        query = f"query: {question}"
+        if options:
+            opt_snippet = " ".join(options.values())[:80]
+            query = f"query: {question} {opt_snippet}"
+
+        embedding = self._encoder.encode(
+            [query], normalize_embeddings=True, convert_to_numpy=True
+        ).astype("float32")
+
+        _, I = self._index.search(embedding, k=5)
+        hits = [self._passages[i] for i in I[0] if 0 <= i < len(self._passages)]
+
+        # Strip the "passage: " prefix before returning
+        clean = [h[len("passage: "):] if h.startswith("passage: ") else h for h in hits]
+        combined = "\n\n[—]\n\n".join(clean)
+        return combined[:_MAX_CONTEXT]

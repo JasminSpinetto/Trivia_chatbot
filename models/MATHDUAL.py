@@ -1,4 +1,5 @@
 import re
+from models.MATH import _MATHWORLD_TRIGGERS
 
 
 class MathDualModel:
@@ -27,8 +28,16 @@ class MathDualModel:
     # ── main entry point ──────────────────────────────────────────────────────
 
     def answer(self, question_text: str, options: dict) -> int:
+        # Retrieve MathWorld context only for questions referencing named concepts
+        context = ""
+        retriever = getattr(self.mathstral_model, "_retriever", None)
+        if retriever and any(kw in question_text.lower() for kw in _MATHWORLD_TRIGGERS):
+            context = retriever.get_context(question_text)
+            if context:
+                print(f"  [DUAL] MathWorld: {context[:150]}...")
+
         # Step 1: Mathstral reasons (no numerical computation)
-        reasoning = self.mathstral_model._generate(question_text, options)
+        reasoning = self.mathstral_model._generate(question_text, options, context)
         print(f"  [DUAL] Mathstral reasoned: {reasoning[:120].strip()!r}...")
 
         # Check for direct ANSWER (pure reasoning, no computation needed)
