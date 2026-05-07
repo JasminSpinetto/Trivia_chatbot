@@ -1,0 +1,41 @@
+Let me reason about each question relative to what you've built:
+
+1. What documents to include in the corpus?
+You're not using a pre-built corpus — you do live web search at inference time (MathWorld via DDG + BeautifulSoup). 
+This is convenient but has real costs: HTTP latency (~4s), rate limiting, and unpredictable page quality.
+ A pre-built corpus of MathWorld (~5000 articles) + AMC/AIME competition problems would be faster and more reliable.
+  For a course project, live search is the right tradeoff — building and hosting a vector database is out of scope.
+
+2. How to chunk the documents?
+Currently you truncate raw text at 2000 chars with no structure awareness. The first 2000 chars of a MathWorld
+ article is often introduction/definition, and the formula you need is buried further. Math articles chunk naturally
+  by theorem/section headings. A section-aware chunker would retrieve ## Stirling Numbers of the Second Kind
+   → formula → recurrence rather than the page preamble.
+
+3. Should images/tables be embedded too?
+You strip images entirely (BeautifulSoup). For math, this loses diagrams but you're using text-only models so
+ there's no alternative without a vision model. LaTeX in the page text is also mangled by the HTML-to-text conversion.
+  You're losing mathematical notation quality but it's unavoidable with the current setup.
+
+4. What embedding to use? How many dimensions?
+You use no embeddings — your retrieval is DDG keyword search + _is_relevant() keyword overlap. This is BM25-style
+ sparse retrieval. The key failure mode you've seen repeatedly: "expected value of dice rolls" retrieves
+  a dice-definition article because it keyword-matches "dice" but not the mathematical concept. Dense embeddings
+   (e.g. e5-mistral-7b) would capture semantic similarity — "Stirling numbers" ↔ "distributing objects into
+    containers" — which your keyword approach cannot.
+
+5. Do we need a BERT-based re-ranker?
+Your _is_relevant() is a primitive re-ranker: count keyword overlaps, threshold at 1/3. A cross-encoder re-ranker
+ (e.g. ms-marco-MiniLM) would score each candidate passage against the full question and discard low-relevance
+  results. This would have caught the dice-definition article — it scores near zero for "expected number of rolls"
+   relevance. For your retrieval failures, a re-ranker would help more than changing the source.
+
+6. How many relevant results to include in the prompt?
+You include up to 3000 chars. For 3-8B models, research suggests 1-2 highly relevant passages outperform 5+
+ mixed-quality ones — more context doesn't help if the model can't locate the relevant sentence. Your current limit
+  is reasonable, but the quality problem matters more than the quantity.
+
+Bottom line: Your system is live-search augmentation, not classical RAG. The biggest gap is retrieval
+ quality — keyword search retrieves topically-related but semantically wrong pages. Dense embeddings + a re-ranker
+  would fix most of the retrieval failures you've observed, at the cost of needing a pre-built index and an
+   embedding model running alongside the LLM.

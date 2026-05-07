@@ -1,0 +1,236 @@
+[
+  {
+    "competition": "Maths",
+    "question": "Which of the following is NOT a group?",
+    "options": {
+      "0": "The complex numbers under addition",
+      "1": "The nonzero real numbers under multiplication",
+      "2": "The nonzero integers under multiplication",
+      "3": "The integers under addition"
+    },
+    "our_answer": 1,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Which of the following can affect the value of the correlation r?",
+    "options": {
+      "0": "A change in which variable is called x and which is called y",
+      "1": "Adding the same constant to all values of the x-variable",
+      "2": "A change in measurement units",
+      "3": "None of the above can affect the r value."
+    },
+    "our_answer": 1,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The main purpose of blocking in an experiment is to:",
+    "options": {
+      "0": "reduce variation between treatments.",
+      "1": "reduce variation within treatments.",
+      "2": "reduce confounding.",
+      "3": "reduce bias."
+    },
+    "our_answer": 2,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Find the area of the first quadrant region bounded by y = x^2, y = cos(x), and the y-axis.",
+    "options": {
+      "0": "0.547",
+      "1": "0.667",
+      "2": "0.508",
+      "3": "0.292"
+    },
+    "our_answer": 1,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Sam has $\\frac{5}{8}$ of a pound of chocolate. If he eats $\\frac{1}{3}$ of the chocolate he has, how many pounds of chocolate does he eat?",
+    "options": {
+      "0": "\\frac{5}{24}",
+      "1": "\\frac{3}{24}",
+      "2": "\\frac{3}{24}",
+      "3": "\\frac{5}{12}"
+    },
+    "our_answer": 3,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Andy wants to read several books from the required summer reading list. He must read one each from fiction, nonfiction, science, and history. There are 15 fiction, 12 nonfiction, 5 science, and 21 history books listed. How many different summer reading programs could he select?",
+    "options": {
+      "0": "8910",
+      "1": "53",
+      "2": "18,900",
+      "3": "265"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "When the point (15,2) is included, the slope of regression line (y= a+ bx) is b= -0.54. The correlation is r= -0.82. When the point is removed, the new slope is -1.04 and the new correlation coefficient is -0.95. What name is given to a point whose removal has this kind of effect on statistical calculations?",
+    "options": {
+      "0": "Influential point",
+      "1": "Outlier",
+      "2": "Statistically significant point",
+      "3": "Point of discontinuity"
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "Six positive integers are written on the faces of a cube. Each vertex is labeled with the product of the three numbers on the faces adjacent to the vertex. If the sum of the numbers on the vertices is equal to $1001$, then what is the sum of the numbers written on the faces?",
+    "options": {
+      "0": "1001",
+      "1": "18",
+      "2": "13",
+      "3": "31"
+    },
+    "our_answer": 1,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The positive square root of 200 is what percent larger than the positive square root of 121? Express your answer to the nearest whole number.",
+    "options": {
+      "0": "29",
+      "1": "14",
+      "2": "27",
+      "3": "11"
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "We roll a fair 6-sided die 5 times. What is the probability that we get a 6 in at most 2 of the rolls?",
+    "options": {
+      "0": "\\frac{125}{648}",
+      "1": "\\frac{1}{648}",
+      "2": "\\frac{625}{648}",
+      "3": "\\frac{25}{648}"
+    },
+    "our_answer": 2,
+    "correct": true,
+    "answer": 2
+  },
+  {
+    "competition": "Maths",
+    "question": "A bin has 5 green balls and $k$ purple balls in it, where $k$ is an unknown positive integer. A ball is drawn at random from the bin. If a green ball is drawn, the player wins 2 dollars, but if a purple ball is drawn, the player loses 2 dollars. If the expected amount won for playing the game is 50 cents, then what is $k$?",
+    "options": {
+      "0": "6",
+      "1": "12",
+      "2": "4",
+      "3": "3"
+    },
+    "our_answer": 2,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Juan rolls a fair regular octahedral die marked with the numbers 1 through 8. Then Amal rolls a fair six-sided die. What is the probability that the product of the two rolls is a multiple of 3?",
+    "options": {
+      "0": "\\frac{1}{144}",
+      "1": "\\frac{1}{288}",
+      "2": "\\frac{1}{4}",
+      "3": "\\frac{1}{2}"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "When the least common multiple of two positive integers is divided by their greatest common divisor, the result is 33. If one integer is 45, what is the smallest possible value of the other integer?",
+    "options": {
+      "0": "9",
+      "1": "45",
+      "2": "165",
+      "3": "46"
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The distribution of salaries of a county school system with 4,752 employees is known to be right skewed, with the superintendent’s salary an outlier on the higher side. A random sample of 20 employees was taken and their salaries recorded. A 95 percent t-confidence interval for the mean salary of the county school system employees is ($15,360, $32,470). The t-confidence interval is not appropriate in this situation because",
+    "options": {
+      "0": "the population standard deviation of the salaries of employees of this county school system is not known",
+      "1": "the sample size is too small compared to the number of employees in the system to give a fair representation",
+      "2": "the teacher salaries are not negotiable, but the superintendent’s salary is negotiable, so the superintendent’s salary should be excluded from the population sampled",
+      "3": "the skewed salary distribution tells us that assumption of normality of the sampled population will not be satisfied"
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Let x_1 = 1 and x_(n+1) = sqrt(3+2x_n) for all positive integers n. If it is assumed that {x_n} converges, then lim x_n =",
+    "options": {
+      "0": "e",
+      "1": "3",
+      "2": "sqrt(5)",
+      "3": "0"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "A telephone executive instructs an associate to contact 104 customers using their service to obtain their opinions in regard to an idea for a new pricing package. The associate notes the number of customers whose names begin with A and uses a random number table to pick four of these names. She then proceeds to use the same procedure for each letter of the alphabet and combines the 4 × 26 = 104 results into a group to be contacted. Which of the following is a correct conclusion?",
+    "options": {
+      "0": "Her procedure introduces bias through sampling error.",
+      "1": "Her procedure results in a simple random sample.",
+      "2": "Her procedure makes use of chance.",
+      "3": "Each customer has an equal probability of being included in the survey."
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Statement 1 | A ring homomorphism is one to one if and only if the kernel is {0}. Statement 2 | Q is an ideal in R.",
+    "options": {
+      "0": "False, False",
+      "1": "True, True",
+      "2": "False, True",
+      "3": "True, False"
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "What are the mean and standard deviation of a binomial experiment that occurs with probability of success 0.76 and is repeated 150 times?",
+    "options": {
+      "0": "The mean is 114, but there is not enough information given to determine the standard deviation.",
+      "1": "114, 5.23",
+      "2": "114, 27.35",
+      "3": "100.5, 5.23"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  }
+]

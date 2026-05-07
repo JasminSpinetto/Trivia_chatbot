@@ -1,3 +1,3 @@
 model_class: MathDualModel
-phi_model: "phi-4-mini-wiki-code-4bit"
-mathstral_model: "mathstral-7b-router"
+phi_model: "phi-4-mini-dense"
+mathstral_model: "mathstral-7b-dense"

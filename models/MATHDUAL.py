@@ -1,23 +1,51 @@
-import re
-from models.MATH import _MATHWORLD_TRIGGERS
+from models.MATH import _has_numeric_content
+
+# Questions that clearly need numerical code execution → phi-4-mini
+# Everything else defaults to Mathstral chain-of-thought reasoning
+_PHI_TRIGGERS = {
+    # calculus
+    "derivative", "differentiate", "integral", "integrate", "antiderivative",
+    "tangent line", "vertical tangent", "normal line",
+    "rate of change", "critical point", "inflection point",
+    "find the limit", "limit of", "limit as",
+    "converges", "diverges", "optimize",
+    "maximum value", "minimum value",
+    # statistics (numerical)
+    "standard deviation", "variance", "z-score", "percentile",
+    "confidence interval", "normal distribution", "regression",
+    "expected value", "expected number",
+    "mean of", "median",
+    # geometry (numerical)
+    "what is the area", "what is the volume", "surface area",
+    "perimeter", "circumference", "hypotenuse",
+    # probability (numerical)
+    "probability that", "probability of",
+    # direct numerical computation
+    "evaluate", "compute", "calculate",
+}
+
+
+def _should_use_phi(question: str) -> bool:
+    """True → phi-4-mini code executor, False → Mathstral reasoning (default)."""
+    if not _has_numeric_content(question):
+        return False
+    q = question.lower()
+    return any(kw in q for kw in _PHI_TRIGGERS)
 
 
 class MathDualModel:
     """
-    Two-step pipeline for math questions:
+    Routes math questions between two fully independent models:
 
-    Step 1 — Mathstral (planner):
-        Reasons through the problem without computing numerical values.
-        Ends with either:
-          COMPUTE: <precise expression/equation to evaluate>
-          ANSWER:  <option number>  (when pure reasoning suffices)
+    phi-4-mini  (code executor + dense retrieval):
+        Calculus, statistics, probability calculations, direct numerical computation.
 
-    Step 2 — phi-4-mini (executor), only when COMPUTE: is found:
-        Receives Mathstral's reasoning as context + the COMPUTE task.
-        Writes and runs Python code to produce the numerical answer.
+    Mathstral   (chain-of-thought reasoning + dense retrieval):
+        Abstract algebra, combinatorics, number theory, proofs, named theorems.
+        Default path — phi is the exception, Mathstral is the rule.
 
-    This lets Mathstral correctly identify the mathematical framework
-    (e.g. "set ∂F/∂y = 0") while phi handles the actual computation.
+    Routing is keyword-based (_PHI_TRIGGERS). No structured tag handoff needed.
+    Both models use their own dense retrieval independently.
     """
 
     def __init__(self, phi_model, mathstral_model):
@@ -25,67 +53,17 @@ class MathDualModel:
         self.mathstral_model = mathstral_model
         self._active         = mathstral_model
 
-    # ── main entry point ──────────────────────────────────────────────────────
+    # ── routing ───────────────────────────────────────────────────────────────
 
     def answer(self, question_text: str, options: dict) -> int:
-        # Retrieve MathWorld context only for questions referencing named concepts
-        context = ""
-        retriever = getattr(self.mathstral_model, "_retriever", None)
-        if retriever and any(kw in question_text.lower() for kw in _MATHWORLD_TRIGGERS):
-            context = retriever.get_context(question_text)
-            if context:
-                print(f"  [DUAL] MathWorld: {context[:150]}...")
-
-        # Step 1: Mathstral reasons (no numerical computation)
-        reasoning = self.mathstral_model._generate(question_text, options, context)
-        print(f"  [DUAL] Mathstral reasoned: {reasoning[:120].strip()!r}...")
-
-        # Check for direct ANSWER (pure reasoning, no computation needed)
-        answer_match = re.search(r'\bANSWER:\s*([0-3])\b', reasoning, re.IGNORECASE)
-        if answer_match:
-            ans = int(answer_match.group(1))
-            print(f"  [DUAL] → mathstral answered directly → option {ans}")
-            return ans
-
-        # Check for COMPUTE handoff to phi
-        compute_match = re.search(r'COMPUTE:\s*(.+?)$', reasoning.strip(),
-                                  re.IGNORECASE | re.DOTALL)
-        if compute_match:
-            task = compute_match.group(1).strip()
-            print(f"  [DUAL] → handing off to phi: {task[:80]}")
-            result = self._phi_compute(task, options, reasoning)
-            if result is not None:
-                return result
-
-        # Fallback: parse an option number from Mathstral's text
-        print("  [DUAL] → mathstral fallback (token parse)")
-        return self.mathstral_model._parse_token(reasoning, options)
-
-    # ── phi execution step ────────────────────────────────────────────────────
-
-    def _phi_compute(self, task: str, options: dict, reasoning: str):
-        """
-        Ask phi to write and run Python code for the given computation task.
-        Mathstral's full reasoning is passed as context so phi understands
-        the mathematical setup.
-        """
-        response = self.phi_model._generate(task, options, context=reasoning)
-        code = self.phi_model._extract_code(response)
-
-        if code:
-            result = self.phi_model._execute_code(code)
-            if result is not None:
-                matched = self.phi_model._match_to_option(result, options)
-                if matched is not None:
-                    print(f"  [DUAL] phi → code ran → {result!r} → option {matched}")
-                    return matched
-            err = getattr(self.phi_model, "_last_exec_error", "unknown")
-            print(f"  [DUAL] phi → code failed: {err}")
+        if _should_use_phi(question_text):
+            self._active = self.phi_model
+            print("  [DUAL] → phi (code executor)")
+            return self.phi_model.answer(question_text, options)
         else:
-            print("  [DUAL] phi → no code generated, parsing token")
-
-        # Fallback: parse phi's text response
-        return self.phi_model._parse_token(response, options)
+            self._active = self.mathstral_model
+            print("  [DUAL] → mathstral (reasoning)")
+            return self.mathstral_model.answer(question_text, options)
 
     # ── interface ─────────────────────────────────────────────────────────────
 
@@ -93,9 +71,9 @@ class MathDualModel:
         p = self.phi_model.get_info()
         m = self.mathstral_model.get_info()
         return {
-            "model_name": "math-dual (planner+executor)",
-            "planner":    f"{m['model_name']} ({m['parameters']}, {m['quantization']})",
-            "executor":   f"{p['model_name']} ({p['parameters']}, {p['quantization']})",
+            "model_name": "math-dual (keyword-routed)",
+            "phi":        f"{p['model_name']} ({p['parameters']}, {p['quantization']})",
+            "mathstral":  f"{m['model_name']} ({m['parameters']}, {m['quantization']})",
         }
 
     def log_result(self, correct: bool):

@@ -1,0 +1,236 @@
+[
+  {
+    "competition": "Maths",
+    "question": "To determine the average number of children living in single-family homes, a researcher picks a simple random sample of 50 such homes. However, even after one follow-up visit the interviewer is unable to make contact with anyone in 8 of these homes. Concerned about nonresponse bias, the researcher picks another simple random sample and instructs the interviewer to keep trying until contact is made with someone in a total of 50 homes. The average number of children is determined to be 1.73. Is this estimate probably too low or too high?",
+    "options": {
+      "0": "Too high, because of undercoverage bias.",
+      "1": "Too low, because convenience samples overestimate average results.",
+      "2": "Too low, because of undercoverage bias.",
+      "3": "Too high, because convenience samples overestimate average results."
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The principal of a school is interested in estimating the average income per family of her students. She selects a random sample of students and collects information about their family income. A 95 percent confidence interval computed from this data for the mean income per family is ($35,095, $45,005). Which of the following provides the best interpretation of this confidence interval?",
+    "options": {
+      "0": "There is a 95% probability that the mean income per family in the school is between $35,095 and $45,005.",
+      "1": "There is a 95% probability that the families of all the students in this school have an income of between $35,095 and $45,005.",
+      "2": "95 percent of the students in her school are from families whose income is between $35,095 and $45,005.",
+      "3": "If we were to take another sample of the same size and compute a 95 percent confidence interval, we would have a 95% chance of getting the interval ($35,095, $45,005)."
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Find the area of the first quadrant region bounded by y = x^2, y = cos(x), and the y-axis.",
+    "options": {
+      "0": "0.292",
+      "1": "0.508",
+      "2": "0.547",
+      "3": "0.667"
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Find $(2^{20} + 2^{20} + 2^{20} +2^{21}) \\div 2^{17}$.",
+    "options": {
+      "0": "40",
+      "1": "0",
+      "2": "20",
+      "3": "10"
+    },
+    "our_answer": 3,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Let V be a finite-dimensional real vector space and let P be a linear transformation of V such that P^2 = P. Which of the following must be true?\nI. P is invertible.\nII. P is diagonalizable.\nIII. P is either the identity transformation or the zero transformation.",
+    "options": {
+      "0": "I only",
+      "1": "III only",
+      "2": "II only",
+      "3": "None"
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "What is a sampling distribution?",
+    "options": {
+      "0": "A distribution of all the values taken by a statistic from all possible samples of a given size",
+      "1": "A normal distribution of some statistic",
+      "2": "A histogram, or other such visual representation, showing the distribution of a sample",
+      "3": "A distribution of all the statistics that can be found in a given sample"
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "Suppose two events, E and F, have nonzero probabilities p and q, respectively. Which of the following is impossible?",
+    "options": {
+      "0": "p /q > 1",
+      "1": "p + q > 1",
+      "2": "E and F are both independent and mutually exclusive.",
+      "3": "p - q < 0"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "A survey was conducted to determine the percentage of parents who would support raising the legal driving age to 18. The results were stated as 67% with a margin of error of ±3%. What is meant by ±3%?",
+    "options": {
+      "0": "It is unlikely that the given sample proportion result could be obtained unless the true percentage was between 64% and 70%.",
+      "1": "The percentage of the entire population of parents who would support raising the driving age is between 64% and 70%.",
+      "2": "Three percent of the population were not surveyed.",
+      "3": "In the sample, the percentage of parents who would support raising the driving age is between 64% and 70%."
+    },
+    "our_answer": 3,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "John divided his souvenir hat pins into two piles. The two piles had an equal number of pins. He gave his brother one-half of one-third of one pile. John had 66 pins left. How many pins did John originally have?",
+    "options": {
+      "0": "36",
+      "1": "396",
+      "2": "66",
+      "3": "72"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The positive square root of 200 is what percent larger than the positive square root of 121? Express your answer to the nearest whole number.",
+    "options": {
+      "0": "29",
+      "1": "27",
+      "2": "11",
+      "3": "14"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "A 12-ounce soft drink has 41 grams of sugar, which is 14% of the normal daily allowance for sugar. Approximately how many grams of sugar are recommended in the normal diet?",
+    "options": {
+      "0": "69",
+      "1": "574",
+      "2": "5.74",
+      "3": "293"
+    },
+    "our_answer": 3,
+    "correct": true,
+    "answer": 3
+  },
+  {
+    "competition": "Maths",
+    "question": "Evaluate $\\log_3 81$.",
+    "options": {
+      "0": "-1",
+      "1": "4",
+      "2": "0.25",
+      "3": "27"
+    },
+    "our_answer": 1,
+    "correct": true,
+    "answer": 1
+  },
+  {
+    "competition": "Maths",
+    "question": "Fifty oranges of one variety were selected at random and weighed. A 95 percent confidence interval computed from the sample weights to estimate the mean weight of oranges of this variety is (7.58, 8.72) ounces. Which of the following statements is true with respect to the confidence level used?",
+    "options": {
+      "0": "In repeated samplings of the same size, 95 percent of the intervals constructed will contain the sampled mean weight of the oranges.",
+      "1": "In repeated samplings of the same size, 95 percent of the intervals constructed will contain the true mean weight of the oranges of this variety.",
+      "2": "Ninety-five percent of the oranges in this sample weigh between 7.58 and 8.72 ounces.",
+      "3": "Ninety-five percent of the oranges of this variety weigh between 7.58 and 8.72 ounces."
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Let K be a nonempty subset of R^n, where n > 1. Which of the following statements must be true?\nI. If K is compact, then every continuous real-valued function defined on K is bounded.\nII. If every continuous real-valued function defined on K is bounded, then K is compact.\nIII. If K is compact, then K is connected.",
+    "options": {
+      "0": "I and II only",
+      "1": "II only",
+      "2": "III only",
+      "3": "I only"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Find the remainder when 25^1059 is divided by 23.",
+    "options": {
+      "0": "13",
+      "1": "5",
+      "2": "8",
+      "3": "11"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "John divided his souvenir hat pins into two piles. The two piles had an equal number of pins. He gave his brother one-half of one-third of one pile. John had 66 pins left. How many pins did John originally have?",
+    "options": {
+      "0": "36",
+      "1": "396",
+      "2": "72",
+      "3": "66"
+    },
+    "our_answer": 1,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Players in the National Football League weigh, on average, about 248 pounds with a standard deviation of about 47 pounds. If four players are to be selected at random, the expected value of the random variable W, the total combined weight of the four players, is 992 pounds. The standard deviation of Wis approximately",
+    "options": {
+      "0": "94 pounds",
+      "1": "141 pounds",
+      "2": "47 pounds",
+      "3": "67 pounds"
+    },
+    "our_answer": 0,
+    "correct": null,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Bob rolls a fair six-sided die each morning. If Bob rolls a composite number, he eats sweetened cereal. If he rolls a prime number, he eats unsweetened cereal. If he rolls a 1, then he rolls again. In a non-leap year, what is the expected number of times Bob will roll his die?",
+    "options": {
+      "0": "\\frac{5}{8}",
+      "1": "\\frac{5}{4}",
+      "2": "\\frac{1825}{4}",
+      "3": "438"
+    },
+    "our_answer": 2,
+    "correct": null,
+    "answer": null
+  }
+]

@@ -22,6 +22,13 @@ SYSTEM_PROMPTS["math"] = (
     "then reply with ONLY the number of the correct option."
 )
 
+SYSTEM_PROMPTS["qwen_math"] = (
+    "Please integrate natural language reasoning with programs to solve the problem.\n"
+    "Write a ```python``` code block that prints the final numerical result.\n"
+    "IMPORTANT: do NOT write any import statements — all libraries are pre-loaded.\n"
+    "After the code, select the matching option and end with ONLY the option number on the last line."
+)
+
 SYSTEM_PROMPTS["mathstral"] = (
     "You are a math competition expert. For each question:\n"
     "1. Identify the mathematical domain and the relevant framework or theorem.\n"
@@ -54,7 +61,8 @@ SYSTEM_PROMPTS["code"] = (
     "  sqrt, prod, reduce, comb, gcd, lcm, perm, inf, pi, e,\n"
     "  factorint, isprime, nextprime, totient, mod_inverse, binomial (sympy),\n"
     "  N, Sum, Product, Abs, Piecewise,\n"
-    "  itertools, Fraction, Counter, defaultdict, deque.\n"
+    "  itertools, Fraction, Counter, defaultdict, deque,\n"
+    "  nx (networkx) for graph theory problems.\n"
     "Only reason in plain text for purely abstract questions with no numbers at all.\n"
     "Always end your response with ONLY the option number on the last line."
 )
@@ -358,6 +366,12 @@ class MathLLMModel(LLMModel):
             "statistics":  stats_stdlib,
             "collections": collections,
         }
+        try:
+            import networkx as nx
+            namespace["nx"]       = nx
+            namespace["networkx"] = nx
+        except ImportError:
+            pass
 
         # ── functools ─────────────────────────────────────────────────────────
         from functools import reduce
@@ -710,10 +724,11 @@ class MathLLMModel(LLMModel):
         with open(self._log_path, "a", encoding="utf-8") as f:
             f.write("\n".join(lines) + "\n")
 
-    def log_result(self, correct: bool):
+    def log_result(self, correct):
         """Append the server verdict and running accuracy to the last open log entry."""
         if not hasattr(self, "_log_path"):
             return
+        correct = bool(correct)   # None → False, True → True
         self._log_total   += 1
         self._log_correct += int(correct)
         verdict  = "CORRECT ✓" if correct else "WRONG ✗"
@@ -756,16 +771,22 @@ class MathLLMModel(LLMModel):
         final_answer = None
 
         if code:
-            code_result = self._execute_code(code)
-            if code_result is not None:
-                matched = self._match_to_option(code_result, options)
-                if matched is not None:
-                    final_answer = matched
-                    print(f"  [AGENTIC OK  ] code ran → output: {code_result!r} → option {final_answer}")
-            if final_answer is None:
-                exec_err = getattr(self, "_last_exec_error", "unknown error")
-                print(f"  [AGENTIC FAIL] {exec_err} → text fallback")
-        else:
+            # Reject trivial hardcoded guesses: code that only prints a single digit
+            _trivial = re.fullmatch(r'\s*print\s*\(\s*[0-9]\s*\)\s*', code.strip())
+            if _trivial:
+                print(f"  [TRIVIAL     ] code is just print(N) → text fallback")
+                code = None
+            else:
+                code_result = self._execute_code(code)
+                if code_result is not None:
+                    matched = self._match_to_option(code_result, options)
+                    if matched is not None:
+                        final_answer = matched
+                        print(f"  [AGENTIC OK  ] code ran → output: {code_result!r} → option {final_answer}")
+                if final_answer is None:
+                    exec_err = getattr(self, "_last_exec_error", "unknown error")
+                    print(f"  [AGENTIC FAIL] {exec_err} → text fallback")
+        if not code:
             print(f"  [STANDARD    ] no code generated → text parsing")
 
         if final_answer is None:

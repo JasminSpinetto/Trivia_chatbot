@@ -272,19 +272,22 @@ class DenseRetriever:
     """
     description = "MathWorld Dense (e5-base-v2 + FAISS)"
 
-    _INDEX_PATH   = "data/mathworld/mathworld.faiss"
-    _PASSAGE_PATH = "data/mathworld/passages.npy"
+    _INDEX_PATH        = "data/mathworld/mathworld.faiss"
+    _PASSAGE_PATH      = "data/mathworld/passages.npy"
+    _MIN_SCORE         = 0.78
+    _RERANKER_MODEL    = "cross-encoder/ms-marco-MiniLM-L6-v2"
 
     def __init__(self):
         import faiss
         import numpy as np
-        from sentence_transformers import SentenceTransformer
+        from sentence_transformers import SentenceTransformer, CrossEncoder
 
-        # Run encoder on CPU to avoid CUDA conflicts with the LLM on the same device
+        # Both encoder and reranker on CPU to avoid CUDA conflicts with the LLM
         self._encoder  = SentenceTransformer("intfloat/e5-base-v2", device="cpu")
+        self._reranker = CrossEncoder(self._RERANKER_MODEL, device="cpu")
         self._index    = faiss.read_index(self._INDEX_PATH)
         self._passages = list(np.load(self._PASSAGE_PATH, allow_pickle=True))
-        print(f"[DenseRetriever] loaded {self._index.ntotal} passages (encoder on CPU)")
+        print(f"[DenseRetriever] loaded {self._index.ntotal} passages (encoder + reranker on CPU)")
 
     def get_context(self, question: str, options: dict = None) -> str:
         query = f"query: {question}"
@@ -296,10 +299,21 @@ class DenseRetriever:
             [query], normalize_embeddings=True, convert_to_numpy=True
         ).astype("float32")
 
-        _, I = self._index.search(embedding, k=5)
-        hits = [self._passages[i] for i in I[0] if 0 <= i < len(self._passages)]
+        # Step 1: FAISS retrieval
+        D, I = self._index.search(embedding, k=5)
+        candidates = [self._passages[i] for i, s in zip(I[0], D[0])
+                      if 0 <= i < len(self._passages) and s >= self._MIN_SCORE]
 
-        # Strip the "passage: " prefix before returning
-        clean = [h[len("passage: "):] if h.startswith("passage: ") else h for h in hits]
+        if not candidates:
+            return ""
+
+        clean = [p[len("passage: "):] if p.startswith("passage: ") else p for p in candidates]
+
+        # Step 2: cross-encoder re-ranking (only when multiple candidates)
+        if len(clean) > 1:
+            scores = self._reranker.predict([(question, p[:500]) for p in clean])
+            ranked = sorted(zip(scores, clean), reverse=True)[:2]
+            clean = [p for _, p in ranked]
+
         combined = "\n\n[—]\n\n".join(clean)
         return combined[:_MAX_CONTEXT]
