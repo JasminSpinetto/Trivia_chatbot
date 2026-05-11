@@ -5,8 +5,11 @@ import yaml
 from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
+import json
+import random
+import time
 
-ONLINE       = True
+ONLINE       = False
 RESULTS_FILE = "results/results.csv"
 CONFIG_DIR   = "config"
 
@@ -25,6 +28,9 @@ def load_model(config_path: str):
     elif model_class_name == "MathLLMModel":
         from models.MATH import MathLLMModel
         return MathLLMModel(**config), model_key
+    elif model_class_name == "Bert":
+        from models.encoder import Bert
+        return Bert(**config), model_key
     elif model_class_name == "TfIdfBaseModel":
         from models.tfidf import TfIdfBaseModel
         return TfIdfBaseModel(**config), model_key
@@ -101,6 +107,8 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
     if client is None:
         print("Game arrested.")
         return
+
+    assert multiplicity >= 1, "Input Error: Multiplicity value should be greater or equal to 1!"
 
     competitions     = client.competitions.list_all()
     num_competitions = len(competitions)
@@ -213,8 +221,166 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
     Runs the quiz session in offline mode using a local dataset.
     Used when the online platform is no longer available.
     """
-    #TODO
-    return
+ 
+    assert multiplicity >= 1, "Input Error: Multiplicity value should be greater or equal to 1!"
+ 
+    # Constants
+    MAX_LEVELS = 15
+    TIME_LIMIT = 30.0
+    # Prize ladder: doubles each level, classic millionaire-like progression
+    PRIZES = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
+ 
+    # Read all competitions
+    competition_ds = []
+    with open(os.path.join('data/', 'entertainment.json'), 'r', encoding="utf-8") as file:
+        competition_ds.append(json.load(file))
+    with open(os.path.join('data/', 'ancient_history_and_politics.json'), 'r', encoding="utf-8") as file:
+        competition_ds.append(json.load(file))
+    with open(os.path.join('data/', 'science_and_nature.json'), 'r', encoding="utf-8") as file:
+        competition_ds.append(json.load(file))
+    with open(os.path.join('data/', 'maths.json'), 'r', encoding="utf-8") as file:
+        competition_ds.append(json.load(file))
+ 
+    # Build a competitions structure compatible with save_results
+    competitions = {
+        i: {"id": comp["id"], "name": comp["name"], "max_levels": MAX_LEVELS}
+        for i, comp in enumerate(competition_ds)
+    }
+ 
+    # Session summary
+    num_competitions = len(competition_ds)
+    play_history = {
+        i: {"num_games": 0, "level": [], "score": []}
+        for i in range(num_competitions)
+    }
+ 
+    # List available competitions
+    print("\n=== Available Competitions ===")
+    for i in range(len(competition_ds)):
+        print(f"  {competition_ds[i]['id']}: {competition_ds[i]['name']} ({len(competition_ds[i]['objects'])} questions)")
+ 
+    math_comp_id = 3
+    if math_only:
+        print(f"\nMath-only mode: running {multiplicity} games on '{competition_ds[math_comp_id]['name']}'")
+ 
+    cnt        = -1
+    print_cond = (not test_all and not math_only) or verbose
+ 
+    while True:
+        # Choose a competition ID
+        if math_only:
+            cnt += 1
+            comp_id = math_comp_id
+            play_history[comp_id]["num_games"] += 1
+            if verbose: print(f"Competition selected: {competition_ds[comp_id]['name']}")
+        elif test_all:
+            cnt += 1
+            comp_id = cnt % num_competitions
+            play_history[comp_id]["num_games"] += 1
+            if verbose: print(f"Competition selected: {competition_ds[comp_id]['name']}")
+        else:
+            comp_id = int(input("Enter competition ID:"))
+            while comp_id < 0 or comp_id >= num_competitions:
+                print(f"Invalid competition. Please enter a competition ID in [0-{num_competitions - 1}]")
+                comp_id = int(input("Enter competition ID:"))
+            play_history[comp_id]["num_games"] += 1
+ 
+        # Start the game
+        if print_cond:
+            print(f"\n=== Starting Game ===")
+            print(f"Total number of questions: {MAX_LEVELS}\n")
+ 
+        # Sample MAX_LEVELS unique questions for this game
+        pool = competition_ds[comp_id]["objects"]
+        if len(pool) >= MAX_LEVELS:
+            sampled = random.sample(pool, MAX_LEVELS)
+        else:
+            sampled = [random.choice(pool) for _ in range(MAX_LEVELS)]
+ 
+        in_progress     = True
+        current_level   = 1
+        earned_amount   = 0.0
+        completed_all   = False
+ 
+        while in_progress:
+            if current_level > MAX_LEVELS:
+                completed_all = True
+                in_progress   = False
+                break
+ 
+            problem  = sampled[current_level - 1]
+            question = problem["question"]
+            options  = problem["options"]
+            answer   = problem["answer"]
+ 
+            if print_cond:
+                print(f"\n--- Level {current_level} ---")
+                print(f"Q: {question}\n")
+                for opt in options:
+                    print(f"  [{opt}] {options[opt]}")
+ 
+            options_for_model = {str(k): v for k, v in options.items()}
+ 
+            # Answer and get time remaining
+            start     = time.time()
+            answer_id = model.answer(question, options_for_model)
+            elapsed   = time.time() - start
+ 
+            if print_cond: print(f"\nSelected answer: {answer_id}")
+ 
+            time_left = TIME_LIMIT - elapsed if (TIME_LIMIT - elapsed) > 0.0 else 0.0
+            if print_cond:
+                print(f"Time to answer: {TIME_LIMIT - time_left:.1f}s")
+ 
+            timed_out  = (time_left <= 0.0)
+            is_correct = (not timed_out) and (str(answer_id) == str(answer))
+ 
+            if is_correct:
+                earned_amount = float(PRIZES[current_level - 1])
+                if print_cond:
+                    print("\n CORRECT!")
+                    if current_level == MAX_LEVELS:
+                        print(f"\n CONGRATULATIONS! You completed the game!")
+                        print(f" Final earnings: ${earned_amount:,.2f}")
+                    else:
+                        print(f" Earned so far: ${earned_amount:,.2f}")
+                current_level += 1
+            elif timed_out:
+                if print_cond:
+                    print(f"\nTIMED OUT!\n Game Over!\n Final earnings: ${earned_amount:,.2f}")
+                in_progress = False
+            else:
+                if print_cond:
+                    print(f"\n WRONG ANSWER!\n Game Over!\n Final earnings: ${earned_amount:,.2f}")
+                in_progress = False
+ 
+        correct_answers = MAX_LEVELS if completed_all else current_level - 1
+        if print_cond:
+            print(f"\n=== Game Summary ===\nReached Level: {correct_answers}")
+            print(f"Total Earnings: ${earned_amount:,.2f}\n")
+ 
+        play_history[comp_id]["level"].append(correct_answers)
+        play_history[comp_id]["score"].append(earned_amount)
+ 
+        if math_only:
+            if cnt + 1 >= multiplicity: break
+        elif test_all:
+            if cnt + 1 >= num_competitions * multiplicity: break
+        else:
+            if input("Play again? [Y/N]: ").lower() == 'n': break
+ 
+    print("\n=== Session Summary ===")
+    for comp_id, data in play_history.items():
+        n = data["num_games"]
+        if n == 0: continue
+        print(f"\nCOMPETITION {competition_ds[comp_id]['name']}:")
+        print(f"Number of games: {n}")
+        print(f"Average correct answers: {sum(data['level'])/n:,.2f}")
+        print(f"Average earnings: {sum(data['score'])/n:,.2f}")
+        print()
+ 
+    if output_csv:
+        save_results(model_key, model, competitions, play_history, math_only)
 
 
 def main():
@@ -231,6 +397,8 @@ def main():
     parser.add_argument("--verbose",     action="store_true", default=False, help="Print logs")
     parser.add_argument("--output_csv",  action="store_true", default=False,
                         help=f"Append session results to {RESULTS_FILE}")
+    parser.add_argument("--debug",       action="store_true", default=False,
+                        help="Log prompts, context, and answers to a timestamped file in logs/")
     args = parser.parse_args()
 
     if args.multiplicity < 1:
@@ -249,6 +417,8 @@ def main():
         return
 
     model, model_key = load_model(config_path)
+    if hasattr(model, "debug"):
+        model.debug = args.debug
 
     if ONLINE:
         play_online(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)

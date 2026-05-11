@@ -1,0 +1,607 @@
+{
+  "id": 0,
+  "name": "Entertainment",
+  "description": "Music, Movies, Celebrities and more",
+  "objects": [
+    {
+      "question": "What is the fundamental principle of Citizen Kane's narrative structure?",
+      "options": {
+        "0": "Direct and straightforward",
+        "1": "Single linear perspective",
+        "2": "Linear and chronological",
+        "3": "Non-linear and fragmented"
+      },
+      "answer": 3
+    },
+    {
+      "question": "How does the blues form relate to the 12-bar blues structure?",
+      "options": {
+        "0": "It is an alternative form",
+        "1": "It is a superset",
+        "2": "It is a subset",
+        "3": "It is unrelated"
+      },
+      "answer": 1
+    },
+    {
+      "question": "In which year was 'Spider-Man 3' released?",
+      "options": {
+        "0": "2004",
+        "1": "2007",
+        "2": "2002",
+        "3": "2010"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following best describes the impact of Orson Welles' first radio experience at the Todd Seminary for Boys?",
+      "options": {
+        "0": "It led to his immediate success as a radio star.",
+        "1": "It allowed him to explore and experiment in an atmosphere of acceptance and encouragement.",
+        "2": "It had no significant impact on his career.",
+        "3": "It was a failure and discouraged him from pursuing radio."
+      },
+      "answer": 1
+    },
+    {
+      "question": "How does the relationship between the Jedi and the Sith reflect the broader conflict in the Star Wars saga?",
+      "options": {
+        "0": "The Jedi represent the Rebel Alliance while the Sith represent the Galactic Empire",
+        "1": "The Jedi represent the Galactic Republic while the Sith represent the Trade Federation",
+        "2": "The Jedi represent the New Republic while the Sith represent the First Order",
+        "3": "The Jedi represent the Alliance of Free Planets while the Sith represent the Separatists"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best describes the relationship between Ridley Scott and his brother Tony in their film and commercial production company, Ridley Scott Associates?",
+      "options": {
+        "0": "They were competitors.",
+        "1": "They were unrelated.",
+        "2": "They were rivals.",
+        "3": "They were partners."
+      },
+      "answer": 3
+    },
+    {
+      "question": "What term describes the period in Taylor's life when she was a child star and MGM controlled her life?",
+      "options": {
+        "0": "Elizabeth Taylor Era",
+        "1": "Golden Era",
+        "2": "Cleopatra Era",
+        "3": "MGM Era"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What was the fundamental principle behind Aretha Franklin's rise to fame in the 1960s?",
+      "options": {
+        "0": "Her powerful mezzo-soprano voice and emotional vocal performances",
+        "1": "Her high-profile marriage to a famous actor",
+        "2": "Her extensive background in classical music",
+        "3": "Her early start in the music industry at a young age"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best describes the connection between Kanye West and the release of his album 'The College Dropout'?",
+      "options": {
+        "0": "It was his first album to top the Billboard 200",
+        "1": "It was his first album with GOOD Music",
+        "2": "It was his first major label release",
+        "3": "It marked his debut as a producer"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which of the following best describes Whitney Houston's impact on music and entertainment?",
+      "options": {
+        "0": "She was the first artist to have seven consecutive Billboard Hot 100 number-one singles.",
+        "1": "She was the first artist to win a Grammy Award for Album of the Year.",
+        "2": "She was the first black woman to sign with a major record label.",
+        "3": "She was the first woman to debut at the top of both the US and UK charts."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary reason Radiohead decided to self-release their album 'In Rainbows'?",
+      "options": {
+        "0": "To avoid the costs associated with a major label release",
+        "1": "To gain more control over the album's artwork and packaging",
+        "2": "To test the pay-what-you-want model and gauge fan reactions",
+        "3": "To focus on touring and live performances without distractions"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes the conflict between Lawrence and the Turkish forces during the First World War?",
+      "options": {
+        "0": "The Arab Revolt",
+        "1": "The Hejaz War",
+        "2": "The Battle of Gallipoli",
+        "3": "The Sinai Campaign"
+      },
+      "answer": 0
+    },
+    {
+      "question": "How does the album 'OK Computer' differ from 'The Bends' in terms of sound and style?",
+      "options": {
+        "0": "OK Computer is less introspective, while The Bends is more politically charged",
+        "1": "OK Computer incorporates more complex song structures and electronic elements, while The Bends is more straightforward",
+        "2": "OK Computer features more traditional rock songs, while The Bends includes more experimental tracks",
+        "3": "OK Computer is more focused on acoustic instruments, while The Bends is more electronic"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What term best describes Meryl Streep's approach to her acting, characterized by refining her characters' dialogue to enhance psychological depth and agency?",
+      "options": {
+        "0": "Method Acting",
+        "1": "Character Development",
+        "2": "Psychological Realism",
+        "3": "Versatility"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What was the fundamental principle behind the Rolling Stones' early success?",
+      "options": {
+        "0": "Incorporating jazz into their music",
+        "1": "Writing original songs about everyday life",
+        "2": "Playing covers of popular songs",
+        "3": "Covering blues and R&B songs"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is the fundamental principle that inspired Coppola to name his studio 'Zoetrope'?",
+      "options": {
+        "0": "The zoetropes he received from a friend",
+        "1": "His interest in music and engineering",
+        "2": "His love for puppet theater",
+        "3": "The success of his first feature film"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following was a key challenge faced by Coldplay during their early years?",
+      "options": {
+        "0": "Finding a suitable drummer.",
+        "1": "Securing a record deal.",
+        "2": "Deciding on their musical genre.",
+        "3": "Choosing a band name."
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the fundamental principle of a film according to the Wikipedia article?",
+      "options": {
+        "0": "It is a work of visual art that simulates experiences and communicates ideas, stories, perceptions, emotions, or atmosphere.",
+        "1": "It is a series of still images that are shown quickly to give the illusion of motion.",
+        "2": "It is a method of recording actual people and objects with cameras or creating them using animation techniques.",
+        "3": "It is a form of animation that creates the illusion of motion through rapid succession of frames."
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best describes the connection between Al Pacino's performance in Dog Day Afternoon and his character Sonny Wortzik?",
+      "options": {
+        "0": "Sonny Wortzik is an exhausted and desperate bank robber.",
+        "1": "Sonny Wortzik is a violent and unpredictable gangster.",
+        "2": "Sonny Wortzik is a low-level criminal who gets involved in a bank robbery.",
+        "3": "Sonny Wortzik is a charismatic and influential businessman."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What was the primary reason John Lennon and Yoko Ono held their first bed-in in 1969?",
+      "options": {
+        "0": "To promote their new album",
+        "1": "To support the Beatles",
+        "2": "To protest the Vietnam War",
+        "3": "To celebrate their wedding"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What is the fundamental principle behind Thanos' actions throughout the MCU?",
+      "options": {
+        "0": "He wants to become the most powerful being",
+        "1": "He believes in the balance of life and death",
+        "2": "He aims to destroy the Avengers",
+        "3": "He seeks to conquer the universe"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which term describes Marlon Brando's iconic performance in 'The Wild One'?",
+      "options": {
+        "0": "Polished and sophisticated",
+        "1": "Rebellious and gritty",
+        "2": "Cool and calculating",
+        "3": "Subtle and nuanced"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What term describes the process of Michael Corleone's transition from outsider to head of the Corleone family?",
+      "options": {
+        "0": "Initiation",
+        "1": "Transformation",
+        "2": "Rivalry",
+        "3": "Assimilation"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the primary principle of Alfred Hitchcock's 'pure cinema'?",
+      "options": {
+        "0": "Long dialogue scenes between characters",
+        "1": "Focus on musical scores to drive the narrative",
+        "2": "Visual storytelling through camera movement and editing",
+        "3": "The use of elaborate costumes and sets"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What fundamental principle did Johnny Cash's 'Man in Black' song codify about his persona?",
+      "options": {
+        "0": "He was a rock and roll star",
+        "1": "He was a wealthy businessman",
+        "2": "He was a government spy",
+        "3": "He was a blue-collar prophet"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is the fundamental principle of Robert De Niro's acting method, as described in the article?",
+      "options": {
+        "0": "Playing only comedic roles",
+        "1": "Sticking to traditional methods without innovation",
+        "2": "Total submersion into the character without regard for consequences",
+        "3": "Acting solely through facial expressions"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which of the following best describes the visual effects technique used to integrate Tom Hanks into archival footage?",
+      "options": {
+        "0": "3D modeling",
+        "1": "Green screen",
+        "2": "Blue screen",
+        "3": "Rotoscoping"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What was the significance of the band's first live performance under the name 'Nirvana' on March 19, 1988?",
+      "options": {
+        "0": "It marked the end of their first band, the Sellouts",
+        "1": "It was their first performance in Olympia, Washington",
+        "2": "It was their first time playing at Community World Theater",
+        "3": "It was the first time they played under the name Nirvana"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is the fundamental principle behind the Roll Safe meme?",
+      "options": {
+        "0": "Promoting positive thinking and optimism",
+        "1": "Mocking poor decision-making and failures in critical thinking",
+        "2": "Celebrating successes and achievements",
+        "3": "Tapping fingers to express happiness"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What term describes Judi Dench's involvement in the revival of the York Mystery Plays in 1951, 1954, and 1957?",
+      "options": {
+        "0": "Academic research",
+        "1": "Non-professional theatrical involvement",
+        "2": "Film production",
+        "3": "Professional acting debut"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the fundamental principle behind the term 'classical' in classical music?",
+      "options": {
+        "0": "It describes the music composed in the 18th century.",
+        "1": "It denotes a formal discipline and model of excellence in music.",
+        "2": "It signifies the music of the 20th century.",
+        "3": "It refers to the ancient Greco-Roman musical traditions."
+      },
+      "answer": 1
+    },
+    {
+      "question": "What term describes Jay-Z's early lyrical style, characterized by fast rhythms and vocal delivery?",
+      "options": {
+        "0": "Soulful",
+        "1": "Rap battle",
+        "2": "Braggadocio",
+        "3": "Flow"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following best describes Orson Welles' relationship with his father in the early years of his life?",
+      "options": {
+        "0": "Orson and his father shared a passion for theater.",
+        "1": "Orson's father was largely absent and struggled with alcoholism.",
+        "2": "Orson was often left to fend for himself.",
+        "3": "They had a close and loving relationship."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following best describes the early years of The Rolling Stones in terms of their sound and style?",
+      "options": {
+        "0": "They pioneered a gritty, rhythmically driven hard rock sound.",
+        "1": "They mainly played folk music and traditional English songs.",
+        "2": "They were known for their avant-garde experimental music.",
+        "3": "They primarily focused on classical music arrangements."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary setting of the film 'Jaws'?",
+      "options": {
+        "0": "Amity Island",
+        "1": "San Francisco",
+        "2": "Hawaii",
+        "3": "New York City"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best describes Katharine Hepburn's approach to her film roles?",
+      "options": {
+        "0": "She meticulously studied her roles and rehearsed extensively",
+        "1": "She often improvised lines to make them more natural",
+        "2": "She rarely performed her own stunts",
+        "3": "She preferred to play supporting characters"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following is a key distinction between the real world and the Matrix?",
+      "options": {
+        "0": "B) In the real world, bullets appear to move normally, while in the Matrix, they move in slow motion.",
+        "1": "C) In the real world, there is no concept of machines controlling humans.",
+        "2": "A) In the real world, people are aware they are in a simulation.",
+        "3": "D) In the real world, humans can perceive and manipulate the code of the Matrix."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary reason for the film's emotional impact on audiences?",
+      "options": {
+        "0": "The unique relationship between Elliott and E.T.",
+        "1": "The special effects used in the film",
+        "2": "The use of a live alien actor",
+        "3": "The score composed by John Williams"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best describes Brad Pitt's film career as mentioned in the article?",
+      "options": {
+        "0": "He has only appeared in a few films and has not received any major awards.",
+        "1": "He primarily focuses on independent films and has not starred in any blockbusters.",
+        "2": "He has received numerous accolades and has starred in both leading and supporting roles in a variety of film genres.",
+        "3": "He has only starred in action films and has not been nominated for any Academy Awards."
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was the primary reason for Stanley Kubrick's high take ratio during filming?",
+      "options": {
+        "0": "To impress his actors and crew with his strict demands.",
+        "1": "To allow actors to improvise and find their best performances.",
+        "2": "To ensure that the actors would not make any mistakes during the shooting.",
+        "3": "To make the film longer and more complex."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following best describes the impact of Michael Jackson's music videos on the music industry?",
+      "options": {
+        "0": "They popularized the concept of music videos as a promotional tool.",
+        "1": "They made music videos less popular on television.",
+        "2": "They reduced the importance of live performances.",
+        "3": "They were mostly ignored by the music industry."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What was the significance of 'Bohemian Rhapsody' in Queen's career?",
+      "options": {
+        "0": "It topped the UK singles chart for nine weeks.",
+        "1": "It was written by Brian May.",
+        "2": "It was their first UK chart hit.",
+        "3": "It was their last song recorded with Freddie Mercury."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the fundamental principle behind Humphrey Bogart's acting career, according to his own words?",
+      "options": {
+        "0": "Always taking acting lessons",
+        "1": "Persistence and working steadily",
+        "2": "Acting in only leading roles",
+        "3": "Playing only comedic characters"
+      },
+      "answer": 1
+    },
+    {
+      "question": "How does the 'Dawn of Man' sequence relate to the rest of the film?",
+      "options": {
+        "0": "It shows the first use of nuclear weapons by humans",
+        "1": "It illustrates the evolutionary progress leading to human space travel",
+        "2": "It depicts the discovery of extraterrestrial life on Jupiter",
+        "3": "It introduces the concept of artificial intelligence"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following best describes the relationship between the lyrics of 'A Cruel Angel's Thesis' and the anime Neon Genesis Evangelion?",
+      "options": {
+        "0": "The lyrics are abstract and philosophical, hinting at themes in the series.",
+        "1": "The lyrics provide a direct plot summary of the series.",
+        "2": "The lyrics are sung from the perspective of a specific character.",
+        "3": "The lyrics are unrelated to the series and are purely musical."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the fundamental principle that describes the connection between Tom Hanks's early acting experiences and his later success in Hollywood?",
+      "options": {
+        "0": "His involvement in theater and school plays provided him with a strong foundation in acting.",
+        "1": "His early roles in comedy helped him become a leading man.",
+        "2": "His portrayal of villains in school plays led to more leading roles.",
+        "3": "His experience in low-budget films prepared him for leading roles."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary reason Taylor became a prominent figure in HIV/AIDS activism?",
+      "options": {
+        "0": "Pressure from the government",
+        "1": "Personal experience with the disease",
+        "2": "Public image and media attention",
+        "3": "Professional obligation"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What type of film is 'The Babadook'?",
+      "options": {
+        "0": "Comedy",
+        "1": "Romance",
+        "2": "Horror",
+        "3": "Action"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes Katharine Hepburn's career spanning six decades, during which she played a variety of roles including strong-willed women and Shakespearean productions?",
+      "options": {
+        "0": "Longevity",
+        "1": "Specialization",
+        "2": "Versatility",
+        "3": "Consistency"
+      },
+      "answer": 2
+    },
+    {
+      "question": "How does the concept of pitch in music relate to frequency?",
+      "options": {
+        "0": "Higher pitch corresponds to higher frequency",
+        "1": "Frequency is unrelated to pitch",
+        "2": "Higher pitch corresponds to lower frequency",
+        "3": "Pitch is unrelated to frequency"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following awards did Forrest Gump not win?",
+      "options": {
+        "0": "Academy Award for Best Original Screenplay",
+        "1": "Academy Award for Best Picture",
+        "2": "Academy Award for Best Director",
+        "3": "Academy Award for Best Actress in a Supporting Role"
+      },
+      "answer": 3
+    },
+    {
+      "question": "According to the article, which of the following best describes the connection between Frank Sinatra and Las Vegas?",
+      "options": {
+        "0": "He was a minor figure in the city's entertainment scene",
+        "1": "He invented the concept of Las Vegas as a tourist destination",
+        "2": "He was considered the 'swinging image' that helped establish the city's image",
+        "3": "He was the first performer to perform in Las Vegas"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was the main challenge Streep faced when playing Sophie in Sophie's Choice?",
+      "options": {
+        "0": "Working with the film's director",
+        "1": "Getting a British accent",
+        "2": "Learning to speak Polish",
+        "3": "Dealing with the controversial subject matter"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was the fundamental principle behind Jimi Hendrix's guitar playing style that set him apart from other musicians of his time?",
+      "options": {
+        "0": "Overdriven amplifiers and feedback",
+        "1": "Relying on a single guitar model",
+        "2": "Use of barre chords exclusively",
+        "3": "Focusing on classical music techniques"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best explains why James Cameron's film 'Avatar' was considered a technological breakthrough?",
+      "options": {
+        "0": "It was the first film to use advanced computer-generated imagery (CGI) and motion capture techniques",
+        "1": "It was the first film to be released in multiple languages",
+        "2": "It was the first film to use motion capture technology",
+        "3": "It was the first film shot entirely in 3D"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the origin of the phrase 'up to eleven'?",
+      "options": {
+        "0": "The 1984 film This Is Spinal Tap",
+        "1": "A popular music magazine article",
+        "2": "A radio broadcast about sound engineering",
+        "3": "A book about guitar techniques"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the fundamental principle of the dream-sharing technology used by Cobb and his team in Inception?",
+      "options": {
+        "0": "It enables the insertion of an idea into a person's subconscious.",
+        "1": "It facilitates the manipulation of a person's memories.",
+        "2": "It provides a way to communicate with people in a parallel universe.",
+        "3": "It allows for the extraction of information from a target's subconscious."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following films is NOT directed by Francis Ford Coppola?",
+      "options": {
+        "0": "Pulp Fiction",
+        "1": "The Godfather",
+        "2": "Apocalypse Now",
+        "3": "Patton"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which actress is known for portraying the character Nazaré Tedesco in the Brazilian soap opera 'Senhora do Destino'?",
+      "options": {
+        "0": "Adriana Esteves",
+        "1": "Julia Roberts",
+        "2": "Renata Sorrah",
+        "3": "Susana Vieira"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What method did Oskar Schindler primarily use to protect Jewish workers from being sent to concentration camps?",
+      "options": {
+        "0": "Bribing the local police",
+        "1": "Arming them with weapons",
+        "2": "Hiring them and ensuring they were considered essential to the war effort",
+        "3": "Providing them with false documentation"
+      },
+      "answer": 2
+    }
+  ]
+}

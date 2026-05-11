@@ -1,0 +1,607 @@
+{
+  "id": 2,
+  "name": "Science and Nature",
+  "description": "Chemistry, Biology, Physics and similar subjects",
+  "objects": [
+    {
+      "question": "In which example does an object move because of the force of gravity?",
+      "options": {
+        "0": "a girl hitting a ball with a bat",
+        "1": "a boy falling from a tree onto the ground",
+        "2": "a boy pushing a box across the floor",
+        "3": "a girl hammering a nail into a wall"
+      },
+      "answer": 1
+    },
+    {
+      "question": "The primary role of the endocrine system is to",
+      "options": {
+        "0": "produce hormones that regulate body functions",
+        "1": "break down food to release nutrients",
+        "2": "supply red blood cells to carry oxygen",
+        "3": "form chemicals that destroy microbes"
+      },
+      "answer": 0
+    },
+    {
+      "question": "In which structure is the Sun located?",
+      "options": {
+        "0": "Milky Way Galaxy",
+        "1": "Cat's Eye Nebula",
+        "2": "Horseshoe Nebula",
+        "3": "Andromeda Galaxy"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Helen is preparing a presentation about objects in the solar system. She includes facts about the order of the planets and their distances from the Sun. Which statement could she include in an accurate presentation?",
+      "options": {
+        "0": "Earth is one astronomical unit from the Sun.",
+        "1": "Neptune is one light-year from the Sun.",
+        "2": "Jupiter is farther from the Sun than Uranus.",
+        "3": "Mars is closer to the Sun than Earth."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term describes the process of heat being transferred from the surface of a cake to its center during baking?",
+      "options": {
+        "0": "Convection",
+        "1": "Conduction",
+        "2": "Caramelization",
+        "3": "Radiation"
+      },
+      "answer": 1
+    },
+    {
+      "question": "A student pours water into a cup and places the cup in a freezer. After many hours, the water will change from",
+      "options": {
+        "0": "solid to gas",
+        "1": "liquid to solid",
+        "2": "liquid to gas",
+        "3": "solid to liquid"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which substance is magnetic and conducts heat?",
+      "options": {
+        "0": "wood",
+        "1": "plastic",
+        "2": "paper",
+        "3": "iron"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following best describes a Feynman diagram?",
+      "options": {
+        "0": "A graphical representation of particle interactions",
+        "1": "A statistical mechanics model for phase transitions",
+        "2": "A technique for calculating scattering amplitudes in classical mechanics",
+        "3": "A method for solving differential equations in quantum mechanics"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which effect do rapidly cooling temperatures have on the water cycle?",
+      "options": {
+        "0": "Precipitation condenses into water droplets.",
+        "1": "Water droplets evaporate into vapor.",
+        "2": "Water vapor condenses into droplets.",
+        "3": "Condensation evaporates into precipitation."
+      },
+      "answer": 2
+    },
+    {
+      "question": "The burning of fossil fuels affects the atmosphere by",
+      "options": {
+        "0": "taking water vapor out of the atmosphere.",
+        "1": "adding more heat and carbon dioxide.",
+        "2": "reducing the amount of necessary heat.",
+        "3": "putting more oxygen in the atmosphere."
+      },
+      "answer": 1
+    },
+    {
+      "question": "When rain falls on the land, some of it is absorbed by surface sediment. How porous the surface sediments are controls how much water is absorbed. Which of the following will most likely result in an area where surface sediment is NOT porous?",
+      "options": {
+        "0": "spring formation",
+        "1": "flooding",
+        "2": "droughts",
+        "3": "tornadoes"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following represents a chemical reaction?",
+      "options": {
+        "0": "a sugar cube dissolving in water.",
+        "1": "ice cream melting in a bowl.",
+        "2": "ice cubes forming in a freezer.",
+        "3": "a cake baking in an oven."
+      },
+      "answer": 3
+    },
+    {
+      "question": "When a switch to a ceiling fan is turned on, electrical energy is being transformed into",
+      "options": {
+        "0": "atomic energy.",
+        "1": "potential energy.",
+        "2": "chemical energy.",
+        "3": "mechanical energy."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Trees use narrow tubes to transport water upward. Which property of water allows the water to rise in these narrow tubes?",
+      "options": {
+        "0": "high boiling point",
+        "1": "net charge of molecules",
+        "2": "cohesion of molecules",
+        "3": "high vapor pressure"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Russell wants to observe changes in nature over the next few months. What can a thermometer help Russell investigate?",
+      "options": {
+        "0": "the amount of growth in a plant",
+        "1": "tiny organisms in pond water",
+        "2": "the high temperatures each day",
+        "3": "rainfall amounts each week"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What helps skin feel heat and pressure?",
+      "options": {
+        "0": "blood cells",
+        "1": "nerve cells",
+        "2": "bone cells",
+        "3": "muscle cells"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of these revolves around a planet?",
+      "options": {
+        "0": "a comet.",
+        "1": "a moon.",
+        "2": "a star.",
+        "3": "an asteroid."
+      },
+      "answer": 1
+    },
+    {
+      "question": "What term describes the measurement of time using a series of events or periods?",
+      "options": {
+        "0": "Chronology",
+        "1": "Calendaring",
+        "2": "Horology",
+        "3": "Spacetime"
+      },
+      "answer": 0
+    },
+    {
+      "question": "A boy and his sister both play piano. Playing piano is an example of",
+      "options": {
+        "0": "a life function",
+        "1": "a learned behavior",
+        "2": "a physical change",
+        "3": "an inherited trait"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which change would most likely cause deer to die or leave a woodland?",
+      "options": {
+        "0": "a forest fire",
+        "1": "a snow storm",
+        "2": "a sinkhole",
+        "3": "a rainstorm"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which method would you use to detect cosmic dust in the interplanetary space?",
+      "options": {
+        "0": "Seismic wave analysis",
+        "1": "Gravitational lensing",
+        "2": "Magnetic field mapping",
+        "3": "Remote sensing using infrared radiation"
+      },
+      "answer": 3
+    },
+    {
+      "question": "How is the structure of an atom best described?",
+      "options": {
+        "0": "a positive core surrounded by mostly empty space",
+        "1": "a negative core surrounded by densely packed matter",
+        "2": "a neutral core surrounded by mostly empty space",
+        "3": "a positive core surrounded by densely packed matter"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the approximate length of time it takes the Moon to complete one lunar cycle?",
+      "options": {
+        "0": "29 days",
+        "1": "180 days",
+        "2": "365 days",
+        "3": "14 days"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term describes the energy absorbed or released by a body or a thermodynamic system during a constant-temperature process?",
+      "options": {
+        "0": "Latent heat",
+        "1": "Kinetic energy",
+        "2": "Sensible heat",
+        "3": "Potential energy"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What happens when a warm object is put inside a cooler object?",
+      "options": {
+        "0": "The warm object loses energy and the cool object gains energy until both objects are the same temperature.",
+        "1": "The warm object loses energy and the cool object gains energy so that both objects stay at different temperatures.",
+        "2": "The warm object gains energy and the cool object loses energy so that both objects stay at different temperatures.",
+        "3": "The warm object gains energy and the cool object loses energy until both objects are the same temperature."
+      },
+      "answer": 0
+    },
+    {
+      "question": "What keeps the planets in orbit around the Sun?",
+      "options": {
+        "0": "magnetism",
+        "1": "gravity",
+        "2": "electricity",
+        "3": "tides"
+      },
+      "answer": 1
+    },
+    {
+      "question": "The Theory of Plate Tectonics is based on",
+      "options": {
+        "0": "volcanic activity along coastlines.",
+        "1": "evidence of sea floor spreading.",
+        "2": "topographic mapping of mountain ranges.",
+        "3": "an analysis of soil at the plate boundaries."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Plastic conducts very little thermal energy or electricity. Because of this property, plastic would most likely be used to cover",
+      "options": {
+        "0": "wood.",
+        "1": "metal.",
+        "2": "solids.",
+        "3": "liquids."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which property of water allows it to dissolve many different substances?",
+      "options": {
+        "0": "It is a polar molecule.",
+        "1": "It has a low density.",
+        "2": "It has a high melting point.",
+        "3": "It contains hydrogen atoms."
+      },
+      "answer": 0
+    },
+    {
+      "question": "According to the Big Bang Theory, which element most likely formed first?",
+      "options": {
+        "0": "nitrogen",
+        "1": "hydrogen",
+        "2": "carbon dioxide",
+        "3": "oxygen"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following best describes the Coandă effect?",
+      "options": {
+        "0": "The tendency of a fluid jet to rotate in a circular motion around an axis.",
+        "1": "The tendency of a fluid jet to separate from a surface due to high pressure differences.",
+        "2": "The tendency of a fluid jet to move in a straight line without deviation.",
+        "3": "The tendency of a fluid jet to follow an adjacent flat or curved surface and entrain surrounding fluid."
+      },
+      "answer": 3
+    },
+    {
+      "question": "A student observes cells in an object by using a microscope. The student thinks that the object was part of a living thing. Which statement explains why cell theory can be used to support the student's thinking?",
+      "options": {
+        "0": "Cell theory states that all living things are made of cells.",
+        "1": "Cell theory was developed using a microscope.",
+        "2": "Cell theory was developed to study living things.",
+        "3": "Cell theory states that scientists may classify things as living or nonliving."
+      },
+      "answer": 0
+    },
+    {
+      "question": "Every copy of a particular protein manufactured by a cell shows the same incorrect amino acid at the same point in its structure. According to the central dogma of molecular biology, in which structure does this error originate?",
+      "options": {
+        "0": "mRNA",
+        "1": "DNA",
+        "2": "tRNA",
+        "3": "rRNA"
+      },
+      "answer": 1
+    },
+    {
+      "question": "In what way do transit systems, such as buses, benefit society?",
+      "options": {
+        "0": "by increasing the amount of carbon dioxide in the air",
+        "1": "by increasing the number of car sales",
+        "2": "by eliminating the possibility of accidents",
+        "3": "by reducing the amount of pollution"
+      },
+      "answer": 3
+    },
+    {
+      "question": "The following statements are from an article in a fitness magazine. Which of these is an opinion?",
+      "options": {
+        "0": "Regular exercise reduces resting heart rate.",
+        "1": "Exercise increases muscle mass.",
+        "2": "Those who exercise regularly can increase their life span.",
+        "3": "People should exercise because it makes them feel better."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which scientist first observed and characterized the diffraction of light?",
+      "options": {
+        "0": "Thomas Young",
+        "1": "Francesco Maria Grimaldi",
+        "2": "Isaac Newton",
+        "3": "James Gregory"
+      },
+      "answer": 1
+    },
+    {
+      "question": "A scientist was examining a large boulder that was covered with lichens (a combination of fungi and algae). He chipped a piece of the rock and placed it under a microscope. He observed that the surface of the rock was breaking down underneath the lichen. Which was the scientist most likely observing?",
+      "options": {
+        "0": "the effects of abrasion",
+        "1": "the interaction between abiotic factors",
+        "2": "the effects of chemical weathering",
+        "3": "the process of deposition"
+      },
+      "answer": 2
+    },
+    {
+      "question": "If the climate in an area were to become much drier, which plant variation would be most advantageous to the survival of the species?",
+      "options": {
+        "0": "larger flowers",
+        "1": "bigger branches",
+        "2": "longer stems",
+        "3": "thicker leaves"
+      },
+      "answer": 3
+    },
+    {
+      "question": "In an earthquake, the primary waves move through",
+      "options": {
+        "0": "rock",
+        "1": "water",
+        "2": "soil",
+        "3": "air"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Martin is writing a report for science class about how the tilt of Earth affects living organisms. Which subject should Martin include in his report that is directly affected by Earth's tilt?",
+      "options": {
+        "0": "changing of the seasons",
+        "1": "phases of the Moon",
+        "2": "cloud formation",
+        "3": "night and day"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What causes day and night on Earth?",
+      "options": {
+        "0": "Earth's revolution around the Sun",
+        "1": "Earth's rotation on its axis",
+        "2": "the Sun's revolution around Earth",
+        "3": "the Sun's rotation on its axis"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Volcanic eruptions are caused primarily by the movement of",
+      "options": {
+        "0": "Earth in its orbit",
+        "1": "tectonic plates",
+        "2": "planetary winds",
+        "3": "rock by erosion"
+      },
+      "answer": 1
+    },
+    {
+      "question": "The boiling point of water in degrees Celsius is",
+      "options": {
+        "0": "32°C.",
+        "1": "0°C.",
+        "2": "212°C.",
+        "3": "100°C."
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is methylsulfonylmethane (MSM) commonly marketed as?",
+      "options": {
+        "0": "A pharmaceutical drug",
+        "1": "A dietary supplement",
+        "2": "A vitamin",
+        "3": "A pain reliever"
+      },
+      "answer": 1
+    },
+    {
+      "question": "An earthworm has a length of 12.8 centimeters. What is the length, in millimeters, of the earthworm?",
+      "options": {
+        "0": "0.128 millimeter",
+        "1": "1280 millimeters",
+        "2": "1.28 millimeters",
+        "3": "128 millimeters"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Lightning from a thunderstorm strikes a 21 tree that falls to the forest floor and dies. During the next few years the dead tree undergoes many changes. What organisms are most likely responsible for the biological and chemical changes to the tree?",
+      "options": {
+        "0": "producers",
+        "1": "predators",
+        "2": "consumers",
+        "3": "decomposers"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Kelly slides a flat rock across the smooth ice of a frozen pond. The rock slows down after several seconds. What causes the rock to slow down?",
+      "options": {
+        "0": "The gravitational force between the ice and the rock",
+        "1": "The thickness of the ice",
+        "2": "The temperature of the air above the ice",
+        "3": "The force of friction between the ice and the rock"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which body system is responsible for breaking down food into molecules that it absorbs?",
+      "options": {
+        "0": "digestive",
+        "1": "respiratory",
+        "2": "lymphatic",
+        "3": "circulatory"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which group of animals contains ONLY reptiles?",
+      "options": {
+        "0": "turtle, lizard, crocodile",
+        "1": "octopus, snail, turtle",
+        "2": "lizard, frog, snake",
+        "3": "crab, earthworm, snake"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following are likely to do the most damage to ecosystems along the Rio Grande River?",
+      "options": {
+        "0": "tsunamis",
+        "1": "blizzards",
+        "2": "floods",
+        "3": "earthquakes"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What is the fundamental principle of numerical aperture in optics?",
+      "options": {
+        "0": "It defines the color spectrum of light that can pass through a lens.",
+        "1": "It measures the brightness of light emitted by an object.",
+        "2": "It indicates the speed at which light travels through a medium.",
+        "3": "It describes the range of angles over which an optical system can accept or emit light."
+      },
+      "answer": 3
+    },
+    {
+      "question": "India was once its own continent. According to the theory of continental drift, India has collided with and become part of the continent of Asia. This caused",
+      "options": {
+        "0": "large mountain ranges to form.",
+        "1": "deep mid-ocean trenches to develop.",
+        "2": "deserts in the area to become fertile.",
+        "3": "glaciers in the area to melt."
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following best describes a scientific law?",
+      "options": {
+        "0": "A prediction of future events",
+        "1": "A detailed explanation of a natural phenomenon",
+        "2": "A statement that summarizes a pattern of observations under consistent conditions",
+        "3": "A hypothesis that has not been tested"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Paco throws a ball. What force pulls the ball down toward the ground?",
+      "options": {
+        "0": "momentum",
+        "1": "friction",
+        "2": "gravity",
+        "3": "inertia"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Where does air go when a person breathes in?",
+      "options": {
+        "0": "Into the liver",
+        "1": "Into the stomach",
+        "2": "Into the lungs",
+        "3": "Into the heart"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which of these cycles takes 24 hours?",
+      "options": {
+        "0": "the Moon rotating on its axis",
+        "1": "the Moon revolving around Earth",
+        "2": "Earth rotating on its axis",
+        "3": "Earth revolving around the Sun"
+      },
+      "answer": 2
+    },
+    {
+      "question": "A wetland was drained to build a mall. Two years later, there were no more toads in that area. Why did the toads disappear?",
+      "options": {
+        "0": "The toads died because toads cannot breathe out of water.",
+        "1": "The toads were frightened and went into the woods.",
+        "2": "The toads were destroyed by the construction equipment.",
+        "3": "The toads got their food from the wetland ecosystem."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Turning off the light when leaving a room is an example of",
+      "options": {
+        "0": "using chemical energy.",
+        "1": "wasting energy.",
+        "2": "conserving energy.",
+        "3": "using potential energy."
+      },
+      "answer": 2
+    },
+    {
+      "question": "A student is hiking through a forest taking pictures for science class. Which picture would most likely be used as an example of human impact on Earth?",
+      "options": {
+        "0": "A river eroding away the riverbank",
+        "1": "A bird nest made of dead branches",
+        "2": "A trail built by cutting down trees",
+        "3": "A group of butterflies landing on flowers"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What is needed to change ice into water?",
+      "options": {
+        "0": "air",
+        "1": "energy",
+        "2": "chemicals",
+        "3": "stirring"
+      },
+      "answer": 1
+    }
+  ]
+}
