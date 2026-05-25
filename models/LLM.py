@@ -24,8 +24,7 @@ TOOL_QUERY_PROMPT = (
     "Sources:\n"
     "  0 = memory      — answer from your own knowledge (no search needed)\n"
     "  1 = wikipedia   — encyclopedia: historical events, people, places, cultural practices\n"
-    "  2 = wiktionary  — word definitions and etymology ONLY (NOT historical/cultural facts)\n"
-    "  3 = duckduckgo  — general web search\n\n"
+    "  2 = wiktionary  — word definitions and etymology ONLY (NOT historical/cultural facts)\n\n"
     "IMPORTANT: use wiktionary ONLY when the question asks what a word or term MEANS "
     "linguistically — NOT for facts about a historical entity, person, or event.\n\n"
     "Reply on ONE line in this exact format:  <digit> | <search query>\n"
@@ -33,16 +32,15 @@ TOOL_QUERY_PROMPT = (
     "Examples:\n"
     "  1 | Roman citizens body ancient Rome\n"
     "  2 | logos\n"
-    "  0 | none\n"
-    "  3 | Who Wants to Be a Millionaire lifelines rules"
+    "  0 | none"
 )
 
-_TOOL_MAP = {"0": "none", "1": "wikipedia", "2": "wiktionary", "3": "ddg"}
+_TOOL_MAP = {"0": "none", "1": "wikipedia", "2": "wiktionary"}
 
 # Minimum confidence required before trusting the LLM's tool pick.
 # Wikipedia is the safe fallback (broadest coverage), so it has no threshold.
 # Stricter for tools with narrow or uncertain coverage.
-_TOOL_MIN_CONF = {"none": 0.80, "wiktionary": 0.65, "ddg": 0.50}
+_TOOL_MIN_CONF = {"none": 0.80, "wiktionary": 0.65}
 
 # If the memory probe confidence is at or above this level we skip the LLM
 # tool-selection call entirely — the model clearly already knows the answer.
@@ -70,7 +68,6 @@ def _bayesian_adjust(prob_dict: dict, mem_conf: float) -> dict:
         "none":       round(adj_none * 100, 1),
         "wikipedia":  round(prob_dict.get("wikipedia",  0) / 100 * rest_scale * 100, 1),
         "wiktionary": round(prob_dict.get("wiktionary", 0) / 100 * rest_scale * 100, 1),
-        "ddg":        round(prob_dict.get("ddg",        0) / 100 * rest_scale * 100, 1),
     }
 
 
@@ -394,28 +391,29 @@ class LLMModel:
             out.sequences[0, input_len:], skip_special_tokens=True
         ).strip()
 
-        # First-token logits → tool selection probabilities over digits 0-3
+        # First-token logits → tool selection probabilities over digits 0-2
         first_logits = out.scores[0][0]
         digit_ids = {}
-        for d in "0123":
+        for d in "012":
             ids = self.pipe.tokenizer.encode(d, add_special_tokens=False)
             if ids:
                 digit_ids[d] = ids[-1]
 
-        if len(digit_ids) == 4:
-            digit_logits = torch.stack([first_logits[digit_ids[d]] for d in "0123"])
+        _DIGITS = "012"
+        if len(digit_ids) == len(_DIGITS):
+            digit_logits = torch.stack([first_logits[digit_ids[d]] for d in _DIGITS])
             d_probs    = torch.softmax(digit_logits, dim=0)
             best_i     = d_probs.argmax().item()
             best_prob  = d_probs[best_i].item()
             prob_dict  = {_TOOL_MAP[d]: round(d_probs[i].item() * 100, 1)
-                          for i, d in enumerate("0123")}
+                          for i, d in enumerate(_DIGITS)}
         else:
             d_probs, prob_dict, best_prob, best_i = None, None, 1.0, 1
 
         # Parse '<digit> | <query>' — use logit-best digit as ground truth
         tool, query = _parse_tool_query(raw)
         if d_probs is not None:
-            best_digit = "0123"[best_i]
+            best_digit = _DIGITS[best_i]
             if _TOOL_MAP.get(best_digit) != tool:
                 tool = _TOOL_MAP.get(best_digit, "wikipedia")
 

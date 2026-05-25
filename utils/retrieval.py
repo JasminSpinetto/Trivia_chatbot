@@ -5,14 +5,6 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-try:
-    from ddgs import DDGS
-    _DDGS_AVAILABLE = True
-except ImportError:
-    _DDGS_AVAILABLE = False
-
-# Extract Wikipedia article title from a Wikipedia URL
-_WIKI_URL_RE = re.compile(r"en\.wikipedia\.org/wiki/([^#?&]+)")
 
 _PARALLEL_TIMEOUT = 5.0   # per search-phase budget; extract batch is one extra call
 _MAX_CONTEXT_LEN  = 3000
@@ -293,19 +285,6 @@ class Retriever:
         self._log(f"WIKI TITLES      : {ordered_titles}")
         return self._fetch_extracts(ordered_titles), had_error
 
-    def _search_ddgs(self, query: str, max_results: int = 6) -> list:
-        """DuckDuckGo text search — no API key, no hard rate limit.
-
-        Returns raw result dicts: [{"title": ..., "href": ..., "body": ...}]
-        """
-        if not _DDGS_AVAILABLE:
-            return []
-        try:
-            return list(DDGS().text(query, max_results=max_results)) or []
-        except Exception as e:
-            self._log(f"DDGS ERROR       : {e}")
-            return []
-
     def get_context(self, question: str, options: dict = None) -> str:
         if options is None:
             options = {}
@@ -382,7 +361,7 @@ class Retriever:
                 wikt_executor.shutdown(wait=False)
 
         # Phrase/combo fallback — skipped when Wikipedia is erroring (429, connection
-        # refused, etc.) since those queries would also fail. Go straight to DDGS.
+        # refused, etc.) since those queries would also fail.
         if not unique and not wiki_error:
             phrase_list = [
                 p for p in _proper_noun_phrases(question)
@@ -412,63 +391,6 @@ class Retriever:
                             self._log(f"FALLBACK ACCEPT  : [{title}]")
                         else:
                             self._log(f"FALLBACK REJECT  : [{title}] (relevance too low)")
-
-        # Last resort: DuckDuckGo.
-        # Two parallel searches: the full question (natural language — much better
-        # than keyword soup for DDG) and proper_only (good for surfacing Wikipedia
-        # URLs). Results are merged, deduplicated, then processed in two stages:
-        #   1. Extract Wikipedia titles from result URLs → fetch full extracts.
-        #   2. If no Wikipedia URLs, fall back to raw DDG snippets.
-        if not unique and _DDGS_AVAILABLE:
-            ddgs_search_queries = [q for q in [question, proper_only] if q]
-            self._log(f"DDGS SEARCH      : {ddgs_search_queries}")
-
-            all_ddgs = []
-            with ThreadPoolExecutor(max_workers=2) as ex:
-                ddgs_futs = {ex.submit(self._search_ddgs, dq, 5): dq
-                             for dq in ddgs_search_queries}
-                ddgs_done, _ = wait(ddgs_futs.keys(), timeout=4.0)
-            seen_ddgs = set()
-            for fut in ddgs_done:
-                try:
-                    for r in fut.result():
-                        key = r.get("href", r.get("body", ""))[:80]
-                        if key not in seen_ddgs:
-                            seen_ddgs.add(key)
-                            all_ddgs.append(r)
-                except Exception:
-                    pass
-            self._log(f"DDGS RESULTS     : {len(all_ddgs)} result(s)")
-
-            wiki_titles = []
-            seen_wiki = set()
-            for r in all_ddgs:
-                m = _WIKI_URL_RE.search(r.get("href", ""))
-                if m:
-                    title = m.group(1).replace("_", " ")
-                    if title not in seen_wiki:
-                        seen_wiki.add(title)
-                        wiki_titles.append(title)
-
-            if wiki_titles:
-                self._log(f"DDGS WIKI TITLES : {wiki_titles}")
-                ddgs_extracts = self._fetch_extracts(wiki_titles)
-                for title, ctx in ddgs_extracts.items():
-                    if ctx[:80] not in seen_text and _is_relevant(question, ctx):
-                        seen_text.add(ctx[:80])
-                        unique.append(ctx)
-                        self._log(f"DDGS WIKI ACCEPT : [{title}]")
-                    elif ctx:
-                        self._log(f"DDGS WIKI REJECT : [{title}] (relevance too low)")
-
-            # If Wikipedia URLs gave nothing, use raw DDGS snippets as context
-            if not unique:
-                for r in all_ddgs:
-                    snippet = r.get("body", "").strip()
-                    if snippet and snippet[:80] not in seen_text and _is_relevant(question, snippet):
-                        seen_text.add(snippet[:80])
-                        unique.append(snippet)
-                        self._log(f"DDGS SNIP ACCEPT : [{r.get('title', '')}]")
 
         if not unique:
             self._log("SEARCH COMBINED  : (none)")
@@ -617,77 +539,11 @@ class Retriever:
             self._log("WIKT             : no entries found")
         return self._score_and_combine(unique, question)
 
-    def _get_ddg_context(self, question: str, options: dict, query: str = None) -> str:
-        """DuckDuckGo-only search — with Wikipedia URL extraction as primary pass."""
-        if not _DDGS_AVAILABLE:
-            self._log("DDG              : ddgs package not installed")
-            return ""
-        if query:
-            ddgs_queries = [query]
-            self._log(f"DDG QUERIES      : {ddgs_queries}  (llm-generated)")
-        else:
-            proper_only = " ".join(
-                re.sub(r"'s?$", "", w)
-                for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
-                if i > 0 and w[0].isupper() and len(w) > 2
-            )
-            ddgs_queries = [q for q in [question, proper_only] if q]
-            self._log(f"DDG QUERIES      : {ddgs_queries}")
-
-        all_ddgs = []
-        with ThreadPoolExecutor(max_workers=2) as ex:
-            ddgs_futs = {ex.submit(self._search_ddgs, dq, 5): dq for dq in ddgs_queries}
-            ddgs_done, _ = wait(ddgs_futs.keys(), timeout=4.0)
-        seen_ddgs = set()
-        for fut in ddgs_done:
-            try:
-                for r in fut.result():
-                    key = r.get("href", r.get("body", ""))[:80]
-                    if key not in seen_ddgs:
-                        seen_ddgs.add(key)
-                        all_ddgs.append(r)
-            except Exception:
-                pass
-        self._log(f"DDG RESULTS      : {len(all_ddgs)} result(s)")
-
-        seen_text, unique = set(), []
-
-        wiki_titles, seen_wiki = [], set()
-        for r in all_ddgs:
-            m = _WIKI_URL_RE.search(r.get("href", ""))
-            if m:
-                title = m.group(1).replace("_", " ")
-                if title not in seen_wiki:
-                    seen_wiki.add(title)
-                    wiki_titles.append(title)
-
-        if wiki_titles:
-            self._log(f"DDG WIKI TITLES  : {wiki_titles}")
-            ddgs_extracts = self._fetch_extracts(wiki_titles)
-            for title, ctx in ddgs_extracts.items():
-                if ctx[:80] not in seen_text:
-                    if _is_relevant(question, ctx):
-                        seen_text.add(ctx[:80])
-                        unique.append(ctx)
-                        self._log(f"DDG WIKI ACCEPT  : [{title}]")
-                    else:
-                        self._log(f"DDG WIKI REJECT  : [{title}] (relevance too low)")
-
-        if not unique:
-            for r in all_ddgs:
-                snippet = r.get("body", "").strip()
-                if snippet and snippet[:80] not in seen_text and _is_relevant(question, snippet):
-                    seen_text.add(snippet[:80])
-                    unique.append(snippet)
-                    self._log(f"DDG SNIPPET      : [{r.get('title', '')}]")
-
-        return self._score_and_combine(unique, question)
-
     def get_context_for_tool(self, tool: str, question: str,
                              options: dict = None, query: str = None) -> str:
         """Route retrieval to a named tool, optionally using an LLM-generated query.
 
-        tool  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        tool  : 'none' | 'wikipedia' | 'wiktionary'
         query : LLM-written search string; when provided it replaces the automatic
                 multi-query generation inside each tool method.
         Falls back to the full waterfall for unrecognised tool names.
@@ -698,23 +554,9 @@ class Retriever:
             return ""
         if tool == "wikipedia":
             self._log("TOOL ROUTE       : wikipedia")
-            ctx = self._get_wikipedia_context(question, options, query=query)
-            if not ctx:
-                # Drop the LLM query — it already failed or returned irrelevant
-                # results. Let DDG build its own queries from the question text
-                # and proper nouns, which are broader and more likely to hit.
-                self._log("WIKI EMPTY       : falling back to DuckDuckGo (question-based)")
-                ctx = self._get_ddg_context(question, options, query=None)
-            return ctx
+            return self._get_wikipedia_context(question, options, query=query)
         if tool == "wiktionary":
             self._log("TOOL ROUTE       : wiktionary")
-            ctx = self._get_wiktionary_context(question, options, query=query)
-            if not ctx:
-                self._log("WIKT EMPTY       : falling back to DuckDuckGo (question-based)")
-                ctx = self._get_ddg_context(question, options, query=None)
-            return ctx
-        if tool == "ddg":
-            self._log("TOOL ROUTE       : duckduckgo")
-            return self._get_ddg_context(question, options, query=query)
+            return self._get_wiktionary_context(question, options, query=query)
         self._log(f"TOOL ROUTE       : unknown '{tool}' → waterfall fallback")
         return self.get_context(question, options)
