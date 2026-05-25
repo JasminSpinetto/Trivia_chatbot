@@ -343,14 +343,15 @@ class LLMModel:
         4. Bayesian adjustment   → blend tool probs with memory confidence
         5. Confidence guard      → low-confidence picks fall back to wikipedia
 
-        source_tag : 'heuristic' | 'memory-shortcut(…%)' | raw LLM text
-        tool_name  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
-        query      : None  | LLM-written search string
+        source_tag  : 'heuristic' | 'memory-shortcut(…%)' | raw LLM text
+        tool_name   : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        query       : None  | LLM-written search string
+        mem_option  : option key the model picked without context (str), or None
         """
         # ── 1. Heuristic ──────────────────────────────────────────────────────
         hint = _heuristic_tool(question_text)
         if hint is not None:
-            return "heuristic", hint, None
+            return "heuristic", hint, None, None
 
         # ── 2. Memory probe ───────────────────────────────────────────────────
         mem_option, mem_conf = self._probe_memory(question_text, options)
@@ -362,7 +363,7 @@ class LLMModel:
 
         if mem_conf >= _MEMORY_SHORTCUT_THRESHOLD:
             tag = f"memory-shortcut(conf={mem_conf:.0%})"
-            return tag, "none", None
+            return tag, "none", None, mem_option
 
         # ── 3. LLM tool + query call ──────────────────────────────────────────
         # Options are intentionally hidden — seeing them causes the model to
@@ -437,16 +438,27 @@ class LLMModel:
             raw  = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
             tool = "wikipedia"
 
-        return raw, tool, query
+        return raw, tool, query, mem_option
 
-    def _generate(self, question_text: str, options: dict, context: str = "") -> tuple:
+    def _generate(self, question_text: str, options: dict,
+                  context: str = "", mem_bias: str = None) -> tuple:
         """Generate an answer and return (response_text, option_probs_dict).
 
         option_probs_dict maps each option key → % probability (softmax over
         the 4 option tokens at position 0 of the generation).
+        mem_bias: option key the model guessed without context — injected as
+        an explicit bias warning so the model actively reconsiders it.
         """
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
         if context:
+            bias_note = ""
+            if mem_bias is not None:
+                bias_label = options.get(str(mem_bias), "?")
+                bias_note = (
+                    f"- Your answer without context was option {mem_bias} "
+                    f"({bias_label}). This is likely a memorised bias — "
+                    f"do NOT default to it. Re-read the context and reconsider.\n"
+                )
             user_content = (
                 f"Context from web search:\n{context}\n\n"
                 f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
@@ -456,6 +468,7 @@ class LLMModel:
                 "- If the context describes a change or transition "
                 "('moved from X to Y', 'replaced by', 'became'), "
                 "choose the final or established state, not the origin.\n"
+                f"{bias_note}"
                 "- Trust the context over your own knowledge.\n"
                 "Reply with only the option number."
             )
@@ -548,7 +561,7 @@ class LLMModel:
 
         if self._retriever:
             if self._use_tool_selection:
-                source_tag, tool, query = self._select_tool(question_text, options)
+                source_tag, tool, query, mem_option = self._select_tool(question_text, options)
                 if source_tag == "heuristic":
                     self._log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
                 elif source_tag.startswith("memory-shortcut"):
@@ -564,7 +577,8 @@ class LLMModel:
                 self._log(f"{'RETRIEVAL MODE':<17}: waterfall (wikipedia → ddg)")
                 context = self._retriever.get_context(question_text, options)
         else:
-            context = ""
+            context  = ""
+            mem_option = None
 
         self._log(f"{'CONTEXT':<17}: {f'{len(context)} chars' if context else '(none)'}")
         if context:
@@ -572,7 +586,7 @@ class LLMModel:
             self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
-        response, answer_probs = self._generate(question_text, options, context)
+        response, answer_probs = self._generate(question_text, options, context, mem_bias=mem_option)
         answer = self._parse_token(response, options)
 
         self._log(f"{'RESPONSE':<17}: {response!r}")
