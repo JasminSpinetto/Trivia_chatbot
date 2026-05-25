@@ -171,8 +171,8 @@ class Retriever:
         self._session.mount("https://", HTTPAdapter(max_retries=_retry))
         self._session.headers.update(_WIKI_HDRS)
 
-    def _search_titles(self, query: str):
-        """Return up to 5 Wikipedia page titles, or None on error.
+    def _search_titles(self, query: str, srlimit: int = 5):
+        """Return up to srlimit Wikipedia page titles, or None on error.
 
         Returning None (vs empty list) lets callers distinguish a network/
         rate-limit failure from a query that simply matched no articles.
@@ -181,7 +181,7 @@ class Retriever:
             r = self._session.get(
                 _WIKI_API,
                 params={"action": "query", "list": "search",
-                        "srsearch": query, "srlimit": 5, "format": "json"},
+                        "srsearch": query, "srlimit": srlimit, "format": "json"},
                 timeout=3,
             )
             r.raise_for_status()
@@ -252,7 +252,7 @@ class Retriever:
             self._log(f"WIKT EXTRACT ERR : {e}")
             return {}
 
-    def _run_queries(self, queries: list) -> tuple:
+    def _run_queries(self, queries: list, srlimit: int = 5) -> tuple:
         """Run search queries in parallel, then batch-fetch all extracts.
 
         Returns (extracts: dict, had_error: bool).
@@ -266,7 +266,7 @@ class Retriever:
 
         # Phase 1: parallel searches → candidate title lists
         with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
-            future_map = {ex.submit(self._search_titles, q): q for q in queries}
+            future_map = {ex.submit(self._search_titles, q, srlimit): q for q in queries}
             done, _    = wait(future_map.keys(), timeout=_PARALLEL_TIMEOUT)
 
         had_error = False
@@ -516,8 +516,18 @@ class Retriever:
         automatic multi-query generation, keeping the search focused and fast.
         """
         if query:
-            self._log(f"WIKI QUERIES     : [{query!r}]  (llm-generated)")
-            queries = [query]
+            self._log(f"WIKI QUERIES     : [{query!r}]  (llm-generated, top-1)")
+            extracts, _ = self._run_queries([query], srlimit=1)
+            seen_text, unique = set(), []
+            for title, ctx in extracts.items():
+                if ctx[:80] not in seen_text:
+                    if _is_relevant(question, ctx):
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"WIKI ACCEPTED    : [{title}]")
+                    else:
+                        self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+            return self._score_and_combine(unique, question)
         else:
             proper_only = " ".join(
                 re.sub(r"'s?$", "", w)
@@ -541,17 +551,17 @@ class Retriever:
                 return ""
             self._log(f"WIKI QUERIES     : {queries}")
 
-        extracts, _ = self._run_queries(queries)
-        seen_text, unique = set(), []
-        for title, ctx in extracts.items():
-            if ctx[:80] not in seen_text:
-                if _is_relevant(question, ctx):
-                    seen_text.add(ctx[:80])
-                    unique.append(ctx)
-                    self._log(f"WIKI ACCEPTED    : [{title}]")
-                else:
-                    self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
-        return self._score_and_combine(unique, question)
+            extracts, _ = self._run_queries(queries)
+            seen_text, unique = set(), []
+            for title, ctx in extracts.items():
+                if ctx[:80] not in seen_text:
+                    if _is_relevant(question, ctx):
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"WIKI ACCEPTED    : [{title}]")
+                    else:
+                        self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+            return self._score_and_combine(unique, question)
 
     def _get_wiktionary_context(self, question: str, options: dict, query: str = None) -> str:
         """Wiktionary-only lookup — best for word definitions and etymology."""
