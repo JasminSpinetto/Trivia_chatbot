@@ -156,9 +156,9 @@ class Retriever:
             total=1,
             connect=0,               # fail fast on connection errors
             read=1,
-            backoff_factor=0.2,      # one retry after 0.2s
+            backoff_factor=2.0,      # one retry after 2s — gives Wikipedia time to clear burst rate limits
             status_forcelist=[429, 500, 502, 503, 504],
-            respect_retry_after_header=False,
+            respect_retry_after_header=False,  # ignore Retry-After (could be 60s+, busts budget)
         )
         self._session.mount("https://", HTTPAdapter(max_retries=_retry))
         self._session.headers.update(_WIKI_HDRS)
