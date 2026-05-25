@@ -100,7 +100,7 @@ _WIKT_ETYMOLOGY_RE = re.compile(
     r"|\bfrom\s+(?:the\s+)?(?:greek|latin|hebrew|arabic|french|german|italian|spanish)"
       r"\s+(?:word|term|phrase|root)\b"
     r"|\betymolog"
-    r"|\b(?:which|what)\s+(?:term|word|phrase)\s+(?:refers|describes|means|denotes|signifies|is\s+used)\b",
+    r"|\bwhich\s+(?:term|word|phrase)\s+(?:refers|means|denotes|signifies)\b",
     re.IGNORECASE,
 )
 
