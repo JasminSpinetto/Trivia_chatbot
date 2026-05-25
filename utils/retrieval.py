@@ -698,10 +698,18 @@ class Retriever:
             return ""
         if tool == "wikipedia":
             self._log("TOOL ROUTE       : wikipedia")
-            return self._get_wikipedia_context(question, options, query=query)
+            ctx = self._get_wikipedia_context(question, options, query=query)
+            if not ctx:
+                self._log("WIKI EMPTY       : falling back to DuckDuckGo")
+                ctx = self._get_ddg_context(question, options, query=query)
+            return ctx
         if tool == "wiktionary":
             self._log("TOOL ROUTE       : wiktionary")
-            return self._get_wiktionary_context(question, options, query=query)
+            ctx = self._get_wiktionary_context(question, options, query=query)
+            if not ctx:
+                self._log("WIKT EMPTY       : falling back to DuckDuckGo")
+                ctx = self._get_ddg_context(question, options, query=query)
+            return ctx
         if tool == "ddg":
             self._log("TOOL ROUTE       : duckduckgo")
             return self._get_ddg_context(question, options, query=query)
