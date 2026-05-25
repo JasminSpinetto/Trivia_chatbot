@@ -450,10 +450,13 @@ class LLMModel:
             user_content = (
                 f"Context from web search:\n{context}\n\n"
                 f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
-                "Read the full context carefully before answering. "
-                "If the text describes a change, transition, or movement "
-                "(e.g. 'moved from X to Y', 'replaced by', 'became'), "
-                "the correct answer is the final or established state, not the origin. "
+                "Read the context carefully, then follow these rules:\n"
+                "- If any option word appears in the context as a synonym, "
+                "definition, or equivalent of the subject, choose that option.\n"
+                "- If the context describes a change or transition "
+                "('moved from X to Y', 'replaced by', 'became'), "
+                "choose the final or established state, not the origin.\n"
+                "- Trust the context over your own knowledge.\n"
                 "Reply with only the option number."
             )
         else:
