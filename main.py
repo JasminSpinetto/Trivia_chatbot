@@ -4,12 +4,13 @@ import argparse
 import yaml
 from datetime import datetime
 from dotenv import dotenv_values
-from utils import MillionaireClient, AuthenticationError
+from utils import MillionaireClient, AuthenticationError, GameError
+from models import transcriber
 import json
 import random
 import time
 
-ONLINE       = False
+ONLINE       = True
 RESULTS_FILE = "results/results.csv"
 CONFIG_DIR   = "config"
 
@@ -95,7 +96,7 @@ def save_results(model_key, model, competitions, play_history, math_only):
     print(f"\nResults appended to {RESULTS_FILE}")
 
 
-def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, math_only):
+def play_online(model, model_key, speech_mode, test_all, multiplicity, verbose, output_csv, math_only):
     """
     Runs an interactive quiz session against the online platform.
     Allows the user to select a competition, play multiple games, and
@@ -113,6 +114,8 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
     competitions     = client.competitions.list_all()
     num_competitions = len(competitions)
     play_history     = {i: {"num_games": 0, "level": [], "score": []} for i in range(num_competitions)}
+    mode = "speech" if speech_mode else "text"
+    transcriber = Transcriber() if speech_mode else None
 
     print("\n=== Available Competitions ===")
     for comp in competitions:
@@ -148,16 +151,40 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
                 comp_id = int(input("Enter competition ID:"))
             play_history[comp_id]["num_games"] += 1
 
-        game = client.game.start(competition_id=comp_id)
+        game = client.game.start(competition_id=comp_id, mode=mode)
         if print_cond:
             print(f"\n=== Starting Game ===\nSession ID: {game.session_id}")
             print(f"Total number of questions: {game.state.competition.max_levels}\n")
 
         while game.in_progress:
-            question = game.current_question
-            if not question:
-                if print_cond: print("No question available. Game may have ended.")
-                break
+            if mode == "text":
+                question = game.current_question
+                if not question:
+                    if print_cond: print("No question available. Game may have ended.")
+                    break
+                options = {str(opt.id): opt.text for opt in question.options}
+            else:
+                try:
+                    question_audio = game.fetch_audio_question()
+                    question = transcriber.process(question_audio)
+                except GameError as e:
+                    print(f"Error fetching question audio: {e}")
+                    break
+                
+                options = {}
+                for i in range(4):
+                    try:
+                        option_audio = game.fetch_audio_option_next()
+                        option = transcriber.process(option_audio, option=i)
+                        if game.current_question and i < len(game.current_question.options):
+                            options[str(i)] = option
+                    except GameError as e:
+                        print(f"Error fetching question audio: {e}")
+                        break
+                
+                if not options:
+                    print("No question available. Game may have ended.")
+                    break
 
             if print_cond:
                 print(f"\n--- Level {game.current_level} ---")
@@ -165,8 +192,8 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
                 for opt in question.options:
                     print(f"  [{opt.id}] {opt.text}")
 
-            options   = {str(opt.id): opt.text for opt in question.options}
             answer_id = model.answer(question.text, options)
+            if mode == "speech": answer_id = chr(65 + answer_id)
             if print_cond: print(f"\nSelected answer: {answer_id}")
 
             time_left = game.time_remaining
@@ -391,6 +418,7 @@ def main():
         required=True,
         help=f"Model config YAML filename (looked up in {CONFIG_DIR}/) or full path"
     )
+    parser.add_argument("--speech_mode", action="store_true", default=False, help="Use speech mode")
     parser.add_argument("--test_all",    action="store_true", default=False, help="Test all competitions")
     parser.add_argument("--math",        action="store_true", default=False, help="Run on math competition only")
     parser.add_argument("--multiplicity",type=int, default=1, help="Games per competition")
@@ -421,9 +449,11 @@ def main():
         model.debug = args.debug
 
     if ONLINE:
-        play_online(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
+        play_online(model, model_key, args.speech_mode, args.test_all, 
+                    args.multiplicity, args.verbose, args.output_csv, args.math)
     else:
-        play_offline(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
+        play_offline(model, model_key, args.test_all, 
+                     args.multiplicity, args.verbose, args.output_csv, args.math)
 
 
 if __name__ == "__main__":

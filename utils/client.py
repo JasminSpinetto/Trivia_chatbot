@@ -89,7 +89,7 @@ class MillionaireClient:
         return self._leaderboard
     
     # Convenience methods for common workflows
-    def play_game(self, competition_id: int, answer_strategy):
+    def play_game(self, competition_id: int, answer_strategy, mode: str = "text"):
         """
         Play a complete game using a provided answer strategy function.
         
@@ -99,6 +99,7 @@ class MillionaireClient:
             competition_id: The ID of the competition to play
             answer_strategy: A callable that receives a Question and returns
                             either an option_id (int) or option_text (str)
+            mode: Game mode, either "text" or "speech" (default: "text")
             
         Returns:
             The final GameSession state
@@ -111,7 +112,7 @@ class MillionaireClient:
             final_state = client.play_game(1, my_strategy)
             print(f"Earned: {final_state.earned_amount}")
         """
-        game = self._game.start(competition_id)
+        game = self._game.start(competition_id, mode=mode)
         
         while game.in_progress:
             question = game.current_question

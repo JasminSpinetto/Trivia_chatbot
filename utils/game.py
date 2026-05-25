@@ -66,6 +66,75 @@ class GameSession:
         """Get the money pyramid."""
         return self._state.money_pyramid
     
+    @property
+    def mode(self) -> str:
+        """Get the game mode (text or speech)."""
+        return self._state.mode
+    
+    def fetch_audio_question(self) -> bytes:
+        """
+        Fetch the current question audio (speech mode only).
+        
+        Returns:
+            WAV audio data as bytes
+            
+        Raises:
+            GameError: If the session is not in speech mode
+        """
+        if self.mode != "speech":
+            raise GameError("Audio is only available in speech mode")
+        return self._client.get(
+            f"/api/game/{self.session_id}/audio/question",
+            raw=True
+        )
+    
+    def fetch_audio_option_next(self) -> bytes:
+        """
+        Fetch the next option audio in sequence (speech mode only).
+        
+        The server enforces sequential delivery: A, then B, then C, then D.
+        Calling this after all four options have been delivered will raise an error.
+        
+        Returns:
+            WAV audio data as bytes
+            
+        Raises:
+            GameError: If the session is not in speech mode or all options delivered
+        """
+        if self.mode != "speech":
+            raise GameError("Audio is only available in speech mode")
+        return self._client.get(
+            f"/api/game/{self.session_id}/audio/option/next",
+            raw=True
+        )
+    
+    def fetch_audio_option(self, index: int) -> bytes:
+        """
+        Fetch an option audio clip by index (speech mode only).
+        
+        This is intended for replaying already-delivered options.
+        The server rejects requests for options that have not yet been
+        delivered via :meth:`fetch_audio_option_next`.
+        
+        Args:
+            index: Option index (0=A, 1=B, 2=C, 3=D)
+            
+        Returns:
+            WAV audio data as bytes
+            
+        Raises:
+            GameError: If the session is not in speech mode
+            ValueError: If index is not 0-3
+        """
+        if self.mode != "speech":
+            raise GameError("Audio is only available in speech mode")
+        if not 0 <= index <= 3:
+            raise ValueError("Option index must be 0, 1, 2, or 3")
+        return self._client.get(
+            f"/api/game/{self.session_id}/audio/option/{index}",
+            raw=True
+        )
+    
     def refresh_state(self) -> GameState:
         """
         Refresh the game state from the server.
@@ -124,6 +193,7 @@ class GameSession:
                 "currentLevel": result.current_level or self._state.current_level,
                 "moneyPyramid": [ml.__dict__ for ml in result.money_pyramid] if result.money_pyramid else self._state.money_pyramid,
                 "questionDeadline": result.question_deadline.isoformat() if result.question_deadline else None,
+                "mode": self._state.mode,
                 "question": {
                     "id": result.question.id,
                     "level": result.question.level,
@@ -180,19 +250,20 @@ class GameModule:
     def __init__(self, client: BaseClient):
         self._client = client
     
-    def start(self, competition_id: int) -> GameSession:
+    def start(self, competition_id: int, mode: str = "text") -> GameSession:
         """
         Start a new game session.
         
         Args:
             competition_id: The ID of the competition to play
+            mode: Game mode, either "text" or "speech" (default: "text")
             
         Returns:
             GameSession object for the new game
         """
         response = self._client.post(
             "/api/game/start",
-            data={"competitionId": competition_id}
+            data={"competitionId": competition_id, "mode": mode}
         )
         state = GameState.from_dict(response)
         return GameSession(self._client, state)

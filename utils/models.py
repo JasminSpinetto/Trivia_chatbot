@@ -34,13 +34,13 @@ class User:
 class Option:
     """Represents an answer option for a question."""
     id: int
-    text: str
+    text: Optional[str] = None
 
     @classmethod
     def from_dict(cls, data: dict) -> "Option":
         return cls(
             id=data["id"],
-            text=data["text"]
+            text=data.get("text")
         )
 
 
@@ -48,15 +48,15 @@ class Option:
 class Question:
     """Represents a quiz question."""
     id: int
-    text: str
-    options: List[Option]
+    text: Optional[str] = None
+    options: List[Option] = field(default_factory=list)
     level: int = 0
 
     @classmethod
     def from_dict(cls, data: dict) -> "Question":
         return cls(
             id=data["id"],
-            text=data["text"],
+            text=data.get("text"),
             options=[Option.from_dict(opt) for opt in data.get("options", [])],
             level=data.get("level", 0)
         )
@@ -71,6 +71,8 @@ class Question:
     def get_option_by_text(self, text: str, case_sensitive: bool = False) -> Optional[Option]:
         """Get an option by its text content."""
         for opt in self.options:
+            if opt.text is None:
+                continue
             opt_text = opt.text if case_sensitive else opt.text.lower()
             search_text = text if case_sensitive else text.lower()
             if opt_text == search_text:
@@ -173,6 +175,7 @@ class GameState:
     question_deadline: Optional[datetime] = None
     question: Optional[Question] = None
     max_level: Optional[int] = None
+    mode: str = "text"
 
     @classmethod
     def from_dict(cls, data: dict) -> "GameState":
@@ -192,7 +195,8 @@ class GameState:
             money_pyramid=[MoneyLevel.from_dict(ml) for ml in data.get("moneyPyramid", [])],
             question_deadline=deadline,
             question=Question.from_dict(data["question"]) if data.get("question") else None,
-            max_level=data.get("maxLevel")
+            max_level=data.get("maxLevel"),
+            mode=data.get("mode", "text"),
         )
 
     @property

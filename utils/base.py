@@ -81,8 +81,9 @@ class BaseClient:
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
         headers: Optional[Dict] = None,
-        auth_required: bool = True
-    ) -> Dict[str, Any]:
+        auth_required: bool = True,
+        raw: bool = False
+    ) -> Any:
         """
         Make an HTTP request to the API.
         
@@ -131,6 +132,10 @@ class BaseClient:
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
             
+            if raw:
+                if response.status_code in (200, 201, 204):
+                    return response.content
+                # For error responses, fall through to normal handling
             return self._handle_response(response)
             
         except requests.Timeout:
@@ -138,22 +143,22 @@ class BaseClient:
         except requests.ConnectionError as e:
             raise MillionaireError(f"Could not connect to server at {self.base_url}: {e}")
     
-    def get(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    def get(self, endpoint: str, **kwargs) -> Any:
         """Make a GET request."""
         return self.request("GET", endpoint, **kwargs)
     
-    def post(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    def post(self, endpoint: str, **kwargs) -> Any:
         """Make a POST request."""
         return self.request("POST", endpoint, **kwargs)
     
-    def put(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    def put(self, endpoint: str, **kwargs) -> Any:
         """Make a PUT request."""
         return self.request("PUT", endpoint, **kwargs)
     
-    def patch(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    def patch(self, endpoint: str, **kwargs) -> Any:
         """Make a PATCH request."""
         return self.request("PATCH", endpoint, **kwargs)
     
-    def delete(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    def delete(self, endpoint: str, **kwargs) -> Any:
         """Make a DELETE request."""
         return self.request("DELETE", endpoint, **kwargs)
