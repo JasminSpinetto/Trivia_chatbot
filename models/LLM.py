@@ -37,6 +37,16 @@ TOOL_QUERY_PROMPT = (
 
 _TOOL_MAP = {"0": "none", "1": "wikipedia", "2": "wiktionary"}
 
+_ELIM_PROMPT = (
+    "You are reviewing answer options for a quiz question.\n"
+    "Read the context carefully and identify option numbers that the context "
+    "EXPLICITLY CONTRADICTS or DISPROVES.\n"
+    "Do NOT eliminate an option just because it is not mentioned — only eliminate "
+    "options the context directly contradicts.\n"
+    "Reply with only the numbers to eliminate separated by spaces (e.g. '0 3'), "
+    "or 'none' if nothing should be eliminated."
+)
+
 # Minimum confidence required before trusting the LLM's tool pick.
 # Wikipedia is the safe fallback (broadest coverage), so it has no threshold.
 # Stricter for tools with narrow or uncertain coverage.
@@ -438,6 +448,49 @@ class LLMModel:
 
         return raw, tool, query, mem_option
 
+    def _eliminate_options(self, question_text: str, options: dict, context: str) -> tuple:
+        """Ask the LLM which options the context explicitly contradicts.
+
+        Returns (surviving_options_dict, raw_llm_output).
+        Always keeps at least one option — if the LLM eliminates everything,
+        the full option set is returned unchanged.
+        """
+        options_str = "\n".join(f"  {k}: {v}" for k, v in options.items())
+        messages = [
+            {"role": "system", "content": _ELIM_PROMPT},
+            {"role": "user",   "content": (
+                f"Context:\n{context}\n\n"
+                f"Question: {question_text}\n\n"
+                f"Options:\n{options_str}\n\n"
+                "Which option numbers does the context contradict? Reply with numbers or 'none'."
+            )},
+        ]
+        text   = self.pipe.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        inputs = self.pipe.tokenizer(text, return_tensors="pt")
+        device = next(self.pipe.model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            out = self.pipe.model.generate(
+                **inputs,
+                max_new_tokens=15,
+                do_sample=False,
+            )
+
+        input_len = inputs["input_ids"].shape[1]
+        raw = self.pipe.tokenizer.decode(
+            out.sequences[0, input_len:], skip_special_tokens=True
+        ).strip()
+
+        if "none" in raw.lower():
+            return options, raw
+
+        eliminated_keys = set(re.findall(r'\b[0-9]\b', raw))
+        surviving = {k: v for k, v in options.items() if k not in eliminated_keys}
+        return (surviving if surviving else options), raw
+
     def _generate(self, question_text: str, options: dict,
                   context: str = "", mem_bias: str = None) -> tuple:
         """Generate an answer and return (response_text, option_probs_dict).
@@ -589,27 +642,21 @@ class LLMModel:
             self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
-        # ── Option elimination ────────────────────────────────────────────────
-        # Scan the context for which option labels appear literally.
-        # • None found  → context is too generic; ignore it and answer from memory.
-        # • Some found  → eliminate the rest; re-prompt with a reduced option set.
-        # • All found   → normal behaviour.
+        # ── LLM option elimination ────────────────────────────────────────────
+        # Ask the model to identify which options the context explicitly
+        # contradicts, then re-run the answer with only the survivors.
         effective_context = context
         effective_options = options
         if context:
-            ctx_lower  = context.lower()
-            surviving  = {k: v for k, v in options.items() if v.lower() in ctx_lower}
-            n_total    = len(options)
+            surviving, elim_raw = self._eliminate_options(question_text, options, context)
+            n_total   = len(options)
             n_survived = len(surviving)
-            if n_survived == 0:
-                self._log(f"{'ELIM SCOPE':<17}: 0/{n_total} options in context → ignoring context (memory fallback)")
-                effective_context = ""
-            elif n_survived < n_total:
-                eliminated = [v for k, v in options.items() if k not in surviving]
-                self._log(f"{'ELIM SCOPE':<17}: {n_survived}/{n_total} options in context → eliminated {eliminated}")
+            if n_survived < n_total:
+                eliminated_labels = [v for k, v in options.items() if k not in surviving]
+                self._log(f"{'ELIMINATED':<17}: {eliminated_labels}  (llm: {elim_raw!r})")
                 effective_options = surviving
             else:
-                self._log(f"{'ELIM SCOPE':<17}: {n_total}/{n_total} options in context → no elimination")
+                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated  (llm: {elim_raw!r})")
 
         response, answer_probs = self._generate(question_text, effective_options, effective_context, mem_bias=mem_option)
         answer = self._parse_token(response, options)
