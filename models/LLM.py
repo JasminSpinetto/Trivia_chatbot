@@ -22,14 +22,23 @@ SYSTEM_PROMPTS = {
 TOOL_SELECTION_PROMPT = (
     "You are deciding which information source to use to answer a quiz question.\n\n"
     "Sources:\n"
-    "  0 = memory      — answer directly from your own knowledge (no lookup needed)\n"
-    "  1 = wikipedia   — encyclopedia: named people, events, places, scientific concepts\n"
-    "  2 = wiktionary  — definitions and etymology: Greek, Latin, ancient, or technical terms\n"
+    "  0 = memory      — answer from your own knowledge (no lookup needed)\n"
+    "  1 = wikipedia   — encyclopedia: historical events, named people, movements,\n"
+    "                    places, scientific discoveries, cultural practices\n"
+    "  2 = wiktionary  — ONLY for word/term meaning: definitions, etymology,\n"
+    "                    linguistic origin of Greek, Latin, or ancient vocabulary\n"
     "  3 = duckduckgo  — general web search for anything else\n\n"
+    "IMPORTANT: use wiktionary ONLY when the question asks what a word or term MEANS "
+    "linguistically — NOT for historical or cultural facts about an entity.\n\n"
     "Choose the SINGLE most appropriate source. Reply with ONLY the digit (0, 1, 2, or 3)."
 )
 
 _TOOL_MAP = {"0": "none", "1": "wikipedia", "2": "wiktionary", "3": "ddg"}
+
+# Minimum confidence required before trusting the LLM's tool pick.
+# Wikipedia is the safe fallback (broadest coverage), so it has no threshold.
+# Stricter for tools with narrow or uncertain coverage.
+_TOOL_MIN_CONF = {"none": 0.80, "wiktionary": 0.65, "ddg": 0.50}
 
 _DTYPE_MAP = {
     "bfloat16": torch.bfloat16,
@@ -222,32 +231,86 @@ class LLMModel:
         self._game_info    = competition_name
 
     def _select_tool(self, question_text: str, options: dict) -> tuple:
-        """Return (source_tag, tool_name) for the best retrieval tool.
+        """Return (source_tag, tool_name, prob_dict) for the best retrieval tool.
 
-        Fast path: heuristic pre-filter catches clear Wiktionary cases without
-        an extra LLM inference call (~40% of terminology questions).
-        Slow path: asks the LLM to choose when no heuristic fires.
+        Fast path  : heuristic pre-filter — no LLM call, prob_dict is None.
+        Slow path  : single forward pass with output_scores to get exact token
+                     probabilities for digits 0-3. Falls back to wikipedia when
+                     the top pick is below _TOOL_MIN_CONF (avoids confident-but-wrong).
 
-        source_tag is 'heuristic' or the raw LLM response string.
-        tool_name is one of: 'none', 'wikipedia', 'wiktionary', 'ddg'.
+        source_tag : 'heuristic' | raw generated text (possibly with override note)
+        tool_name  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        prob_dict  : None | {'none': %, 'wikipedia': %, 'wiktionary': %, 'ddg': %}
         """
         hint = _heuristic_tool(question_text)
         if hint is not None:
-            return "heuristic", hint
+            return "heuristic", hint, None
 
         options_str = "\n".join(f"  {k}: {v}" for k, v in options.items())
         messages = [
             {"role": "system", "content": TOOL_SELECTION_PROMPT},
             {"role": "user",   "content": f"Question: {question_text}\n\nOptions:\n{options_str}"},
         ]
-        gen_config = GenerationConfig(max_new_tokens=5, do_sample=False)
-        output     = self.pipe(messages, generation_config=gen_config, return_full_text=False)
-        raw        = output[0]["generated_text"].strip()
-        for token in raw.split():
-            t = token.strip(".,!?:;")
-            if t in _TOOL_MAP:
-                return raw, _TOOL_MAP[t]
-        return raw, "wikipedia"  # safe default when model outputs unexpected text
+
+        # Build input via chat template so we can call model.generate() directly
+        # and capture per-token logits — the pipeline API doesn't expose scores.
+        text   = self.pipe.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        inputs = self.pipe.tokenizer(text, return_tensors="pt")
+        device = next(self.pipe.model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            out = self.pipe.model.generate(
+                **inputs,
+                max_new_tokens=1,
+                output_scores=True,
+                return_dict_in_generate=True,
+                do_sample=False,
+            )
+
+        # Decode the single generated token for the raw label
+        raw = self.pipe.tokenizer.decode(
+            out.sequences[0, inputs["input_ids"].shape[1]:],
+            skip_special_tokens=True,
+        ).strip()
+
+        # Extract logits for the digit tokens "0"-"3" at the first generated position
+        first_logits = out.scores[0][0]  # [vocab_size]
+        digit_ids = {}
+        for d in "0123":
+            ids = self.pipe.tokenizer.encode(d, add_special_tokens=False)
+            if ids:
+                digit_ids[d] = ids[-1]
+
+        if len(digit_ids) == 4:
+            digit_logits = torch.stack([first_logits[digit_ids[d]] for d in "0123"])
+            probs        = torch.softmax(digit_logits, dim=0)
+            best_i       = probs.argmax().item()
+            best_digit   = "0123"[best_i]
+            best_prob    = probs[best_i].item()
+            prob_dict    = {_TOOL_MAP[d]: round(probs[i].item() * 100, 1)
+                            for i, d in enumerate("0123")}
+            tool = _TOOL_MAP.get(best_digit, "wikipedia")
+
+            # Low-confidence override: defer to wikipedia when the model is unsure
+            min_conf = _TOOL_MIN_CONF.get(tool, 0.0)
+            if best_prob < min_conf:
+                tool = "wikipedia"
+                raw  = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
+        else:
+            # Tokenizer encodes digits as multi-token sequences — fall back to
+            # greedy text parsing without probability info
+            prob_dict = None
+            tool = "wikipedia"
+            for token in raw.split():
+                t = token.strip(".,!?:;")
+                if t in _TOOL_MAP:
+                    tool = _TOOL_MAP[t]
+                    break
+
+        return raw, tool, prob_dict
 
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
@@ -312,11 +375,14 @@ class LLMModel:
 
         if self._retriever:
             if self._use_tool_selection:
-                source_tag, tool = self._select_tool(question_text, options)
+                source_tag, tool, prob_dict = self._select_tool(question_text, options)
                 if source_tag == "heuristic":
                     self._log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
                 else:
                     self._log(f"{'TOOL SELECT':<17}: llm={source_tag!r} → {tool}")
+                    if prob_dict:
+                        prob_str = "  ".join(f"{k}:{v}%" for k, v in prob_dict.items())
+                        self._log(f"{'TOOL PROBS':<17}: {prob_str}")
                 context = self._retriever.get_context_for_tool(tool, question_text, options)
             else:
                 self._log(f"{'RETRIEVAL MODE':<17}: waterfall (wikipedia → ddg)")
