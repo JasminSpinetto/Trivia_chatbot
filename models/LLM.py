@@ -44,6 +44,36 @@ _TOOL_MAP = {"0": "none", "1": "wikipedia", "2": "wiktionary", "3": "ddg"}
 # Stricter for tools with narrow or uncertain coverage.
 _TOOL_MIN_CONF = {"none": 0.80, "wiktionary": 0.65, "ddg": 0.50}
 
+# If the memory probe confidence is at or above this level we skip the LLM
+# tool-selection call entirely — the model clearly already knows the answer.
+_MEMORY_SHORTCUT_THRESHOLD = 0.90
+
+
+def _bayesian_adjust(prob_dict: dict, mem_conf: float) -> dict:
+    """Re-weight tool selection probabilities using memory-probe confidence.
+
+    Treats mem_conf as the likelihood that the model knows the answer without
+    any retrieval (i.e. evidence for tool='none'):
+      P(none  | mem) ∝ P(none)  * mem_conf
+      P(other | mem) ∝ P(other) * (1 - mem_conf)
+    """
+    p_none = prob_dict.get("none", 0.0) / 100
+    p_rest = 1.0 - p_none
+    unnorm_none = p_none * mem_conf
+    unnorm_rest = p_rest * (1.0 - mem_conf)
+    total       = unnorm_none + unnorm_rest
+    if total == 0:
+        return dict(prob_dict)
+    adj_none    = unnorm_none / total
+    rest_scale  = (unnorm_rest / total) / p_rest if p_rest > 0 else 0.0
+    return {
+        "none":       round(adj_none * 100, 1),
+        "wikipedia":  round(prob_dict.get("wikipedia",  0) / 100 * rest_scale * 100, 1),
+        "wiktionary": round(prob_dict.get("wiktionary", 0) / 100 * rest_scale * 100, 1),
+        "ddg":        round(prob_dict.get("ddg",        0) / 100 * rest_scale * 100, 1),
+    }
+
+
 _DTYPE_MAP = {
     "bfloat16": torch.bfloat16,
     "float16":  torch.float16,
@@ -252,32 +282,94 @@ class LLMModel:
         self._question_num = 0
         self._game_info    = competition_name
 
-    def _select_tool(self, question_text: str, options: dict) -> tuple:
-        """Return (source_tag, tool_name, prob_dict, query) for retrieval.
+    def _probe_memory(self, question_text: str, options: dict) -> tuple:
+        """Single-token forward pass: how confidently can the model answer without retrieval?
 
-        Fast path  : heuristic pre-filter — no LLM call, query=None (retrieval
-                     uses its own term extraction for that tool).
-        Slow path  : one forward pass (max_new_tokens=30) generates '<digit> | <query>'.
-                     First-token logits give exact probabilities over 0-3.
-                     Low-confidence picks fall back to wikipedia.
+        Uses the same direct model.generate() path as tool selection to capture
+        per-token logits. Computes softmax over the 4 option token IDs only.
 
-        source_tag : 'heuristic' | raw generated text
-        tool_name  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
-        prob_dict  : None | {'none': %, 'wikipedia': %, 'wiktionary': %, 'ddg': %}
-        query      : None | LLM-written search string (replaces auto-generated queries)
+        Returns (best_option_key, confidence) — e.g. ('2', 0.83).
         """
+        options_str = "\n".join(f"{k}: {v}" for k, v in options.items())
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPTS["default"]},
+            {"role": "user",   "content": (
+                f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
+                "Reply with only the option number."
+            )},
+        ]
+        text   = self.pipe.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        inputs = self.pipe.tokenizer(text, return_tensors="pt")
+        device = next(self.pipe.model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            out = self.pipe.model.generate(
+                **inputs,
+                max_new_tokens=1,
+                output_scores=True,
+                return_dict_in_generate=True,
+                do_sample=False,
+            )
+
+        first_logits = out.scores[0][0]
+        opt_ids = {}
+        for k in options:
+            ids = self.pipe.tokenizer.encode(str(k), add_special_tokens=False)
+            if ids:
+                opt_ids[str(k)] = ids[-1]
+        if not opt_ids:
+            return None, 0.0
+
+        keys        = list(opt_ids.keys())
+        opt_logits  = torch.stack([first_logits[opt_ids[k]] for k in keys])
+        probs       = torch.softmax(opt_logits, dim=0)
+        best_i      = probs.argmax().item()
+        return keys[best_i], probs[best_i].item()
+
+    def _select_tool(self, question_text: str, options: dict) -> tuple:
+        """Return (source_tag, tool_name, query) for retrieval.
+
+        Logging is done internally so callers stay clean.
+
+        Decision flow
+        ─────────────
+        1. Heuristic pre-filter  → fast path, no LLM calls
+        2. Memory probe          → single-token forward pass over answer options
+           • conf ≥ 90 %         → short-circuit to 'none', skip tool-selection LLM call
+        3. LLM tool+query call   → '<digit> | <query>' format, 30 tokens
+        4. Bayesian adjustment   → blend tool probs with memory confidence
+        5. Confidence guard      → low-confidence picks fall back to wikipedia
+
+        source_tag : 'heuristic' | 'memory-shortcut(…%)' | raw LLM text
+        tool_name  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        query      : None  | LLM-written search string
+        """
+        # ── 1. Heuristic ──────────────────────────────────────────────────────
         hint = _heuristic_tool(question_text)
         if hint is not None:
-            return "heuristic", hint, None, None
+            return "heuristic", hint, None
 
+        # ── 2. Memory probe ───────────────────────────────────────────────────
+        mem_option, mem_conf = self._probe_memory(question_text, options)
+        mem_option_text = options.get(str(mem_option), "?") if mem_option else "?"
+        self._log(
+            f"{'MEMORY PROBE':<17}: option={mem_option} ({mem_option_text!r})  "
+            f"conf={mem_conf:.0%}"
+        )
+
+        if mem_conf >= _MEMORY_SHORTCUT_THRESHOLD:
+            tag = f"memory-shortcut(conf={mem_conf:.0%})"
+            return tag, "none", None
+
+        # ── 3. LLM tool + query call ──────────────────────────────────────────
         options_str = "\n".join(f"  {k}: {v}" for k, v in options.items())
         messages = [
             {"role": "system", "content": TOOL_QUERY_PROMPT},
             {"role": "user",   "content": f"Question: {question_text}\n\nOptions:\n{options_str}"},
         ]
-
-        # Call model.generate() directly to capture per-token scores.
-        # The pipeline API doesn't expose output_scores.
         text   = self.pipe.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -299,8 +391,8 @@ class LLMModel:
             out.sequences[0, input_len:], skip_special_tokens=True
         ).strip()
 
-        # Probabilities: digit 0-3 are the first generated token (format: '<digit> | …')
-        first_logits = out.scores[0][0]  # [vocab_size]
+        # First-token logits → tool selection probabilities over digits 0-3
+        first_logits = out.scores[0][0]
         digit_ids = {}
         for d in "0123":
             ids = self.pipe.tokenizer.encode(d, add_special_tokens=False)
@@ -309,33 +401,41 @@ class LLMModel:
 
         if len(digit_ids) == 4:
             digit_logits = torch.stack([first_logits[digit_ids[d]] for d in "0123"])
-            probs      = torch.softmax(digit_logits, dim=0)
-            best_i     = probs.argmax().item()
-            best_prob  = probs[best_i].item()
-            prob_dict  = {_TOOL_MAP[d]: round(probs[i].item() * 100, 1)
+            d_probs    = torch.softmax(digit_logits, dim=0)
+            best_i     = d_probs.argmax().item()
+            best_prob  = d_probs[best_i].item()
+            prob_dict  = {_TOOL_MAP[d]: round(d_probs[i].item() * 100, 1)
                           for i, d in enumerate("0123")}
         else:
-            probs, prob_dict, best_prob = None, None, 1.0
-            best_i = 1  # default to wikipedia index
+            d_probs, prob_dict, best_prob, best_i = None, None, 1.0, 1
 
-        # Parse tool and query from '<digit> | <query>'
+        # Parse '<digit> | <query>' — use logit-best digit as ground truth
         tool, query = _parse_tool_query(raw)
-
-        # Probabilities override when best_i disagrees with parsed digit
-        # (guards against format deviations like the model writing "wikipedia" instead of "1")
-        if probs is not None:
+        if d_probs is not None:
             best_digit = "0123"[best_i]
             if _TOOL_MAP.get(best_digit) != tool:
                 tool = _TOOL_MAP.get(best_digit, "wikipedia")
 
-        # Low-confidence fallback to wikipedia
+        # ── 4. Bayesian adjustment with memory confidence ─────────────────────
+        if prob_dict is not None:
+            adj = _bayesian_adjust(prob_dict, mem_conf)
+            raw_str = "  ".join(f"{k}:{v}%" for k, v in prob_dict.items())
+            adj_str = "  ".join(f"{k}:{v}%" for k, v in adj.items())
+            self._log(f"{'TOOL PROBS':<17}: {raw_str}")
+            self._log(f"{'ADJ PROBS':<17}: {adj_str}  (mem={mem_conf:.0%})")
+            # Pick tool from adjusted probabilities
+            tool = max(adj, key=adj.get)
+            best_prob = adj[tool] / 100
+        else:
+            self._log(f"{'TOOL PROBS':<17}: (unavailable — digit token ambiguity)")
+
+        # ── 5. Confidence guard ───────────────────────────────────────────────
         min_conf = _TOOL_MIN_CONF.get(tool, 0.0)
         if best_prob < min_conf:
-            tool  = "wikipedia"
-            query = query  # keep the query even when overriding the tool
-            raw   = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
+            raw  = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
+            tool = "wikipedia"
 
-        return raw, tool, prob_dict, query
+        return raw, tool, query
 
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
@@ -400,14 +500,13 @@ class LLMModel:
 
         if self._retriever:
             if self._use_tool_selection:
-                source_tag, tool, prob_dict, query = self._select_tool(question_text, options)
+                source_tag, tool, query = self._select_tool(question_text, options)
                 if source_tag == "heuristic":
                     self._log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
+                elif source_tag.startswith("memory-shortcut"):
+                    self._log(f"{'TOOL SELECT':<17}: {source_tag} → none")
                 else:
                     self._log(f"{'TOOL SELECT':<17}: llm={source_tag!r} → {tool}")
-                    if prob_dict:
-                        prob_str = "  ".join(f"{k}:{v}%" for k, v in prob_dict.items())
-                        self._log(f"{'TOOL PROBS':<17}: {prob_str}")
                     if query:
                         self._log(f"{'QUERY (LLM)':<17}: {query!r}")
                 context = self._retriever.get_context_for_tool(
