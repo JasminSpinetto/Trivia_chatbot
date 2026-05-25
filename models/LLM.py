@@ -46,7 +46,7 @@ _TOOL_MIN_CONF = {"none": 0.80, "wiktionary": 0.65, "ddg": 0.50}
 
 # If the memory probe confidence is at or above this level we skip the LLM
 # tool-selection call entirely — the model clearly already knows the answer.
-_MEMORY_SHORTCUT_THRESHOLD = 0.90
+_MEMORY_SHORTCUT_THRESHOLD = 0.95
 
 
 def _bayesian_adjust(prob_dict: dict, mem_conf: float) -> dict:
