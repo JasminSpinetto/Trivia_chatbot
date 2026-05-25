@@ -24,3 +24,4 @@ dependencies:
       - pyyaml #for loading model config files
       - wikipedia
       - duckduckgo-search
+      - openai-whisper

@@ -5,7 +5,7 @@ import yaml
 from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError, GameError
-from models import transcriber
+from models.transcriber import Transcriber
 import json
 import random
 import time
@@ -163,6 +163,7 @@ def play_online(model, model_key, speech_mode, test_all, multiplicity, verbose, 
                     if print_cond: print("No question available. Game may have ended.")
                     break
                 options = {str(opt.id): opt.text for opt in question.options}
+                question = question.text
             else:
                 try:
                     question_audio = game.fetch_audio_question()
@@ -188,12 +189,11 @@ def play_online(model, model_key, speech_mode, test_all, multiplicity, verbose, 
 
             if print_cond:
                 print(f"\n--- Level {game.current_level} ---")
-                print(f"Q: {question.text}\n")
-                for opt in question.options:
-                    print(f"  [{opt.id}] {opt.text}")
+                print(f"Q: {question}\n")
+                for opt in options.keys():
+                    print(f"  [{opt}] {options[opt]}")
 
-            answer_id = model.answer(question.text, options)
-            if mode == "speech": answer_id = chr(65 + answer_id)
+            answer_id = model.answer(question, options)
             if print_cond: print(f"\nSelected answer: {answer_id}")
 
             time_left = game.time_remaining
