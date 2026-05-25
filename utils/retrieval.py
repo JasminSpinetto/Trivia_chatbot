@@ -700,15 +700,18 @@ class Retriever:
             self._log("TOOL ROUTE       : wikipedia")
             ctx = self._get_wikipedia_context(question, options, query=query)
             if not ctx:
-                self._log("WIKI EMPTY       : falling back to DuckDuckGo")
-                ctx = self._get_ddg_context(question, options, query=query)
+                # Drop the LLM query — it already failed or returned irrelevant
+                # results. Let DDG build its own queries from the question text
+                # and proper nouns, which are broader and more likely to hit.
+                self._log("WIKI EMPTY       : falling back to DuckDuckGo (question-based)")
+                ctx = self._get_ddg_context(question, options, query=None)
             return ctx
         if tool == "wiktionary":
             self._log("TOOL ROUTE       : wiktionary")
             ctx = self._get_wiktionary_context(question, options, query=query)
             if not ctx:
-                self._log("WIKT EMPTY       : falling back to DuckDuckGo")
-                ctx = self._get_ddg_context(question, options, query=query)
+                self._log("WIKT EMPTY       : falling back to DuckDuckGo (question-based)")
+                ctx = self._get_ddg_context(question, options, query=None)
             return ctx
         if tool == "ddg":
             self._log("TOOL ROUTE       : duckduckgo")
