@@ -329,13 +329,14 @@ class LLMModel:
             if ids:
                 opt_ids[str(k)] = ids[-1]
         if not opt_ids:
-            return None, 0.0
+            return None, 0.0, {}
 
         keys        = list(opt_ids.keys())
         opt_logits  = torch.stack([first_logits[opt_ids[k]] for k in keys])
         probs       = torch.softmax(opt_logits, dim=0)
         best_i      = probs.argmax().item()
-        return keys[best_i], probs[best_i].item()
+        prob_dict   = {k: probs[i].item() for i, k in enumerate(keys)}
+        return keys[best_i], probs[best_i].item(), prob_dict
 
     def _select_tool(self, question_text: str, options: dict) -> tuple:
         """Return (source_tag, tool_name, query) for retrieval.
@@ -359,10 +360,10 @@ class LLMModel:
         # ── 1. Heuristic ──────────────────────────────────────────────────────
         hint = _heuristic_tool(question_text)
         if hint is not None:
-            return "heuristic", hint, None, None
+            return "heuristic", hint, None, None, {}
 
         # ── 2. Memory probe ───────────────────────────────────────────────────
-        mem_option, mem_conf = self._probe_memory(question_text, options)
+        mem_option, mem_conf, mem_probs = self._probe_memory(question_text, options)
         mem_option_text = options.get(str(mem_option), "?") if mem_option else "?"
         self._log(
             f"{'MEMORY PROBE':<17}: option={mem_option} ({mem_option_text!r})  "
@@ -371,7 +372,7 @@ class LLMModel:
 
         if mem_conf >= _MEMORY_SHORTCUT_THRESHOLD:
             tag = f"memory-shortcut(conf={mem_conf:.0%})"
-            return tag, "none", None, mem_option
+            return tag, "none", None, mem_option, mem_probs
 
         # ── 3. LLM tool + query call ──────────────────────────────────────────
         # Options are intentionally hidden — seeing them causes the model to
@@ -447,7 +448,7 @@ class LLMModel:
             raw  = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
             tool = "wikipedia"
 
-        return raw, tool, query, mem_option
+        return raw, tool, query, mem_option, mem_probs
 
     def _eliminate_options(self, question_text: str, options: dict, context: str) -> tuple:
         """Ask the LLM which options the context explicitly contradicts.
@@ -618,7 +619,7 @@ class LLMModel:
 
         if self._retriever:
             if self._use_tool_selection:
-                source_tag, tool, query, mem_option = self._select_tool(question_text, options)
+                source_tag, tool, query, mem_option, mem_probs = self._select_tool(question_text, options)
                 if source_tag == "heuristic":
                     self._log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
                 elif source_tag.startswith("memory-shortcut"):
@@ -634,8 +635,9 @@ class LLMModel:
                 self._log(f"{'RETRIEVAL MODE':<17}: waterfall (wikipedia → ddg)")
                 context = self._retriever.get_context(question_text, options)
         else:
-            context  = ""
+            context    = ""
             mem_option = None
+            mem_probs  = {}
 
         self._log(f"{'CONTEXT':<17}: {f'{len(context)} chars' if context else '(none)'}")
         if context:
@@ -665,12 +667,17 @@ class LLMModel:
                     prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
                     self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
             else:
-                # Nothing eliminated — re-generate with full context but warn
-                # the model not to default to its initial guess.
-                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated → re-generating with bias warning (llm: {elim_raw!r})")
-                response, answer_probs = self._generate(
-                    question_text, options, context, mem_bias=mem_option
-                )
+                # Nothing eliminated — manually drop bottom-2 by memory probe probability,
+                # then re-generate fresh with top-2 survivors (no bias warning).
+                if mem_probs and len(mem_probs) >= 2:
+                    sorted_keys = sorted(mem_probs, key=mem_probs.get, reverse=True)
+                    top2    = {k: options[k] for k in sorted_keys[:2] if k in options}
+                    dropped = [options[k] for k in sorted_keys[2:] if k in options]
+                    self._log(f"{'MANUAL ELIM':<17}: dropped bottom-2 by memory prob → {dropped}  (llm: {elim_raw!r})")
+                else:
+                    top2 = options
+                    self._log(f"{'MANUAL ELIM':<17}: no mem probs available → keeping all options  (llm: {elim_raw!r})")
+                response, answer_probs = self._generate(question_text, top2, context)
                 answer = self._parse_token(response, options)
                 self._log(f"{'RESPONSE':<17}: {response!r}")
                 if answer_probs:
