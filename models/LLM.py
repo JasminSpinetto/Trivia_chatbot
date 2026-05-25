@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from datetime import datetime
 from typing import Optional
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, GenerationConfig, pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
 from utils.HF_login import HF_login
 
 SYSTEM_PROMPTS = {
@@ -437,13 +437,22 @@ class LLMModel:
 
         return raw, tool, query
 
-    def _generate(self, question_text: str, options: dict, context: str = "") -> str:
+    def _generate(self, question_text: str, options: dict, context: str = "") -> tuple:
+        """Generate an answer and return (response_text, option_probs_dict).
+
+        option_probs_dict maps each option key → % probability (softmax over
+        the 4 option tokens at position 0 of the generation).
+        """
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
         if context:
             user_content = (
                 f"Context from web search:\n{context}\n\n"
                 f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
-                "Using the context above, reply with only the option number."
+                "Read the full context carefully before answering. "
+                "If the text describes a change, transition, or movement "
+                "(e.g. 'moved from X to Y', 'replaced by', 'became'), "
+                "the correct answer is the final or established state, not the origin. "
+                "Reply with only the option number."
             )
         else:
             user_content = (
@@ -454,13 +463,47 @@ class LLMModel:
             {"role": "system", "content": self._system_prompt},
             {"role": "user",   "content": user_content},
         ]
-        gen_config = GenerationConfig(
-            max_new_tokens=self._max_new_tokens,
-            do_sample=self._do_sample,
-            temperature=self._temperature if self._do_sample else None,
+        text   = self.pipe.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
         )
-        output = self.pipe(messages, generation_config=gen_config, return_full_text=False)
-        return output[0]["generated_text"].strip()
+        inputs = self.pipe.tokenizer(text, return_tensors="pt")
+        device = next(self.pipe.model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        gen_kwargs = dict(
+            max_new_tokens=self._max_new_tokens,
+            output_scores=True,
+            return_dict_in_generate=True,
+            do_sample=self._do_sample,
+        )
+        if self._do_sample and self._temperature is not None:
+            gen_kwargs["temperature"] = self._temperature
+
+        with torch.no_grad():
+            out = self.pipe.model.generate(**inputs, **gen_kwargs)
+
+        input_len = inputs["input_ids"].shape[1]
+        response  = self.pipe.tokenizer.decode(
+            out.sequences[0, input_len:], skip_special_tokens=True
+        ).strip()
+
+        # Per-option probabilities from first generated token
+        prob_dict = {}
+        if out.scores:
+            first_logits = out.scores[0][0]
+            opt_ids = {}
+            for k in options:
+                ids = self.pipe.tokenizer.encode(str(k), add_special_tokens=False)
+                if ids:
+                    opt_ids[str(k)] = ids[-1]
+            if opt_ids:
+                keys       = list(opt_ids.keys())
+                opt_logits = torch.stack([first_logits[opt_ids[k]] for k in keys])
+                probs      = torch.softmax(opt_logits, dim=0)
+                prob_dict  = {k: round(probs[i].item() * 100, 1)
+                              for i, k in enumerate(keys)}
+
+        return response, prob_dict
 
     def _parse_token(self, response: str, options: dict) -> int:
         tokens = list(reversed(response.split())) if self._search_reversed else response.split()
@@ -524,10 +567,13 @@ class LLMModel:
             self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
-        response = self._generate(question_text, options, context)
-        answer   = self._parse_token(response, options)
+        response, answer_probs = self._generate(question_text, options, context)
+        answer = self._parse_token(response, options)
 
         self._log(f"{'RESPONSE':<17}: {response!r}")
+        if answer_probs:
+            prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
+            self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
         self._log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
         return answer
 
