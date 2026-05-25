@@ -643,32 +643,42 @@ class LLMModel:
             self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
-        # ── LLM option elimination ────────────────────────────────────────────
-        # Ask the model to identify which options the context explicitly
-        # contradicts, then re-run the answer with only the survivors.
-        effective_context = context
-        effective_options = options
+        # ── Pipeline ──────────────────────────────────────────────────────────
+        # 1. Memory probe already ran inside _select_tool → mem_option is the
+        #    model's initial guess without any context.
+        # 2. LLM reads the context and eliminates contradicted options.
+        # 3. If eliminations happened → re-generate with survivors + context.
+        # 4. If nothing eliminated → context was too generic; return initial guess.
         if context:
             surviving, elim_raw = self._eliminate_options(question_text, options, context)
-            n_total   = len(options)
+            n_total    = len(options)
             n_survived = len(surviving)
             if n_survived < n_total:
                 eliminated_labels = [v for k, v in options.items() if k not in surviving]
                 self._log(f"{'ELIMINATED':<17}: {eliminated_labels}  (llm: {elim_raw!r})")
-                effective_options = surviving
+                response, answer_probs = self._generate(
+                    question_text, surviving, context, mem_bias=mem_option
+                )
+                answer = self._parse_token(response, options)
+                self._log(f"{'RESPONSE':<17}: {response!r}")
+                if answer_probs:
+                    prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
+                    self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
             else:
-                # Context too generic — LLM found nothing to eliminate.
-                # Discard context so the model answers from memory.
-                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated → discarding context (memory fallback)")
-                effective_context = ""
+                # Nothing eliminated — context didn't help narrow down.
+                # Trust the initial memory-probe guess.
+                answer = int(mem_option) if mem_option is not None else self._parse_token(
+                    self._generate(question_text, options, "")[0], options
+                )
+                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated → using initial guess (llm: {elim_raw!r})")
+        else:
+            response, answer_probs = self._generate(question_text, options, "", mem_bias=mem_option)
+            answer = self._parse_token(response, options)
+            self._log(f"{'RESPONSE':<17}: {response!r}")
+            if answer_probs:
+                prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
+                self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
 
-        response, answer_probs = self._generate(question_text, effective_options, effective_context, mem_bias=mem_option)
-        answer = self._parse_token(response, options)
-
-        self._log(f"{'RESPONSE':<17}: {response!r}")
-        if answer_probs:
-            prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
-            self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
         self._log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
         return answer
 
