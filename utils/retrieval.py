@@ -409,9 +409,9 @@ class Retriever:
                         if _is_relevant(question, ctx):
                             seen_text.add(ctx[:80])
                             unique.append(ctx)
-                            self._log(f"FALLBACK ACCEPTED: [{title}]")
+                            self._log(f"FALLBACK ACCEPT  : [{title}]")
                         else:
-                            self._log(f"FALLBACK REJECTED: [{title}] (relevance too low)")
+                            self._log(f"FALLBACK REJECT  : [{title}] (relevance too low)")
 
         # Last resort: DuckDuckGo.
         # Two parallel searches: the full question (natural language — much better
@@ -488,3 +488,172 @@ class Retriever:
         combined = "\n\n---\n\n".join(unique)[:_MAX_CONTEXT_LEN]
         self._log(f"SEARCH COMBINED  : {len(unique)} source(s), {len(combined)} chars")
         return combined
+
+    # ── helpers shared by individual-tool methods ──────────────────────────────
+
+    def _score_and_combine(self, unique: list, question: str) -> str:
+        """Score articles by relevance, keep top _MAX_ARTICLES, return combined string."""
+        if not unique:
+            return ""
+        q_kw     = set(_keywords(question))
+        q_proper = set(_proper_nouns(question))
+        def _score(ctx: str) -> int:
+            lower = ctx.lower()
+            return (sum(1 for kw in q_kw if kw in lower)
+                    + sum(2 for p in q_proper if p in lower))
+        unique.sort(key=_score, reverse=True)
+        unique   = unique[:_MAX_ARTICLES]
+        combined = "\n\n---\n\n".join(unique)[:_MAX_CONTEXT_LEN]
+        self._log(f"CONTEXT READY    : {len(unique)} source(s), {len(combined)} chars")
+        return combined
+
+    # ── individual tool retrieval methods ──────────────────────────────────────
+
+    def _get_wikipedia_context(self, question: str, options: dict) -> str:
+        """Wikipedia-only retrieval — no DDG fallback."""
+        proper_only = " ".join(
+            re.sub(r"'s?$", "", w)
+            for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
+            if i > 0 and w[0].isupper() and len(w) > 2
+        )
+        focused    = _focused_query(question)
+        opts_query = _options_query(question, options)
+        keywords   = _keywords(question)
+        quoted     = _quoted_terms(question)
+
+        quoted_queries = [f"{t} {' '.join(keywords[:2])}" for t in quoted] if quoted else []
+        seen_q, queries = set(), []
+        for q in quoted_queries + [proper_only, focused, opts_query]:
+            if q and q.lower() not in seen_q:
+                seen_q.add(q.lower())
+                queries.append(q)
+
+        if not queries:
+            self._log("WIKI QUERIES     : (none generated)")
+            return ""
+        self._log(f"WIKI QUERIES     : {queries}")
+
+        extracts, _ = self._run_queries(queries)
+        seen_text, unique = set(), []
+        for title, ctx in extracts.items():
+            if ctx[:80] not in seen_text:
+                if _is_relevant(question, ctx):
+                    seen_text.add(ctx[:80])
+                    unique.append(ctx)
+                    self._log(f"WIKI ACCEPTED    : [{title}]")
+                else:
+                    self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+        return self._score_and_combine(unique, question)
+
+    def _get_wiktionary_context(self, question: str, options: dict) -> str:
+        """Wiktionary-only lookup — best for word definitions and etymology."""
+        terms = _quoted_terms(question)
+        if not terms:
+            # Fall back: capitalised words from question that might be terms
+            words = re.findall(r"\b[a-zA-Z]+\b", question)
+            terms = [
+                w for i, w in enumerate(words)
+                if i > 0 and w[0].isupper() and 2 < len(w) <= 25
+                and w.lower() not in _STOP_WORDS
+            ][:6]
+        if not terms:
+            self._log("WIKT LOOKUP      : (no terms found)")
+            return ""
+
+        self._log(f"WIKT LOOKUP      : {terms}")
+        wikt_extracts = self._fetch_wiktionary(terms)
+
+        unique, seen_text = [], set()
+        for title, ctx in wikt_extracts.items():
+            if ctx[:80] not in seen_text:
+                seen_text.add(ctx[:80])
+                unique.append(ctx)
+                self._log(f"WIKT ACCEPTED    : [{title}]")
+
+        if not unique:
+            self._log("WIKT             : no entries found")
+        return self._score_and_combine(unique, question)
+
+    def _get_ddg_context(self, question: str, options: dict) -> str:
+        """DuckDuckGo-only search — with Wikipedia URL extraction as primary pass."""
+        if not _DDGS_AVAILABLE:
+            self._log("DDG              : ddgs package not installed")
+            return ""
+        proper_only = " ".join(
+            re.sub(r"'s?$", "", w)
+            for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
+            if i > 0 and w[0].isupper() and len(w) > 2
+        )
+        ddgs_queries = [q for q in [question, proper_only] if q]
+        self._log(f"DDG QUERIES      : {ddgs_queries}")
+
+        all_ddgs = []
+        with ThreadPoolExecutor(max_workers=2) as ex:
+            ddgs_futs = {ex.submit(self._search_ddgs, dq, 5): dq for dq in ddgs_queries}
+            ddgs_done, _ = wait(ddgs_futs.keys(), timeout=4.0)
+        seen_ddgs = set()
+        for fut in ddgs_done:
+            try:
+                for r in fut.result():
+                    key = r.get("href", r.get("body", ""))[:80]
+                    if key not in seen_ddgs:
+                        seen_ddgs.add(key)
+                        all_ddgs.append(r)
+            except Exception:
+                pass
+        self._log(f"DDG RESULTS      : {len(all_ddgs)} result(s)")
+
+        seen_text, unique = set(), []
+
+        wiki_titles, seen_wiki = [], set()
+        for r in all_ddgs:
+            m = _WIKI_URL_RE.search(r.get("href", ""))
+            if m:
+                title = m.group(1).replace("_", " ")
+                if title not in seen_wiki:
+                    seen_wiki.add(title)
+                    wiki_titles.append(title)
+
+        if wiki_titles:
+            self._log(f"DDG WIKI TITLES  : {wiki_titles}")
+            ddgs_extracts = self._fetch_extracts(wiki_titles)
+            for title, ctx in ddgs_extracts.items():
+                if ctx[:80] not in seen_text:
+                    if _is_relevant(question, ctx):
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"DDG WIKI ACCEPT  : [{title}]")
+                    else:
+                        self._log(f"DDG WIKI REJECT  : [{title}] (relevance too low)")
+
+        if not unique:
+            for r in all_ddgs:
+                snippet = r.get("body", "").strip()
+                if snippet and snippet[:80] not in seen_text and _is_relevant(question, snippet):
+                    seen_text.add(snippet[:80])
+                    unique.append(snippet)
+                    self._log(f"DDG SNIPPET      : [{r.get('title', '')}]")
+
+        return self._score_and_combine(unique, question)
+
+    def get_context_for_tool(self, tool: str, question: str, options: dict = None) -> str:
+        """Route retrieval to a named tool.
+
+        tool: 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        Falls back to the full waterfall for unrecognised tool names.
+        """
+        options = options or {}
+        if tool == "none":
+            self._log("TOOL ROUTE       : memory (no retrieval)")
+            return ""
+        if tool == "wikipedia":
+            self._log("TOOL ROUTE       : wikipedia")
+            return self._get_wikipedia_context(question, options)
+        if tool == "wiktionary":
+            self._log("TOOL ROUTE       : wiktionary")
+            return self._get_wiktionary_context(question, options)
+        if tool == "ddg":
+            self._log("TOOL ROUTE       : duckduckgo")
+            return self._get_ddg_context(question, options)
+        self._log(f"TOOL ROUTE       : unknown '{tool}' → waterfall fallback")
+        return self.get_context(question, options)

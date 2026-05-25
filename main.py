@@ -286,10 +286,12 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
             play_history[comp_id]["num_games"] += 1
  
         # Start the game
+        if hasattr(model, 'start_game'):
+            model.start_game(competition_ds[comp_id]['name'])
         if print_cond:
             print(f"\n=== Starting Game ===")
             print(f"Total number of questions: {MAX_LEVELS}\n")
- 
+
         # Sample MAX_LEVELS unique questions for this game
         pool = competition_ds[comp_id]["objects"]
         if len(pool) >= MAX_LEVELS:
@@ -334,7 +336,10 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
  
             timed_out  = (time_left <= 0.0)
             is_correct = (not timed_out) and (str(answer_id) == str(answer))
- 
+
+            if hasattr(model, 'record_outcome'):
+                model.record_outcome(int(answer), is_correct)
+
             if is_correct:
                 earned_amount = float(PRIZES[current_level - 1])
                 if print_cond:
