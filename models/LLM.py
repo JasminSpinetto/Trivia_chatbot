@@ -589,7 +589,29 @@ class LLMModel:
             self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
-        response, answer_probs = self._generate(question_text, options, context, mem_bias=mem_option)
+        # ── Option elimination ────────────────────────────────────────────────
+        # Scan the context for which option labels appear literally.
+        # • None found  → context is too generic; ignore it and answer from memory.
+        # • Some found  → eliminate the rest; re-prompt with a reduced option set.
+        # • All found   → normal behaviour.
+        effective_context = context
+        effective_options = options
+        if context:
+            ctx_lower  = context.lower()
+            surviving  = {k: v for k, v in options.items() if v.lower() in ctx_lower}
+            n_total    = len(options)
+            n_survived = len(surviving)
+            if n_survived == 0:
+                self._log(f"{'ELIM SCOPE':<17}: 0/{n_total} options in context → ignoring context (memory fallback)")
+                effective_context = ""
+            elif n_survived < n_total:
+                eliminated = [v for k, v in options.items() if k not in surviving]
+                self._log(f"{'ELIM SCOPE':<17}: {n_survived}/{n_total} options in context → eliminated {eliminated}")
+                effective_options = surviving
+            else:
+                self._log(f"{'ELIM SCOPE':<17}: {n_total}/{n_total} options in context → no elimination")
+
+        response, answer_probs = self._generate(question_text, effective_options, effective_context, mem_bias=mem_option)
         answer = self._parse_token(response, options)
 
         self._log(f"{'RESPONSE':<17}: {response!r}")
