@@ -665,12 +665,17 @@ class LLMModel:
                     prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
                     self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
             else:
-                # Nothing eliminated — context didn't help narrow down.
-                # Trust the initial memory-probe guess.
-                answer = int(mem_option) if mem_option is not None else self._parse_token(
-                    self._generate(question_text, options, "")[0], options
+                # Nothing eliminated — re-generate with full context but warn
+                # the model not to default to its initial guess.
+                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated → re-generating with bias warning (llm: {elim_raw!r})")
+                response, answer_probs = self._generate(
+                    question_text, options, context, mem_bias=mem_option
                 )
-                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated → using initial guess (llm: {elim_raw!r})")
+                answer = self._parse_token(response, options)
+                self._log(f"{'RESPONSE':<17}: {response!r}")
+                if answer_probs:
+                    prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
+                    self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
         else:
             response, answer_probs = self._generate(question_text, options, "", mem_bias=mem_option)
             answer = self._parse_token(response, options)
