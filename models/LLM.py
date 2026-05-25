@@ -451,12 +451,17 @@ class LLMModel:
         if context:
             bias_note = ""
             if mem_bias is not None:
-                bias_label = options.get(str(mem_bias), "?")
-                bias_note = (
-                    f"- Your answer without context was option {mem_bias} "
-                    f"({bias_label}). This is likely a memorised bias — "
-                    f"do NOT default to it. Re-read the context and reconsider.\n"
-                )
+                # Only warn about the bias when the context actually contains
+                # at least one option word — if none appear, the context is too
+                # generic to override the prior and the warning would backfire.
+                ctx_lower = context.lower()
+                if any(v.lower() in ctx_lower for v in options.values()):
+                    bias_label = options.get(str(mem_bias), "?")
+                    bias_note = (
+                        f"- Your answer without context was option {mem_bias} "
+                        f"({bias_label}). This is likely a memorised bias — "
+                        f"do NOT default to it. Re-read the context and reconsider.\n"
+                    )
             user_content = (
                 f"Context from web search:\n{context}\n\n"
                 f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
