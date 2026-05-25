@@ -519,6 +519,9 @@ class LLMModel:
             context = ""
 
         self._log(f"{'CONTEXT':<17}: {f'{len(context)} chars' if context else '(none)'}")
+        if context:
+            preview = context[:1200] + ("…" if len(context) > 1200 else "")
+            self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
         response = self._generate(question_text, options, context)
