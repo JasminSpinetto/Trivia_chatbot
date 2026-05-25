@@ -43,8 +43,9 @@ _ELIM_PROMPT = (
     "EXPLICITLY CONTRADICTS or DISPROVES.\n"
     "Do NOT eliminate an option just because it is not mentioned — only eliminate "
     "options the context directly contradicts.\n"
-    "Reply with only the numbers to eliminate separated by spaces (e.g. '0 3'), "
-    "or 'none' if nothing should be eliminated."
+    "The number of eliminations can be zero, one, two, or three depending on the context.\n"
+    "Reply with only the numbers to eliminate separated by spaces "
+    "(e.g. '0', '0 3', '1 2 3'), or 'none' if nothing should be eliminated."
 )
 
 # Minimum confidence required before trusting the LLM's tool pick.
