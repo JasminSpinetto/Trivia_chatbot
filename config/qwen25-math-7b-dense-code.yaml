@@ -2,7 +2,7 @@ model_class: MathLLMModel
 model_name: "Qwen/Qwen2.5-Math-7B-Instruct"
 do_sample: false
 temperature: null
-max_new_tokens: 256
+max_new_tokens: 450
 system_prompt: "qwen_math"
 search_reversed: false
 quantization:

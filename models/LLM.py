@@ -52,6 +52,7 @@ class LLMModel:
         quantization: Optional[dict] = None,
         use_retrieval: bool = False,
         use_dense_retrieval: bool = False,
+        repetition_penalty: Optional[float] = None,
     ):
         HF_login()
 
@@ -63,11 +64,12 @@ class LLMModel:
         torch.manual_seed(42)
         torch.cuda.manual_seed_all(42)
 
-        self._model_name      = model_name
-        self._do_sample       = do_sample
-        self._temperature     = temperature
-        self._max_new_tokens  = max_new_tokens
-        self._search_reversed = search_reversed
+        self._model_name        = model_name
+        self._do_sample         = do_sample
+        self._temperature       = temperature
+        self._max_new_tokens    = max_new_tokens
+        self._search_reversed   = search_reversed
+        self._repetition_penalty = repetition_penalty
 
         if use_dense_retrieval:
             from utils.retrieval import DenseRetriever
@@ -116,7 +118,7 @@ class LLMModel:
         handler.setFormatter(logging.Formatter("%(asctime)s  %(message)s"))
         logger.addHandler(handler)
         self._logger = logger
-        print(f"[LLM] Debug logging → {log_path}")
+        print(f"[LLM] Debug logging -> {log_path}")
 
     def _log(self, msg: str):
         if not self.debug:
@@ -149,6 +151,7 @@ class LLMModel:
             max_new_tokens=self._max_new_tokens,
             do_sample=self._do_sample,
             temperature=self._temperature if self._do_sample else None,
+            repetition_penalty=self._repetition_penalty,
         )
         output   = self.pipe(messages, generation_config=gen_config, return_full_text=False)
         response = output[0]["generated_text"].strip()
@@ -183,7 +186,7 @@ class LLMModel:
             "max_new_tokens": self._max_new_tokens,
         }
         if self._retriever:
-            info["retrieval"] = getattr(self._retriever, "description", "Wikipedia → DuckDuckGo")
+            info["retrieval"] = getattr(self._retriever, "description", "Wikipedia -> DuckDuckGo")
         return info
 
     def answer(self, question_text: str, options: dict) -> int:
@@ -192,6 +195,8 @@ class LLMModel:
             preview = context[:300] + ("..." if len(context) > 300 else "")
             print(f"  [CONTEXT] {preview}")
         response = self._generate(question_text, options, context)
+        self._last_response = response
+        self._last_context  = context
         answer   = self._parse_token(response, options)
         self._log(f"ANSWER   : {answer}")
         self._log(f"{'='*60}")

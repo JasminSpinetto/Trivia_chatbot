@@ -134,7 +134,7 @@ class Retriever:
     Supports query grouping: multi-concept questions are split into sub-queries,
     each searched in parallel, and results are combined.
     """
-    description = "Wikipedia → DuckDuckGo"
+    description = "Wikipedia -> DuckDuckGo"
 
     def _search_wikipedia(self, query: str) -> str:
         try:
@@ -235,7 +235,7 @@ class MathRetriever(Retriever):
     with Wikipedia and DuckDuckGo as fallbacks.
     Inherits query grouping from Retriever.
     """
-    description = "MathWorld → Wikipedia → DuckDuckGo"
+    description = "MathWorld -> Wikipedia -> DuckDuckGo"
 
     def _search_mathworld(self, query: str) -> str:
         try:

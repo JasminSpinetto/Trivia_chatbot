@@ -1,0 +1,21 @@
+================================================================================
+QUESTION: The polynomial x^4 + 4 can be factored into linear factors in Z_5[x]. Find this factorization.
+OPTIONS:
+  0: (x-1)^3(x+1)
+  1: (x-1)(x+1)^3
+  2: (x+1)^4
+  3: (x-2)(x+2)(x-1)(x+1)
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Polynomial Factorization: A factor of a polynomial of degree is a polynomial of degree less than which can be multiplied by another polynomial of degree less than to yield , i.e., a polynomial such that For example, since both and are factors of . Polynomial factorization can be performed in the Wolfram Language using Factor [ poly ]. Factorization over an algebraic number field is implemented as Factor [ poly , Extension -> ext ]. The coefficients of factor polynomials are often required to be real numbers or integers but could, in general, be complex numbers . The fundamental theorem of algebra states that a polynomial of degree has values (some of which are possibly degenerate) for which . Such values are called polynomial roots . The average number of factors of a polynomial of degree with integer coefficients in the range has been considered by Schinzel (1976), Pinner and Vaaler (1996), Bérczes and Hajdu (1998), and Dubickas (1999).
+
+[—]
+
+AC Method: The method is an algorithm for factoring quadratic polynomials of the form with integer coefficients . As its name suggests, the crux of the algorithm is to consider the multiplicative factors of the product of the coefficients and . More precisely, the goal is to find an integer pair and satisfying and simultaneously, whereby one can rewrite in the form (1) and to factor the remaining four-term polynomial by grouping into a product of linear factors with integer coefficients. For example, consider the polynomial having coefficients , , and . To begin the factorization, consider the product . By observation, while ; in particular, this guarantees that can be rewritten so that (2) This four-term expression for can be factored by grouping: (3) and so (4) One can easily see that the above method generalizes to certain polynomials of the form for positive integers , though the result will be a factorization into pairs of polynomials of degree which aren't necessarily linear. This procedure is an alternative to the more straightforward utilization of the quadratic formula and has a number of drawbacks. For example, finding and hinges on observation and/or guess-and-check; this can be particularly problematic when the product has a large number of factors. Moreover, while the quadratic formula illustrates immediately the existence of irrational and/or imaginary roots , the method often disguises such behavior and thus requires a degree of "pre-processing," e.g., by analyzing the po
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 12.3s
+RESULT: WRONG ✗  |  RUNNING SCORE: 0/1 (0.0%)
+================================================================================
+

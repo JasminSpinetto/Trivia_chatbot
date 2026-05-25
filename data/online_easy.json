@@ -1,0 +1,156 @@
+[
+  {
+    "question": "A group of people have the number 12345.6789 written on a piece of paper. Then the group decides to play a game. The winner of the game is the person who can round the given number and get a number higher than any other person. Alice rounds to the nearest ten-thousand, Bob to the nearest thousand, Carol to the nearest hundred, Devon to the nearest ten, and Eugene to the nearest whole number. In addition, Felicity rounds the number to the nearest tenth, Gerald to the nearest hundredth, Harry to the nearest thousandth, and Irene rounds to the nearest ten-thousandth. Who wins the game?",
+    "options": {
+      "0": "Alice",
+      "1": "Devon",
+      "2": "Gerald",
+      "3": "Bob"
+    },
+    "answer": 1,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "Which of these is the best description of a P-value?",
+    "options": {
+      "0": "The probability of making a Type II error.",
+      "1": "The probability of rejecting the null hypothesis if it is, in fact, false.",
+      "2": "The probability of making a Type I error.",
+      "3": "The probability of getting a test statistic at least as extreme as the observed test statistic, if the null hypothesis is true."
+    },
+    "answer": 3,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "The shape of the sign outside Bob's Burger Barn is a regular octagon. How many degrees are in the measure of an interior angle of this sign?",
+    "options": {
+      "0": "90",
+      "1": "180",
+      "2": "135",
+      "3": "45"
+    },
+    "answer": 2,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "A university sent out a survey to a random sample of 120 recent graduates to see how those graduates feel about the education they received. Thirty-two of the graduates did not respond to the survey. Which of these would be the best way to proceed?",
+    "options": {
+      "0": "Attempt to contact the 32 who did not respond and get the information from them.",
+      "1": "Use the 88 who did respond, using 120 as the sample size in the analysis.",
+      "2": "Select 32 more graduates at random and use them to replace the nonresponders.",
+      "3": "Use the 88 who did respond, using 88 as the sample size in the analysis."
+    },
+    "answer": 0,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "A small kiosk at the Atlanta airport carries souvenirs in the price range of $3.99 to $29.99, with a mean price of $14.75. The airport authorities decide to increase the rent charged for a kiosk by 5 percent. To make up for the increased rent, the kiosk owner decides to increase the prices of all items by 50 cents. As a result, which of the following will happen?",
+    "options": {
+      "0": "The mean price and the standard deviation of prices will increase by 50 cents.",
+      "1": "The mean price will increase by 50 cents, but the standard deviation of prices will remain the same.",
+      "2": "The mean price and the range of prices will increase by 50 cents.",
+      "3": "The mean price will remain the same, but the range of prices will increase by 50 cents."
+    },
+    "answer": 1,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "A sample of size 35 is to be drawn from a large population. The sampling technique is such that every possible sample of size 35 that could be drawn from the population is equally likely. What name is given to this type of sample?",
+    "options": {
+      "0": "Voluntary response sample",
+      "1": "Cluster sample",
+      "2": "Simple random sample",
+      "3": "Systematic sample"
+    },
+    "answer": 2,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "To conduct a survey of which long distance carriers are used in a particular locality, a researcher opens a telephone book to a random page, closes his eyes, puts his finger down on the page, and then calls the next 75 names. Which of the following is a correct statement?",
+    "options": {
+      "0": "While the survey design does incorporate chance, the procedure could easily result in selection bias.",
+      "1": "The procedure results in a simple random sample.",
+      "2": "This is an example of cluster sampling with 26 clusters.",
+      "3": "This is an example of stratified sampling with 26 strata."
+    },
+    "answer": 0,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "How many numbers are in the list $ -36, -29, -22, \\ldots, 41, 48?$",
+    "options": {
+      "0": "11",
+      "1": "10",
+      "2": "13",
+      "3": "12"
+    },
+    "answer": 2,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "The midterm scores for a statistics course were approximately normally distributed with a mean of 52 points and a standard deviation of 4 points. The final exam scores were approximately normally distributed with a mean of 112 points and a standard deviation of 10 points. One student had a score of 58 points on the midterm. If she had the same standardized score (z-score) on the final exam, what must her score have been?",
+    "options": {
+      "0": "127 points",
+      "1": "58 points",
+      "2": "15 points",
+      "3": "118 points"
+    },
+    "answer": 0,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "If all the values of a data set are the same, all of the following must equal zero except for which one?",
+    "options": {
+      "0": "Range",
+      "1": "Variance",
+      "2": "Standard deviation",
+      "3": "Mean"
+    },
+    "answer": 3,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "Divide $11$ by the reciprocal of $1815 \\div 11$.",
+    "options": {
+      "0": "121",
+      "1": "68",
+      "2": "1815",
+      "3": "111"
+    },
+    "answer": 2,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "Which of the following is a false statement about simple random samples?",
+    "options": {
+      "0": "A sample must be reasonably large to be properly considered a simple random sample.",
+      "1": "Every element of the population has an equal chance of being picked.",
+      "2": "Attributes of a simple random sample may be very different from attributes of the population.",
+      "3": "Inspection of a sample will give no indication of whether or not it is a simple random sample."
+    },
+    "answer": 0,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "A company with offices in five different countries is interested in estimating the proportion of its employees in favor of banning smoking on the office premises. It is known that the views of people from different countries on issues like smoking tend to vary due to the influence of different local social structures. Which of the following is an appropriate sampling technique to use in this situation, and why?",
+    "options": {
+      "0": "Simple random sample, because this is the only method that gives unbiased results",
+      "1": "Stratified sample, because the population is divided into five strataâ€”namely, five offices in five different countries",
+      "2": "Simple random sample, because this is the simplest sampling method",
+      "3": "Cluster sample, because the population is divided into five clustersâ€”namely, five offices in five different countries"
+    },
+    "answer": 1,
+    "note": "online_session_20260508"
+  },
+  {
+    "question": "Which of the following is a true statement?",
+    "options": {
+      "0": "In a well-designed experiment, the treatments are carefully planned to result in responses that are as similar as possible.",
+      "1": "In a well-designed observational study, responses are influenced through an orderly, carefully planned procedure during the collection of data.",
+      "2": "In a well-designed, well-conducted sample survey, sampling error is effectively eliminated.",
+      "3": "None of the above is a true statement."
+    },
+    "answer": 3,
+    "note": "online_session_20260508"
+  }
+]

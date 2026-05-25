@@ -1,0 +1,88 @@
+SCORE: 8/14 (57.1%)
+================================================================================
+
+================================================================================
+QUESTION: To conduct a survey of which long distance carriers are used in a particular locality, a researcher opens a telephone book to a random page, closes his eyes, puts his finger down on the page, and then calls the next 75 names. Which of the following is a correct statement?
+OPTIONS:
+  0: While the survey design does incorporate chance, the procedure could easily result in selection bias.
+  1: The procedure results in a simple random sample.
+  2: This is an example of cluster sampling with 26 clusters.
+  3: This is an example of stratified sampling with 26 strata.
+--------------------------------------------------------------------------------
+PYTHON CODE:
+0
+----------------------------------------
+CODE OUTPUT: 0
+FINAL ANSWER: 0
+TIME: 0.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 1/1 (100.0%)
+================================================================================
+
+================================================================================
+QUESTION: How many numbers are in the list $ -36, -29, -22, \ldots, 41, 48?$
+OPTIONS:
+  0: 11
+  1: 10
+  2: 13
+  3: 12
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Digitaddition: , 46, 49, 52, 64, 91, 94, ... 9 30 2, 8, 11, 17, 20, 23, 29, 32, 35, ... 9 80 6, 9, 15, 18, 24, 33, 42, 48, 51, ... 9 93 3, 12, 21, 27, 30, 36, 39, 45, 54, ... 10 1 A011557 1, 10, 100, 1000, 10000, 100000, ... 10 6 266, 626, 662, 1159, 1195, 1519, ... 10 7 46, 58, 64, 85, 122, 123, 132, ... 10 17 2, 4, 5, 11, 13, 20, 31, 38, 40, ... 10 81 17, 18, 37, 71, 73, 81, 107, 108, ... 10 123 3, 6, 7, 8, 9, 12, 14, 15, 16, 19, ...
+
+[—]
+
+Euler's 6n+1 Theorem: Euler's theorem states that every prime of the form , (i.e., 7, 13, 19, 31, 37, 43, 61, 67, ..., which are also the primes of the form ; OEIS A002476 ) can be written in the form with and positive integers. The first few positive integers that can be represented in this form (with ) are 4, 7, 12, 13, 16, 19, ... (OEIS A092572 ), summarized in the following table together with their representations. 4 (1, 1) 7 (2, 1) 12 (3, 1) 13 (1, 2) 16 (2, 2) 19 (4, 1) 21 (3, 2) 28 (1, 3), (4, 2), (5, 1) 31 (2, 3) Restricting solutions such that (i.e., and are relatively prime), the numbers that can be represented as are 4, 7, 12, 13, 19, 21, 28, 31, 37, 39, 43, ... (OEIS A092574 ), as summarized in the following table. with 4 (1, 1) 7 (2, 1) 12 (3, 1) 13 (1, 2) 19 (4, 1) 21 (3, 2) 28 (1, 3), (5, 1) 31 (2, 3) 37 (5, 2)
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Calculate the number of terms in the arithmetic sequence
+first_term = -36
+last_term = 48
+common_difference = 7
+
+# Calculate the number of terms using the formula for the nth term of an arithmetic sequence
+n = ((last_term - first_term) // common_difference) + 1
+
+# Print the number of terms
+print(n)
+----------------------------------------
+CODE OUTPUT: 13
+FINAL ANSWER: 2
+TIME: 4.1s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 2/2 (100.0%)
+================================================================================
+
+================================================================================
+QUESTION: The midterm scores for a statistics course were approximately normally distributed with a mean of 52 points and a standard deviation of 4 points. The final exam scores were approximately normally distributed with a mean of 112 points and a standard deviation of 10 points. One student had a score of 58 points on the midterm. If she had the same standardized score (z-score) on the final exam, what must her score have been?
+OPTIONS:
+  0: 127 points
+  1: 58 points
+  2: 15 points
+  3: 118 points
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Topics in a Probability and Statistics Course: mited number of samples. Uniform Distribution A uniform distribution is a probability distribution that has constant probability. Variance In statistics, variance is the measure of the expected deviation from the mean. The square root of the variance is the standard deviation. z-Score A z-score, also called a "standard score," is the difference from the mean divided by the standard deviation.
+
+[—]
+
+Topics in a Probability and Statistics Course: s, such as the arithmetic, geometric, or harmonic mean. In the absence of additional context, the term "mean" most commnly refers to the arithmetic mean (i.e., the average). Median (1) In statistics, the median is an order statistic that gives the "middle" value of a sample. (2) In geometry, the median of a triangle is a line segment from one of its vertices to the midpoint of the opposite side. Mode The mode of a set of observations is the most commonly occurring value. A distribution with a single mode is said to be unimodal. A distribution with more than one mode is said to be bimodal, trimodal, etc., or in general, multimodal. Moment In statistics, a moment is a measure of the expected deviation from the mean. The most important example of a moment is the variance. Normal Distribution The normal distribution is a probability distribution associated with many sets of real-world data. Due to the shape of this distribution, it is also famously called the "bell curve." Outlier In statistics, an outlier is a point in a sample that has a substantially different value from the rest. Paired t -Test The paired t-test is a statistical test that determines whether the means of two sample sets differ significantly. Poisson Distribution The Poisson distribution is the statistical distribution giving the probability of obtaining exactly n successes in N trials for Poisson processes such as radioactive decay and lotteries. Probability Probability is the branch of mathematics that studie
+--------------------------------------------------------------------------------
+PYTHON CODE:
+mean_midterm = 52
+std_dev_midterm = 4
+score_midterm = 58
+
+z_score = (score_midterm - mean_midterm) / std_dev_midterm
+
+mean_final = 112
+std_dev_final = 10
+
+score_final = z_score * std_dev_final + mean_final
+
+print(score_final)
+----------------------------------------
+CODE OUTPUT: 127.0
+FINAL ANSWER: 0
+TIME: 3.5s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 3/3 (100.0%)
+================================================================================
+

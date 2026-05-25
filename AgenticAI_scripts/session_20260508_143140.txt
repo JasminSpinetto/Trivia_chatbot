@@ -1,0 +1,436 @@
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 1/1 (100.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 2/2 (100.0%)
+================================================================================
+
+================================================================================
+QUESTION: To conduct a survey of which long distance carriers are used in a particular locality, a researcher opens a telephone book to a random page, closes his eyes, puts his finger down on the page, and then calls the next 75 names. Which of the following is a correct statement?
+OPTIONS:
+  0: While the survey design does incorporate chance, the procedure could easily result in selection bias.
+  1: This is an example of cluster sampling with 26 clusters.
+  2: This is an example of stratified sampling with 26 strata.
+  3: The procedure results in a simple random sample.
+--------------------------------------------------------------------------------
+PYTHON CODE:
+0
+----------------------------------------
+CODE OUTPUT: 0
+FINAL ANSWER: 0
+TIME: 0.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 3/3 (100.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 4/4 (100.0%)
+================================================================================
+
+================================================================================
+QUESTION: Find the order of the factor group (Z_11 x Z_15)/(<1, 1>)
+OPTIONS:
+  0: 5
+  1: 1
+  2: 2
+  3: 11
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import gcd, lcm
+
+# Order of Z_11 is 11, order of Z_15 is 15
+order_Z_11 = 11
+order_Z_15 = 15
+
+# Order of the factor group (Z_11 x Z_15)/(<1, 1>) is lcm(order of Z_11, order of Z_15) / gcd(1, 1)
+order_factor_group = lcm(order_Z_11, order_Z_15) // gcd(1, 1)
+
+print(order_factor_group)
+----------------------------------------
+CODE OUTPUT: 165
+FINAL ANSWER: 3
+TIME: 4.8s
+RESULT: WRONG [X]  |  RUNNING SCORE: 4/5 (80.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 5/6 (83.3%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 6/7 (85.7%)
+================================================================================
+
+================================================================================
+QUESTION: Compute the product in the given ring. (12)(16) in Z_24
+OPTIONS:
+  0: 4
+  1: 6
+  2: 0
+  3: 1
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# In Z_24, we compute the product (12)(16) and then take the result modulo 24
+result = (12 * 16) % 24
+print(result)
+----------------------------------------
+CODE OUTPUT: 0
+FINAL ANSWER: 0
+TIME: 1.8s
+RESULT: WRONG [X]  |  RUNNING SCORE: 6/8 (75.0%)
+================================================================================
+
+================================================================================
+QUESTION: Define a new measurement as the difference between the 60th and 40th percentile scores in a population. This measurement will give information concerning
+OPTIONS:
+  0: symmetry.
+  1: skewness.
+  2: variability.
+  3: central tendency.
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 0.4s
+RESULT: WRONG [X]  |  RUNNING SCORE: 6/9 (66.7%)
+================================================================================
+
+================================================================================
+QUESTION: Using Fermat's theorem, find the remainder of 3^47 when it is divided by 23.
+OPTIONS:
+  0: 4
+  1: 2
+  2: 1
+  3: 3
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Fermat's 4n+1 Theorem: Fermat's theorem, sometimes called Fermat's two-square theorem or simply "Fermat's theorem," states that a prime number can be represented in an essentially unique manner (up to the order of addends ) in the form for integer and iff or (which is a degenerate case with ). The theorem was stated by Fermat, but the first published proof was by Euler. The first few primes which are 1 or 2 (mod 4) are 2, 5, 13, 17, 29, 37, 41, 53, 61, ... (OEIS A002313 ) (with the only prime congruent to 2 mod 4 being 2). The numbers such that equal these primes are (1, 1), (1, 2), (2, 3), (1, 4), (2, 5), (1, 6), ... (OEIS A002331 and A002330 ). The theorem can be restated by letting then all relatively prime solutions to the problem of representing for any integer are achieved by means of successive applications of the genus theorem and composition theorem .
+
+[—]
+
+Fermat Quotient: The Fermat quotient for a number and a prime base is defined as (1) If , then (2) (3) (mod ), where the modulus is taken as a fractional congruence . The special case is given by (4) (5) (6) (7) (8) all again (mod ) where the modulus is taken as a fractional congruence , is the digamma function , and the last two equations hold for odd primes only. is an integer for a prime, with the values for , 3, 5, ... being 1, 3, 2, 5, 3, 13, 3, 17, 1, 6, .... The quantity is known to be congruent to zero (mod ) for only two primes : the so-called Wieferich primes 1093 and 3511 (Lehmer 1981, Crandall 1986).
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import mod_inverse
+
+# Fermat's theorem states that a^p ≡ a (mod p) for a prime p
+# We can use this to simplify 3^47 mod 23
+# Since 23 is prime, we can directly calculate 3^47 mod 23
+
+# Calculate 3^47 mod 23
+remainder = pow(3, 47, 23)
+
+print(remainder)
+----------------------------------------
+CODE OUTPUT: 4
+FINAL ANSWER: 0
+TIME: 4.2s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 7/10 (70.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the probability of a Type II error when a hypothesis test is being conducted at the 10% significance level (α = 0.10)?
+OPTIONS:
+  0: 0.05
+  1: 0.90
+  2: There is insufficient information to answer this question.
+  3: 0.10
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# The probability of a Type II error (β) is not directly given by the significance level (α).
+# It depends on the true state of nature, the power of the test, and the effect size.
+# Without specific information about these factors, we cannot calculate β.
+# Therefore, the correct answer is that there is insufficient information to answer this question.
+
+print(2)
+----------------------------------------
+CODE OUTPUT: 2
+FINAL ANSWER: 2
+TIME: 3.2s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 8/11 (72.7%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 9/12 (75.0%)
+================================================================================
+
+================================================================================
+QUESTION: Find the area bounded by the spiral r = ln θ on the interval π <= θ <= 2π.
+OPTIONS:
+  0: 2.405
+  1: 2.931
+  2: 4.81
+  3: 3.743
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from scipy.integrate import quad
+import numpy as np
+
+def integrand(theta):
+    return np.log(theta)
+
+area, _ = quad(integrand, np.pi, 2 * np.pi)
+print(area)
+----------------------------------------
+CODE OUTPUT: 4.809854526746569
+FINAL ANSWER: 2
+TIME: 2.1s
+RESULT: WRONG [X]  |  RUNNING SCORE: 9/13 (69.2%)
+================================================================================
+
+================================================================================
+QUESTION: A newspaper reporter examined police reports of accidents during the past 12 months to collect data about the speed of a car and its stopping distance. The reporter then constructed a scatterplot and computed a correlation coefficient to show the relation between a car’s speed and its stopping distance. This is an example of
+OPTIONS:
+  0: a study involving no blinding at all
+  1: a single-blind study
+  2: a double-blind study
+  3: an observational study
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 0.4s
+RESULT: WRONG [X]  |  RUNNING SCORE: 9/14 (64.3%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 9/15 (60.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 10/16 (62.5%)
+================================================================================
+
+================================================================================
+QUESTION: Simplify $(5x+3) - 2(2x-4)$.
+OPTIONS:
+  0: 10+x
+  1: x+11
+  2: 7+2x
+  3: 5x+3
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the expression
+expr = (5* symbols('x') + 3) - 2*(2* symbols('x') - 4)
+
+# Simplify the expression
+simplified_expr = sp.simplify(expr)
+
+# Print the simplified expression
+print(simplified_expr)
+----------------------------------------
+CODE OUTPUT: x + 11.0
+FINAL ANSWER: 1
+TIME: 2.6s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 11/17 (64.7%)
+================================================================================
+
+================================================================================
+QUESTION: Suppose that $f(x)$ is a polynomial that has degree $6$ and $g(x)$ is a polynomial that has degree $3$. If $h(x)$ is also a polynomial such that $f(g(x)) + g(h(x)) + h(f(x))$ is a polynomial of degree $36$, then what is the degree of the polynomial $h$?
+OPTIONS:
+  0: 72
+  1: 12
+  2: 6
+  3: 18
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Since f(g(x)) has degree 6*3 = 18, g(h(x)) has degree 3*deg(h), and h(f(x)) has degree deg(h)*6,
+# and the total degree is 36, we can set up the equation 18 + 3*deg(h) + deg(h)*6 = 36.
+# Solving for deg(h) gives us the degree of h.
+
+# Define the degree of f(g(x))
+deg_f_g = 6 * 3
+
+# Define the total degree of the polynomial
+total_degree = 36
+
+# Set up the equation and solve for the degree of h
+# 18 + 3*deg_h + deg_h*6 = 36
+# 9*deg_h = 36 - 18
+# deg_h = (36 - 18) / 9
+
+deg_h = (total_degree - deg_f_g) / 9
+
+# Print the degree of h
+print(deg_h)
+----------------------------------------
+CODE OUTPUT: 2.0
+FINAL ANSWER: 2
+TIME: 9.3s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 12/18 (66.7%)
+================================================================================
+
+================================================================================
+QUESTION: How many palindromes (arrangements reading the same forward as backward) of 2 letters or more, containing the letter M, can be formed by rearranging any subset of the letters MISSISSIPPI?
+OPTIONS:
+  0: 66
+  1: 86
+  2: 2012
+  3: 89
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from itertools import permutations
+
+letters = "MISSISSIPPI"
+palindromes = set()
+
+for i in range(2, len(letters) + 1):
+    for subset in permutations(letters, i):
+        if 'M' in subset and subset == subset[::-1]:
+            palindromes.add(subset)
+
+print(len(palindromes))
+----------------------------------------
+CODE OUTPUT: FAILED — NameError: name 'permutations' is not defined
+FINAL ANSWER: 0
+TIME: 3.9s
+RESULT: WRONG [X]  |  RUNNING SCORE: 12/19 (63.2%)
+================================================================================
+
+================================================================================
+QUESTION: The least common multiple of two integers is 240, and the greatest common divisor is 24. Given that one of the integers is 48, what is the other integer?
+OPTIONS:
+  0: 1
+  1: 20
+  2: 120
+  3: 12
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from math import gcd
+
+# Given values
+lcm = 240
+gcd_value = 24
+one_integer = 48
+
+# Calculate the other integer using the formula: (lcm * gcd) / (one_integer * gcd_value)
+other_integer = (lcm * gcd_value) // (one_integer * gcd_value)
+
+print(other_integer)
+----------------------------------------
+CODE OUTPUT: 5
+FINAL ANSWER: 0
+TIME: 3.5s
+RESULT: WRONG [X]  |  RUNNING SCORE: 12/20 (60.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 12/21 (57.1%)
+================================================================================
+
+================================================================================
+QUESTION: Exits on a highway are numbered consecutively from 1 to 50. The distance from exit 41 to exit 50 is 100 km. If each exit is at least 6 km from the next exit, what is the longest possible distance, in kilometers, between exit 47 and exit 48?
+OPTIONS:
+  0: 50
+  1: 52
+  2: 51
+  3: 49
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 11.1s
+RESULT: WRONG [X]  |  RUNNING SCORE: 12/22 (54.5%)
+================================================================================
+
+================================================================================
+QUESTION: The average number of calories in Yum-Yum Good candy bars is 210, with a standard deviation of 10. If the number of calories per candy bar is normally distributed, what percent of candy bars contain more than 225 calories?
+OPTIONS:
+  0: 6.68%
+  1: 43.30%
+  2: 66.80%
+  3: 47.70%
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from scipy.stats import norm
+
+# Given values
+mean = 210
+std_dev = 10
+value = 225
+
+# Calculate the z-score
+z_score = (value - mean) / std_dev
+
+# Calculate the percentage of candy bars with more than 225 calories
+percentage = 1 - norm.cdf(z_score)
+
+print(percentage)
+----------------------------------------
+CODE OUTPUT: 0.06680720126885809
+FINAL ANSWER: 0
+TIME: 3.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 13/23 (56.5%)
+================================================================================
+
+================================================================================
+QUESTION: Suppose that 60% of a particular electronic part last over 3 years, while 70% last less than 6 years. Assuming a normal distribution, what are the mean and standard deviation with regard to length of life of these parts?
+OPTIONS:
+  0: μ = 3.977, σ = 3.861
+  1: μ = 4.177, σ = 3.561
+  2: μ = 4.377, σ = 3.261
+  3: μ = 3.677, σ = 3.561
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Standard Normal Distribution: A standard normal distribution is a normal distribution with zero mean ( ) and unit variance ( ), given by the probability density function and distribution function (1) (2) over the domain . It has mean , variance , skewness , and kurtosis excess given by (3) (4) (5) (6) The first quartile of the standard normal distribution occurs when , which is (7) (8) (OEIS A092678 ; Kenney and Keeping 1962, p. 134), where is the inverse erf function. The absolute value of this is known as the probable error .
+
+[—]
+
+Standard Deviation Distribution: Consider the sample standard deviation (1) for samples taken from a population with a normal distribution . The distribution of is then given by (2) where is a gamma function and (3) (Kenney and Keeping 1951, pp. 161 and 171). The function is plotted above for (red), 4 (orange), ..., 10 (blue), and 12 (violet). The mean is given by (4) (5) where (6) (Kenney and Keeping 1951, p. 171). The function is known as in statistical process control (Duncan 1986, pp. 62 and 134). Romanovsky showed that (7) (OEIS A088801 and A088802 ; Romanovsky 1925; Pearson 1935; Kenney and Keeping 1951, p. 171). The raw moments are given by (8) and the variance of is (9) (10) is an unbiased estimator of (Kenney and Keeping 1951, p. 171).
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 3
+TIME: 11.1s
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/24 (54.2%)
+================================================================================
+
+================================================================================
+QUESTION: In a high school of 1650 students, 132 have personal investments in the stock market. To estimate the total stock investment by students in this school, two plans are proposed. Plan I would sample 30 students at random, find a confidence interval estimate of their average investment, and then multiply both ends of this interval by 1650 to get an interval estimate of the total investment. Plan II would sample 30 students at random from among the 132 who have investments in the market, find a confidence interval estimate of their average investment, and then multiply both ends of this interval by 132 to get an interval estimate of the total investment. Which is the better plan for estimating the total stock market investment by students in this school?
+OPTIONS:
+  0: Neither plan will give an accurate estimate.
+  1: Plan II
+  2: Both plans use random samples and so will produce equivalent results.
+  3: Plan I
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# The answer is 3: Plan I
+----------------------------------------
+CODE OUTPUT: FAILED — NO OUTPUT (code ran but nothing was printed)
+FINAL ANSWER: 0
+TIME: 0.7s
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/25 (52.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/26 (50.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/27 (48.1%)
+================================================================================
+
+================================================================================
+QUESTION: For a class project, Charlotte recorded the heights of all 28 students in her class and calculated several statistics. She then realized she made an error recording the height of the tallest person in the class. She correctly had him listed as the tallest, but needed to add two inches to his recorded height to correct it. Which of these measures of spread must remain unchanged?
+OPTIONS:
+  0: Variance
+  1: Interquartile range
+  2: Standard deviation
+  3: Mean absolute deviation
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Since the variance and standard deviation are both measures of spread that depend on the square of the differences from the mean,
+# and the mean absolute deviation is a measure of spread that depends on the absolute differences from the mean,
+# all of these measures would change if the height of the tallest person is corrected.
+# The interquartile range, however, is a measure of spread that depends on the 25th and 75th percentiles,
+# and would not change if the height of the tallest person is corrected, as it does not depend on the extreme values.
+
+# Therefore, the interquartile range must remain unchanged.
+
+print(1)
+----------------------------------------
+CODE OUTPUT: 1
+FINAL ANSWER: 1
+TIME: 5.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 14/28 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: Exits on a highway are numbered consecutively from 1 to 50. The distance from exit 41 to exit 50 is 100 km. If each exit is at least 6 km from the next exit, what is the longest possible distance, in kilometers, between exit 47 and exit 48?
+OPTIONS:
+  0: 50
+  1: 49
+  2: 52
+  3: 51
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 10.8s
+RESULT: WRONG [X]  |  RUNNING SCORE: 14/29 (48.3%)
+================================================================================
+

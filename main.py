@@ -1,3 +1,9 @@
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import torch  # must be imported before utils/requests to avoid DLL conflicts on Windows
 import os
 import json
@@ -9,12 +15,12 @@ from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
-ONLINE            = False
+ONLINE            = True
 RESULTS_FILE      = "results/Math/online-math-results.csv"
 #RESULTS_FILE      = "results/results.csv"
 CONFIG_DIR        = "config"
 ONLINE_TIMEOUT_S  = 30   # hard limit imposed by the quiz server
-OFFLINE_TIMEOUT_S = 180  # generous limit for local runs (DeepSeek-R1 needs time to think)
+OFFLINE_TIMEOUT_S = 180  # generous limit for local runs to better analyze behaviour
 
 
 def load_model(config_path: str):
@@ -246,7 +252,7 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(seen_questions, f, ensure_ascii=False, indent=2)
         correct_count = sum(1 for q in seen_questions if q["correct"])
-        print(f"\nSaved {len(seen_questions)} questions ({correct_count} with known correct answer) → {out_path}")
+        print(f"\nSaved {len(seen_questions)} questions ({correct_count} with known correct answer) -> {out_path}")
 
 
 def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only, dataset):
@@ -300,9 +306,9 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
             elif correct:
                 verdict = f"CORRECT ({elapsed:.1f}s)"
             else:
-                verdict = f"WRONG → correct: {q['answer']} ({elapsed:.1f}s)"
+                verdict = f"WRONG -> correct: {q['answer']} ({elapsed:.1f}s)"
 
-            print(f"  Q{i+1:02d} → answered {answer_id} | {verdict}")
+            print(f"  Q{i+1:02d} -> answered {answer_id} | {verdict}")
 
     accuracy = correct_count / total * 100 if total else 0
     print(f"\n=== Offline Summary ===")

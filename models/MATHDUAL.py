@@ -1,86 +1,100 @@
-from models.MATH import _has_numeric_content
-
-# Questions that clearly need numerical code execution → phi-4-mini
-# Everything else defaults to Mathstral chain-of-thought reasoning
-_PHI_TRIGGERS = {
-    # calculus
-    "derivative", "differentiate", "integral", "integrate", "antiderivative",
-    "tangent line", "vertical tangent", "normal line",
-    "rate of change", "critical point", "inflection point",
-    "find the limit", "limit of", "limit as",
-    "converges", "diverges", "optimize",
-    "maximum value", "minimum value",
-    # statistics (numerical)
-    "standard deviation", "variance", "z-score", "percentile",
-    "confidence interval", "normal distribution", "regression",
-    "expected value", "expected number",
-    "mean of", "median",
-    # geometry (numerical)
-    "what is the area", "what is the volume", "surface area",
-    "perimeter", "circumference", "hypotenuse",
-    # probability (numerical)
-    "probability that", "probability of",
-    # direct numerical computation
-    "evaluate", "compute", "calculate",
-}
-
-
-def _should_use_phi(question: str) -> bool:
-    """True → phi-4-mini code executor, False → Mathstral reasoning (default)."""
-    if not _has_numeric_content(question):
-        return False
-    q = question.lower()
-    return any(kw in q for kw in _PHI_TRIGGERS)
+import os
+import time
+from datetime import datetime
+from models.MATH import _should_use_code
 
 
 class MathDualModel:
     """
-    Routes math questions between two fully independent models:
+    Routes questions between two models using _should_use_code() from MATH.py:
 
-    phi-4-mini  (code executor + dense retrieval):
-        Calculus, statistics, probability calculations, direct numerical computation.
+    code_model  (phi-4-mini, code executor + dense retrieval):
+        Any question with numeric content AND computation keywords.
 
-    Mathstral   (chain-of-thought reasoning + dense retrieval):
-        Abstract algebra, combinatorics, number theory, proofs, named theorems.
-        Default path — phi is the exception, Mathstral is the rule.
-
-    Routing is keyword-based (_PHI_TRIGGERS). No structured tag handoff needed.
-    Both models use their own dense retrieval independently.
+    text_model  (llama / mathstral, chain-of-thought reasoning):
+        Conceptual definitions, AP Stats, abstract proofs, True/False statements.
+        Default path — code model is the exception, text model is the rule.
     """
 
-    def __init__(self, phi_model, mathstral_model):
-        self.phi_model       = phi_model
-        self.mathstral_model = mathstral_model
-        self._active         = mathstral_model
+    def __init__(self, phi_model=None, mathstral_model=None,
+                 code_model=None, text_model=None, log_dir: str = "AgenticAI_scripts"):
+        self.code_model = code_model or phi_model
+        self.text_model = text_model or mathstral_model
+        self._active    = self.text_model
+        self._log_correct = 0
+        self._log_total   = 0
+        os.makedirs(log_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self._log_path = os.path.join(log_dir, f"session_{timestamp}.txt")
 
     # ── routing ───────────────────────────────────────────────────────────────
 
     def answer(self, question_text: str, options: dict) -> int:
-        if _should_use_phi(question_text):
-            self._active = self.phi_model
-            print("  [DUAL] → phi (code executor)")
-            return self.phi_model.answer(question_text, options)
+        if _should_use_code(question_text):
+            self._active = self.code_model
+            print("  [DUAL] -> code model (phi)")
+            return self.code_model.answer(question_text, options)
         else:
-            self._active = self.mathstral_model
-            print("  [DUAL] → mathstral (reasoning)")
-            return self.mathstral_model.answer(question_text, options)
+            self._active = self.text_model
+            print("  [DUAL] -> text model (llama)")
+            t0 = time.time()
+            result = self.text_model.answer(question_text, options)
+            elapsed = time.time() - t0
+            self._log_text(question_text, options, result, elapsed)
+            return result
+
+    def _log_text(self, question_text: str, options: dict, final_answer: int, elapsed: float):
+        context  = getattr(self.text_model, "_last_context",  "")
+        response = getattr(self.text_model, "_last_response", "")
+        lines = ["=" * 80, f"QUESTION: {question_text}", "OPTIONS:"]
+        for opt_id, opt_text in options.items():
+            lines.append(f"  {opt_id}: {opt_text}")
+        if context:
+            lines += ["-" * 80, f"RETRIEVED CONTEXT:\n{context}"]
+        lines += ["-" * 80, "LLAMA REASONING:", response if response else "(no response)",
+                  f"FINAL ANSWER: {final_answer}", f"TIME: {elapsed:.1f}s"]
+        with open(self._log_path, "a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
 
     # ── interface ─────────────────────────────────────────────────────────────
 
     def get_info(self) -> dict:
-        p = self.phi_model.get_info()
-        m = self.mathstral_model.get_info()
+        c = self.code_model.get_info()
+        t = self.text_model.get_info()
         return {
             "model_name": "math-dual (keyword-routed)",
-            "phi":        f"{p['model_name']} ({p['parameters']}, {p['quantization']})",
-            "mathstral":  f"{m['model_name']} ({m['parameters']}, {m['quantization']})",
+            "code_model": f"{c['model_name']} ({c['parameters']}, {c['quantization']})",
+            "text_model": f"{t['model_name']} ({t['parameters']}, {t['quantization']})",
         }
 
-    def log_result(self, correct: bool):
-        if hasattr(self._active, "log_result"):
-            self._active.log_result(correct)
+    def log_result(self, correct):
+        correct = bool(correct)
+        self._log_total   += 1
+        self._log_correct += int(correct)
+        verdict  = "CORRECT [OK]" if correct else "WRONG [X]"
+        accuracy = f"{self._log_correct}/{self._log_total} ({self._log_correct/self._log_total*100:.1f}%)"
+        # append to whichever log is active
+        if self._active is self.code_model and hasattr(self.code_model, "log_result"):
+            self.code_model.log_result(correct)
+        elif os.path.exists(self._log_path):
+            with open(self._log_path, "a", encoding="utf-8") as f:
+                f.write(f"RESULT: {verdict}  |  RUNNING SCORE: {accuracy}\n{'=' * 80}\n\n")
 
     def finalize_log(self, correct: int, total: int):
-        for model in [self.phi_model, self.mathstral_model]:
-            if hasattr(model, "finalize_log"):
-                model.finalize_log(correct, total)
+        # finalize phi's log for code-path questions
+        if hasattr(self.code_model, "finalize_log"):
+            self.code_model.finalize_log(correct, total)
+        # rename our text-path log
+        if not os.path.exists(self._log_path):
+            return
+        with open(self._log_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        header = f"SCORE: {correct}/{total} ({correct/total*100:.1f}%)\n{'=' * 80}\n\n"
+        timestamp = os.path.basename(self._log_path).replace("session_", "").replace(".txt", "")
+        new_path  = os.path.join(os.path.dirname(self._log_path),
+                                 f"LLAMA_{correct}of{total}_{timestamp}.txt")
+        with open(new_path, "w", encoding="utf-8") as f:
+            f.write(header + content)
+        os.remove(self._log_path)
+        self._log_path = new_path
+        print(f"Llama log saved to {new_path}")

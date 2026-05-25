@@ -1,0 +1,12 @@
+model_class: MathLLMModel
+model_name: "microsoft/Phi-4-mini-instruct"
+do_sample: false
+temperature: null
+max_new_tokens: 256
+system_prompt: "code"
+search_reversed: false
+use_retrieval: false
+use_dense_retrieval: true
+use_code_executor: true
+use_router: true
+log_dir: "AgenticAI_scripts"

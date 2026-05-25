@@ -1,0 +1,15 @@
+model_class: LLMModel
+model_name: "meta-llama/Llama-3.1-8B-Instruct"
+do_sample: false
+temperature: null
+max_new_tokens: 400
+system_prompt: "mathstral"
+search_reversed: true
+quantization:
+  load_in_4bit: true
+  quant_type: "nf4"
+  compute_dtype: "bfloat16"
+  double_quant: true
+use_retrieval: false
+use_dense_retrieval: false
+repetition_penalty: 1.3

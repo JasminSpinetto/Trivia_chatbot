@@ -50,7 +50,7 @@ def get_article_urls() -> list[str]:
         try:
             resp = requests.get(sitemap_url, timeout=30, headers={"User-Agent": UA})
             if resp.status_code != 200:
-                print(f"  {sitemap_url} → {resp.status_code}, trying next...")
+                print(f"  {sitemap_url} -> {resp.status_code}, trying next...")
                 continue
             soup = BeautifulSoup(resp.text, "xml")
             found = [loc.get_text().strip() for loc in soup.find_all("loc")]

@@ -14,8 +14,28 @@ import contextlib
 import numpy as np
 from datetime import datetime
 from typing import Optional
-from transformers import GenerationConfig
+from transformers import GenerationConfig, StoppingCriteria, StoppingCriteriaList
 from models.LLM import LLMModel, SYSTEM_PROMPTS
+
+
+class _BoxedStoppingCriteria(StoppingCriteria):
+    """Stop generation as soon as \\boxed{N} is produced for any valid option key."""
+    def __init__(self, tokenizer, option_keys):
+        seqs = []
+        for key in option_keys:
+            ids = tokenizer.encode(f"\\boxed{{{key}}}", add_special_tokens=False)
+            if ids:
+                seqs.append(ids)
+        self._sequences = seqs
+        self._max_len   = max((len(s) for s in seqs), default=8)
+
+    def __call__(self, input_ids, *_, **__) -> bool:
+        tail = input_ids[0, -self._max_len:].tolist()
+        for seq in self._sequences:
+            n = len(seq)
+            if len(tail) >= n and tail[-n:] == seq:
+                return True
+        return False
 
 SYSTEM_PROMPTS["math"] = (
     "You are a math expert. Take a deep breath and reason step by step, "
@@ -23,10 +43,10 @@ SYSTEM_PROMPTS["math"] = (
 )
 
 SYSTEM_PROMPTS["qwen_math"] = (
-    "Please integrate natural language reasoning with programs to solve the problem.\n"
-    "Write a ```python``` code block that prints the final numerical result.\n"
-    "IMPORTANT: do NOT write any import statements — all libraries are pre-loaded.\n"
-    "After the code, select the matching option and end with ONLY the option number on the last line."
+    "Please integrate natural language reasoning with programs to solve the problem above, "
+    "and put your final answer within \\boxed{}. "
+    "For multiple choice questions, put the correct option number (0, 1, 2, or 3) inside \\boxed{}. "
+    "Be brief: short reasoning, minimal code."
 )
 
 SYSTEM_PROMPTS["mathstral"] = (
@@ -90,7 +110,8 @@ _CODE_QUESTION_KEYWORDS = [
     "what is the length",
     # trigonometry
     "sin(", "cos(", "tan(", "arcsin", "arccos", "arctan",
-    "angle between", "find the angle",
+    "angle between", "find the angle", "interior angle", "how many degrees",
+    "regular polygon", "regular hexagon", "regular octagon", "regular pentagon",
     # statistics & probability
     "probability that", "probability of", "what is the probability",
     "expected value", "expected number", "expected",
@@ -169,10 +190,18 @@ def _has_numeric_content(question: str) -> bool:
     return bool(words & _NUMBER_WORDS)
 
 
+_ALWAYS_CODE_KEYWORDS = {
+    "interior angle", "how many degrees", "regular polygon",
+    "regular hexagon", "regular octagon", "regular pentagon",
+}
+
 def _should_use_code(question: str) -> bool:
-    """Keyword heuristic: True → use code executor, False → use plain text path."""
+    """Keyword heuristic: True -> use code executor, False -> use plain text path."""
+    q = question.lower()
+    if any(kw in q for kw in _ALWAYS_CODE_KEYWORDS):
+        return True  # geometry formulas need code even without explicit numbers
     if not _has_numeric_content(question):
-        return False   # no numeric content → purely abstract, code cannot help
+        return False   # no numeric content -> purely abstract, code cannot help
     q = question.lower()
     for kw in _TEXT_QUESTION_KEYWORDS:
         if kw in q:
@@ -225,13 +254,17 @@ class MathLLMModel(LLMModel):
 
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
-        user_suffix = (
-            "You MUST write a ```python``` code block that prints the answer, even when context is provided. "
-            "Read constraints carefully — only enforce what the problem explicitly states. "
-            "End with only the option number."
-            if self._use_code_executor else
-            "Reply with only the option number."
-        )
+        _is_qwen_tir = (self._system_prompt == SYSTEM_PROMPTS.get("qwen_math", ""))
+        if _is_qwen_tir:
+            user_suffix = "Answer concisely. End with \\boxed{option_number}."
+        elif self._use_code_executor:
+            user_suffix = (
+                "You MUST write a ```python``` code block that prints the answer, even when context is provided. "
+                "Read constraints carefully — only enforce what the problem explicitly states. "
+                "End with only the option number."
+            )
+        else:
+            user_suffix = "Reply with only the option number."
 
         if re.search(r"statement\s*1", question_text, re.IGNORECASE):
             user_content = _STATEMENT_FEW_SHOT + f"Question: {question_text}\n\nOptions:\n{options_str}\n\n{user_suffix}"
@@ -248,7 +281,12 @@ class MathLLMModel(LLMModel):
             do_sample=self._do_sample,
             temperature=self._temperature if self._do_sample else None,
         )
-        output = self.pipe(messages, generation_config=gen_config, return_full_text=False)
+        extra = {}
+        if _is_qwen_tir:
+            extra["stopping_criteria"] = StoppingCriteriaList(
+                [_BoxedStoppingCriteria(self.pipe.tokenizer, options.keys())]
+            )
+        output = self.pipe(messages, generation_config=gen_config, return_full_text=False, **extra)
         return output[0]["generated_text"].strip()
 
     def answer(self, question_text: str, options: dict) -> int:
@@ -267,16 +305,16 @@ class MathLLMModel(LLMModel):
                 self._use_code_executor  = True
                 if any(kw in question_text.lower() for kw in _MATHWORLD_TRIGGERS) and original_retriever is not None:
                     self._retriever = original_retriever  # MathWorld-only lookup for theorem questions
-                    print(f"  [ROUTER] → code path (+MathWorld)")
+                    print(f"  [ROUTER] -> code path (+MathWorld)")
                 else:
                     self._retriever = None
-                    print(f"  [ROUTER] → code path")
+                    print(f"  [ROUTER] -> code path")
             else:
                 self._system_prompt      = SYSTEM_PROMPTS.get("default", self._system_prompt)
-                self._max_new_tokens     = 10
+                self._max_new_tokens     = 20
                 self._use_code_executor  = False
-                self._retriever          = None   # disable wiki for conceptual questions
-                print(f"  [ROUTER] → text path")
+                self._retriever          = None   # disable retrieval for conceptual questions
+                print(f"  [ROUTER] -> text path")
 
         try:
             retrieval_options = None if use_code else options
@@ -599,20 +637,41 @@ class MathLLMModel(LLMModel):
             builtins.print(*[_evalf_if_sympy(a) for a in args], **kwargs)
 
         def _safe_float(x):
+            # unwrap a single-element list (common from SymPy solve())
+            if isinstance(x, (list, tuple)) and len(x) == 1:
+                x = x[0]
             try:
                 return builtins.float(x)
             except TypeError:
                 return builtins.float(_evalf_if_sympy(x))
 
         def _safe_int(x):
+            if isinstance(x, (list, tuple)) and len(x) == 1:
+                x = x[0]
             try:
                 return builtins.int(x)
             except TypeError:
                 return builtins.int(_evalf_if_sympy(x))
 
-        namespace["print"] = _smart_print
-        namespace["float"] = _safe_float
-        namespace["int"]   = _safe_int
+        def _solve_to_float(expr, var):
+            """solve() wrapper that returns a list of real floats — avoids SymPy type errors."""
+            try:
+                sols = namespace["sp"].solve(expr, var)
+                result = []
+                for s in sols:
+                    try:
+                        v = builtins.float(namespace["N"](s))
+                        result.append(v)
+                    except Exception:
+                        pass
+                return result
+            except Exception:
+                return []
+
+        namespace["print"]          = _smart_print
+        namespace["float"]          = _safe_float
+        namespace["int"]            = _safe_int
+        namespace["solve_to_float"] = _solve_to_float
 
         import sys
         namespace["sys"] = sys  # allow models to call sys.setrecursionlimit() if needed
@@ -663,7 +722,7 @@ class MathLLMModel(LLMModel):
         self._last_exec_error = None
         return result
 
-    # ── result → option mapping ───────────────────────────────────────────────
+    # ── result -> option mapping ───────────────────────────────────────────────
 
     @staticmethod
     def _normalize(text: str) -> str:
@@ -692,9 +751,21 @@ class MathLLMModel(LLMModel):
         best_id, best_diff = None, float("inf")
         for opt_id, opt_text in options.items():
             opt_text_n = self._normalize(opt_text)
-            opt_nums   = re.findall(_NUM, opt_text_n)
-            if opt_nums:
-                diff = abs(float(opt_nums[-1]) - result_val)
+            # Try evaluating fraction — {N}{M} covers \frac{N}{M}, plain N/M covered separately
+            opt_val = None
+            frac = re.search(r"\{(-?\d+(?:\.\d*)?)\}\{(-?\d+(?:\.\d*)?)\}", opt_text_n)
+            if not frac:
+                frac = re.search(r"(-?\d+(?:\.\d*)?)\s*/\s*(-?\d+(?:\.\d*)?)", opt_text_n)
+            if frac:
+                denom = float(frac.group(2))
+                if denom != 0:
+                    opt_val = float(frac.group(1)) / denom
+            if opt_val is None:
+                opt_nums = re.findall(_NUM, opt_text_n)
+                if opt_nums:
+                    opt_val = float(opt_nums[-1])
+            if opt_val is not None:
+                diff = abs(opt_val - result_val)
                 if diff < best_diff:
                     best_diff, best_id = diff, opt_id
         return int(best_id) if best_id is not None else None
@@ -728,10 +799,10 @@ class MathLLMModel(LLMModel):
         """Append the server verdict and running accuracy to the last open log entry."""
         if not hasattr(self, "_log_path"):
             return
-        correct = bool(correct)   # None → False, True → True
+        correct = bool(correct)   # None -> False, True -> True
         self._log_total   += 1
         self._log_correct += int(correct)
-        verdict  = "CORRECT ✓" if correct else "WRONG ✗"
+        verdict  = "CORRECT [OK]" if correct else "WRONG [X]"
         accuracy = f"{self._log_correct}/{self._log_total} ({self._log_correct/self._log_total*100:.1f}%)"
         with open(self._log_path, "a", encoding="utf-8") as f:
             f.write(f"RESULT: {verdict}  |  RUNNING SCORE: {accuracy}\n{'=' * 80}\n\n")
@@ -774,20 +845,24 @@ class MathLLMModel(LLMModel):
             # Reject trivial hardcoded guesses: code that only prints a single digit
             _trivial = re.fullmatch(r'\s*print\s*\(\s*[0-9]\s*\)\s*', code.strip())
             if _trivial:
-                print(f"  [TRIVIAL     ] code is just print(N) → text fallback")
+                print(f"  [TRIVIAL     ] code is just print(N) -> text fallback")
                 code = None
             else:
                 code_result = self._execute_code(code)
                 if code_result is not None:
+                    # Strip trailing standalone option index (0-3) that phi adds via print(N)
+                    lines = [l for l in code_result.strip().split("\n") if l.strip()]
+                    if len(lines) > 1 and re.fullmatch(r"[0-3]", lines[-1].strip()):
+                        code_result = "\n".join(lines[:-1])
                     matched = self._match_to_option(code_result, options)
                     if matched is not None:
                         final_answer = matched
-                        print(f"  [AGENTIC OK  ] code ran → output: {code_result!r} → option {final_answer}")
+                        print(f"  [AGENTIC OK  ] code ran -> output: {code_result!r} -> option {final_answer}")
                 if final_answer is None:
                     exec_err = getattr(self, "_last_exec_error", "unknown error")
-                    print(f"  [AGENTIC FAIL] {exec_err} → text fallback")
+                    print(f"  [AGENTIC FAIL] {exec_err} -> text fallback")
         if not code:
-            print(f"  [STANDARD    ] no code generated → text parsing")
+            print(f"  [STANDARD    ] no code generated -> text parsing")
 
         if final_answer is None:
             final_answer = self._parse_token(response, options)

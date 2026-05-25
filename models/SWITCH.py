@@ -18,10 +18,10 @@ class SwitchModel:
     def set_competition(self, comp_id: int):
         if comp_id == self.math_comp_id:
             self._active = self.math_model
-            print("  [SWITCH] math competition → Mathstral 7B wiki-code")
+            print("  [SWITCH] math competition -> Mathstral 7B wiki-code")
         else:
             self._active = self.general_model
-            print("  [SWITCH] general competition → Llama 8B wiki")
+            print("  [SWITCH] general competition -> Llama 8B wiki")
 
     # ── model interface ───────────────────────────────────────────────────────
 

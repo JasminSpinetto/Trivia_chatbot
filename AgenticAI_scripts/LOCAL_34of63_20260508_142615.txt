@@ -1,0 +1,1137 @@
+SCORE: 34/63 (54.0%)
+================================================================================
+
+================================================================================
+QUESTION: The polynomial x^4 + 4 can be factored into linear factors in Z_5[x]. Find this factorization.
+OPTIONS:
+  0: (x-1)^3(x+1)
+  1: (x-1)(x+1)^3
+  2: (x+1)^4
+  3: (x-2)(x+2)(x-1)(x+1)
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the polynomial and the field
+x = symbols('x')
+polynomial = x**4 + 4
+
+# Factor the polynomial in Z_5[x]
+factorization = factor(polynomial, modulus=5)
+
+# Print the factorization
+print(factorization)
+----------------------------------------
+CODE OUTPUT: (x - 2.0)*(x - 1.0)*(x + 1.0)*(x + 2.0)
+FINAL ANSWER: 0
+TIME: 3.1s
+RESULT: WRONG [X]  |  RUNNING SCORE: 0/1 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: Six positive integers are written on the faces of a cube. Each vertex is labeled with the product of the three numbers on the faces adjacent to the vertex. If the sum of the numbers on the vertices is equal to 1001, then what is the sum of the numbers written on the faces?
+OPTIONS:
+  0: 1001
+  1: 18
+  2: 13
+  3: 31
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 11.1s
+RESULT: WRONG [X]  |  RUNNING SCORE: 0/2 (0.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 0/3 (0.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the area, in square units, of a square whose sides are the same length as the radius of a circle with a circumference of 12*pi units?
+OPTIONS:
+  0: 12
+  1: 10
+  2: 36
+  3: 11
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Given the circumference of the circle
+circumference = 12 * pi
+
+# Calculate the radius of the circle
+radius = circumference / (2 * pi)
+
+# The side of the square is equal to the radius of the circle
+side_of_square = radius
+
+# Calculate the area of the square
+area_of_square = side_of_square ** 2
+
+# Print the area of the square
+print(area_of_square)
+----------------------------------------
+CODE OUTPUT: 36.0
+FINAL ANSWER: 2
+TIME: 3.9s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 1/4 (25.0%)
+================================================================================
+
+================================================================================
+QUESTION: Where, in the first quadrant, does the rose r = sin(3*theta) have a vertical tangent?
+OPTIONS:
+  0: theta = 0.52
+  1: theta = 0.47
+  2: nowhere
+  3: theta = 0.39
+--------------------------------------------------------------------------------
+PYTHON CODE:
+import sympy as sp
+
+theta = sp.symbols('theta')
+r = sp.sin(3*theta)
+
+# Derivative of r with respect to theta
+dr_dtheta = sp.diff(r, theta)
+
+# Solve for vertical tangents (where dr/dtheta is undefined or infinite)
+vertical_tangents = sp.solve(dr_dtheta, theta)
+
+# Filter solutions in the first quadrant (0 < theta < pi/2)
+first_quadrant_tangents = [sol.evalf() for sol in vertical_tangents if 0 < sol.evalf() < sp.pi/2]
+
+# Check the options provided
+options = [0.52, 0.47, 2, 0.39]
+answer = next((sol for sol in first_quadrant_tangents if sol in options), None)
+
+print(answer)
+----------------------------------------
+CODE OUTPUT: None
+FINAL ANSWER: 0
+TIME: 7.3s
+RESULT: WRONG [X]  |  RUNNING SCORE: 1/5 (20.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 2/6 (33.3%)
+================================================================================
+
+================================================================================
+QUESTION: Find all c in Z_3 such that Z_3[x]/(x^3 + cx^2 + 1) is a field.
+OPTIONS:
+  0: 0
+  1: 1
+  2: 2
+  3: 3
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the polynomial and the modulus
+c_values = [0, 1, 2]
+is_field = []
+
+# Check for each c in Z_3
+for c in c_values:
+    # Define the polynomial
+    poly = [1, c, 0, 1]
+    # Check if the polynomial is irreducible over Z_3
+    if sp.is_irreducible(poly, modulus=3):
+        is_field.append(c)
+
+# Print the valid c values
+print(is_field)
+----------------------------------------
+CODE OUTPUT: FAILED — AttributeError: module 'sympy' has no attribute 'is_irreducible'
+FINAL ANSWER: 0
+TIME: 4.6s
+RESULT: WRONG [X]  |  RUNNING SCORE: 2/7 (28.6%)
+================================================================================
+
+================================================================================
+QUESTION: A newspaper reporter examined police reports of accidents during the past 12 months to collect data about the speed of a car and its stopping distance. The reporter then constructed a scatterplot and computed a correlation coefficient to show the relation between a car's speed and its stopping distance. This is an example of
+OPTIONS:
+  0: an observational study
+  1: a study involving no blinding at all
+  2: a double-blind study
+  3: a single-blind study
+--------------------------------------------------------------------------------
+NO CODE GENERATED (conceptual question)
+FINAL ANSWER: 0
+TIME: 0.2s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 3/8 (37.5%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 3/9 (33.3%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 3/10 (30.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 3/11 (27.3%)
+================================================================================
+
+================================================================================
+QUESTION: The financial aid office at a state university conducts a study to determine the total student costs per semester. All students are charged $4500 for tuition. The mean cost for books is $350 with a standard deviation of $65. The mean outlay for room and board is $2800 with a standard deviation of $380. The mean personal expenditure is $675 with a standard deviation of $125. Assuming independence among categories, what is the standard deviation of the total student costs?
+OPTIONS:
+  0: $24
+  1: $91
+  2: $190
+  3: $405
+--------------------------------------------------------------------------------
+PYTHON CODE:
+import math
+
+# Given standard deviations
+std_tuition = 0  # Tuition is a fixed cost, so its standard deviation is 0
+std_books = 65
+std_room_board = 380
+std_personal = 125
+
+# Calculate the variance of the total costs
+variance_total = (std_books**2) + (std_room_board**2) + (std_personal**2)
+
+# Calculate the standard deviation of the total costs
+std_total = math.sqrt(variance_total)
+
+print(std_total)
+----------------------------------------
+CODE OUTPUT: 405.2776825831889
+FINAL ANSWER: 3
+TIME: 4.7s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 4/12 (33.3%)
+================================================================================
+
+================================================================================
+QUESTION: What are the mean and standard deviation of a binomial experiment that occurs with probability of success 0.76 and is repeated 150 times?
+OPTIONS:
+  0: 114, 5.23
+  1: The mean is 114, but there is not enough information given to determine the standard deviation.
+  2: 114, 27.35
+  3: 100.5, 5.23
+--------------------------------------------------------------------------------
+PYTHON CODE:
+mean = 150 * 0.76
+std_dev = (150 * 0.76 * (1 - 0.76))**0.5
+print(mean, std_dev)
+----------------------------------------
+CODE OUTPUT: 114.0 5.230678732248808
+FINAL ANSWER: 0
+TIME: 2.0s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 5/13 (38.5%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 6/14 (42.9%)
+================================================================================
+
+================================================================================
+QUESTION: Mr. Cleary's class and Ms. Ntuala's class go to use the computer lab. There are 20 computers available, two of which do not work. Mr. Cleary's class has 14 kids, and Ms. Ntuala's class has 12 kids. If every student must use a computer and there can only be 2 students on a computer at most, what is the maximum number of students who can have a computer to themselves?
+OPTIONS:
+  0: 10
+  1: 14
+  2: 6
+  3: 2
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Total number of working computers
+working_computers = 20 - 2
+
+# Total number of students
+total_students = 14 + 12
+
+# Maximum number of students who can have a computer to themselves
+max_students_to_themselves = min(working_computers, total_students // 2)
+
+print(max_students_to_themselves)
+----------------------------------------
+CODE OUTPUT: 13
+FINAL ANSWER: 1
+TIME: 3.3s
+RESULT: WRONG [X]  |  RUNNING SCORE: 6/15 (40.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 7/16 (43.8%)
+================================================================================
+
+================================================================================
+QUESTION: How many square units are in the region satisfying the inequalities y >= |x| and y <= -|x| + 3? Express your answer as a decimal.
+OPTIONS:
+  0: 3.3
+  1: 2.25
+  2: 6.6
+  3: 4.5
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the inequalities
+def f1(x):
+    return abs(x)
+
+def f2(x):
+    return -abs(x) + 3
+
+# Calculate the area
+area, _ = quad(lambda x: f2(x) - f1(x), -1.5, 1.5)
+
+print(area)
+----------------------------------------
+CODE OUTPUT: 4.5
+FINAL ANSWER: 3
+TIME: 3.0s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 8/17 (47.1%)
+================================================================================
+
+================================================================================
+QUESTION: 3 cards are chosen at random from a standard 52-card deck. What is the probability that they form a pair? (A 3-card hand is a pair if two of the cards match in rank but the third card is different.)
+OPTIONS:
+  0: \frac{1}{36}
+  1: \frac{1}{78}
+  2: \frac{72}{425}
+  3: \frac{1}{8}
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from math import comb
+
+# Total ways to choose 3 cards from 52
+total_ways = comb(52, 3)
+
+# Ways to choose a pair (13 ranks, choose 1, then choose 2 cards of that rank)
+pair_ways = 13 * comb(4, 2)
+
+# Ways to choose the third card (different rank from the pair)
+third_card_ways = 12 * 4
+
+# Total ways to form a pair
+pair_ways_total = pair_ways * third_card_ways
+
+# Probability of forming a pair
+probability = pair_ways_total / total_ways
+
+print(probability)
+----------------------------------------
+CODE OUTPUT: 0.16941176470588235
+FINAL ANSWER: 2
+TIME: 6.0s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 9/18 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: Simplify (5x+3) - 2(2x-4).
+OPTIONS:
+  0: 5x+3
+  1: 7+2x
+  2: 10+x
+  3: x+11
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the expression
+x = symbols('x')
+expr = (5*x + 3) - 2*(2*x - 4)
+
+# Simplify the expression
+simplified_expr = simplify(expr)
+
+# Print the simplified expression
+print(simplified_expr)
+----------------------------------------
+CODE OUTPUT: x + 11.0
+FINAL ANSWER: 3
+TIME: 2.7s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 10/19 (52.6%)
+================================================================================
+
+================================================================================
+QUESTION: The curve defined by x^3 + xy - y^2 = 10 has a vertical tangent line when x =
+OPTIONS:
+  0: 2.096
+  1: 1.037
+  2: 2.074
+  3: 0 or -1/3
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import symbols, diff, solve
+
+x, y = symbols('x y')
+equation = x**3 + x*y - y**2 - 10
+dy_dx = diff(equation, x)
+vertical_tangent_solutions = solve(dy_dx, y)
+vertical_tangent_x_values = [sol.evalf(subs={y: val}) for val in vertical_tangent_solutions for sol in vertical_tangent_solutions if sol!= val]
+
+print(vertical_tangent_x_values)
+----------------------------------------
+CODE OUTPUT: []
+FINAL ANSWER: 0
+TIME: 5.2s
+RESULT: WRONG [X]  |  RUNNING SCORE: 10/20 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the volume of the solid in xyz-space bounded by the surfaces y = x^2, y = 2 - x^2, z = 0, and z = y + 3?
+OPTIONS:
+  0: 16/3
+  1: 32/3
+  2: 8/3
+  3: 104/105
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import symbols, integrate, Piecewise
+
+x, y, z = symbols('x y z')
+# Define the limits for y
+y_lower = x**2
+y_upper = 2 - x**2
+
+# Integrate with respect to y
+integral_y = integrate(1, (y, y_lower, y_upper))
+
+# Integrate the result with respect to x
+integral_x = integrate(integral_y, (x, -1, 1))
+
+# Integrate the result with respect to z
+integral_z = integrate(integral_x, (z, 0, y + 3))
+
+# Calculate the volume
+volume = integral_z
+print(volume)
+----------------------------------------
+CODE OUTPUT: 2.66666666666667*y + 8.0
+FINAL ANSWER: 1
+TIME: 6.7s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 11/21 (52.4%)
+================================================================================
+
+================================================================================
+QUESTION: A meteorologist reports that there is a 30% probability of rain and no sun. If there is a 40% probability of no rain, then the probability of both rain and sun is
+OPTIONS:
+  0: 0.16
+  1: 0.24
+  2: 0.5
+  3: 0.3
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Given probabilities
+P_rain = 0.3
+P_no_rain = 0.4
+
+# Probability of no sun is the same as the probability of rain
+P_no_sun = P_rain
+
+# Probability of no rain and no sun
+P_no_rain_and_no_sun = P_no_rain * P_no_sun
+
+# Probability of both rain and sun
+P_rain_and_sun = 1 - P_no_rain_and_no_sun
+
+print(P_rain_and_sun)
+----------------------------------------
+CODE OUTPUT: 0.88
+FINAL ANSWER: 2
+TIME: 4.8s
+RESULT: WRONG [X]  |  RUNNING SCORE: 11/22 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: When the expression -2x^2 - 20x - 53 is written in the form a(x+d)^2 + e, what is the sum a+d+e?
+OPTIONS:
+  0: 6
+  1: 53
+  2: 0
+  3: -80
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Coefficients of the quadratic equation
+a = -2
+b = -20
+c = -53
+
+# Completing the square
+d = -b / (2 * a)
+e = c - (b**2 / (4 * a))
+
+# Sum a + d + e
+result = a + d + e
+print(result)
+----------------------------------------
+CODE OUTPUT: -10.0
+FINAL ANSWER: 2
+TIME: 3.3s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 12/23 (52.2%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 12/24 (50.0%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 13/25 (52.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/26 (50.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/27 (48.1%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 13/28 (46.4%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 14/29 (48.3%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 15/30 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: A manufacturer of ready-bake cake mixes is interested in designing an experiment to test the effects of four different temperature levels (300, 325, 350, and 375F), two different types of pans (glass and metal), and three different types of ovens (gas, electric, and microwave) on the texture of its cakes, in all combinations. Which of the following below is the best description of the design of the necessary experiment?
+OPTIONS:
+  0: A randomized block design, blocked on temperature, with six treatment groups
+  1: A completely randomized design with 24 treatment groups
+  2: A randomized block design, blocked on type of pan, with 12 treatment groups
+  3: A completely randomized design with nine treatment groups
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# There are 4 temperature levels, 2 types of pans, and 3 types of ovens.
+# The total number of treatment groups is 4 * 2 * 3 = 24.
+
+# Option 0: A randomized block design, blocked on temperature, with six treatment groups
+# This is incorrect because there are 24 treatment groups, not 6.
+
+# Option 1: A completely randomized design with 24 treatment groups
+# This is correct because there are 24 treatment groups and no blocking is mentioned.
+
+# Option 2: A randomized block design, blocked on type of pan, with 12 treatment groups
+# This is incorrect because the blocking should be on temperature, not type of pan.
+
+# Option 3: A completely randomized design with nine treatment groups
+# This is incorrect because there are 24 treatment groups, not 9.
+
+print(1)
+----------------------------------------
+CODE OUTPUT: 1
+FINAL ANSWER: 1
+TIME: 7.7s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 16/31 (51.6%)
+================================================================================
+
+================================================================================
+QUESTION: Solve for $x$:$$\left(\frac{1}{25}\right)^{x + 2} = 125^{-x}.$$
+OPTIONS:
+  0: 2
+  1: 4
+  2: 3
+  3: 1
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import symbols, Eq, solve
+
+x = symbols('x')
+equation = Eq((1/25)**(x + 2), 125**(-x))
+solution = solve(equation, x)
+print(solution[0])
+----------------------------------------
+CODE OUTPUT: 4.00000000000000
+FINAL ANSWER: 1
+TIME: 2.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 17/32 (53.1%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 17/33 (51.5%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 17/34 (50.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 17/35 (48.6%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 18/36 (50.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 18/37 (48.6%)
+================================================================================
+
+================================================================================
+QUESTION: Find all positive values of $c$ so that the inequality $x^2-6x+c<0$ has real solutions for $x$. Express your answer in interval notation.
+OPTIONS:
+  0: (6, 0)
+  1: (6, 6)
+  2: (0, 9)
+  3: (1, 1)
+--------------------------------------------------------------------------------
+RETRIEVED CONTEXT:
+Ostrowski's Inequality: If is a monotonically increasing integrable function on with , then if is a real function integrable on ,
+
+[—]
+
+Gram's Inequality: Let , ..., be real integrable functions over the closed interval , then the determinant of their integrals satisfies
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# The roots of the quadratic equation x^2 - 6x + c = 0 are given by the quadratic formula:
+# x = [6 ± sqrt(36 - 4c)] / 2
+# For the inequality to have real solutions, the discriminant must be positive:
+# 36 - 4c > 0
+# Solving for c gives:
+# c < 9
+
+# The correct interval for c is (0, 9)
+print(2)
+----------------------------------------
+CODE OUTPUT: 2
+FINAL ANSWER: 2
+TIME: 4.6s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 19/38 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: Suppose X and Y are random variables with μx = 32, σx = 5, μy = 44, and σy = 12. Given that X and Y are independent, what are the mean and standard deviation of the random variable X + Y?
+OPTIONS:
+  0: μx+y = 76, σx+y = 13
+  1: μx+y = 76, σx+y = 17
+  2: μx+y = 76, σx+y = 8.5
+  3: μx+y = 38, σx+y = 17
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Given values
+mu_x = 32
+sigma_x = 5
+mu_y = 44
+sigma_y = 12
+
+# Calculating the mean and standard deviation of X + Y
+mu_x_plus_y = mu_x + mu_y
+sigma_x_plus_y = (sigma_x**2 + sigma_y**2)**0.5
+
+# Printing the results
+print(f"μx+y = {mu_x_plus_y}, σx+y = {sigma_x_plus_y}")
+
+# Checking the options
+options = {
+    "0": (76, 13),
+    "1": (76, 17),
+    "2": (76, 8.5),
+    "3": (38, 17)
+}
+
+# Finding the correct option
+for option, (mu, sigma) in options.items():
+    if mu == mu_x_plus_y and sigma == sigma_x_plus_y:
+        print(option)
+----------------------------------------
+CODE OUTPUT: μx+y = 76, σx+y = 13.0
+FINAL ANSWER: 0
+TIME: 7.9s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 20/39 (51.3%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 21/40 (52.5%)
+================================================================================
+
+================================================================================
+QUESTION: A customer is not certain if the advertised width of a 48-inch television is along the horizontal length of the screen or along the diagonal of the screen. If the ratio of the length to the height of the television screen is 5 to 3, how much shorter, to the nearest inch, will the horizontal length of the television screen be if the measure is made along the diagonal of the television screen rather than along the horizontal length?
+OPTIONS:
+  0: 3
+  1: 8
+  2: 7
+  3: 9
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Given the ratio of length to height (5:3) and the diagonal (48 inches)
+# Let the length be 5x and the height be 3x, then the diagonal is sqrt((5x)^2 + (3x)^2) = 48
+# Solving for x gives us the length and height, and we can find the difference when measured along the diagonal
+
+from sympy import symbols, Eq, solve, sqrt
+
+x = symbols('x')
+length = 5 * x
+height = 3 * x
+diagonal = 48
+
+# Equation for the diagonal
+eq = Eq(sqrt(length**2 + height**2), diagonal)
+
+# Solve for x
+x_value = solve(eq, x)[0]
+
+# Calculate the actual length and height
+actual_length = length.subs(x, x_value)
+actual_height = height.subs(x, x_value)
+
+# Calculate the difference when measured along the diagonal
+difference = sqrt(actual_length**2 + actual_height**2) - diagonal
+
+# Round the difference to the nearest inch
+rounded_difference = round(difference.evalf())
+
+rounded_difference
+----------------------------------------
+CODE OUTPUT: FAILED — TypeError: Cannot convert expression to float
+FINAL ANSWER: 3
+TIME: 10.0s
+RESULT: WRONG [X]  |  RUNNING SCORE: 21/41 (51.2%)
+================================================================================
+
+================================================================================
+QUESTION: The waiting times for a new roller coaster ride are normally distributed with a mean of 35 minutes and a standard deviation of 10 minutes. If there are 150,000 riders the first summer, which of the following is the shortest time interval associated with 100,000 riders?
+OPTIONS:
+  0: 0 to 31.7 minutes
+  1: 31.7 to 39.3 minutes
+  2: 25.3 to 35 minutes
+  3: 25.3 to 44.7 minutes
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from scipy.stats import norm
+
+# Given values
+mean = 35
+std_dev = 10
+total_riders = 150000
+target_riders = 100000
+
+# Calculate the z-score for the target number of riders
+z_score = norm.ppf(target_riders / total_riders)
+
+# Calculate the time interval
+lower_bound = mean + z_score * std_dev
+upper_bound = mean + (z_score + 1) * std_dev
+
+# Find the option that matches the calculated interval
+options = {
+    0: (0, 31.7),
+    1: (31.7, 39.3),
+    2: (25.3, 35),
+    3: (25.3, 44.7)
+}
+
+for option, (lower, upper) in options.items():
+    if lower_bound >= lower and upper_bound <= upper:
+        print(option)
+        break
+----------------------------------------
+CODE OUTPUT: FAILED — NO OUTPUT (code ran but nothing was printed)
+FINAL ANSWER: 1
+TIME: 8.5s
+RESULT: WRONG [X]  |  RUNNING SCORE: 21/42 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the greatest possible area of a triangular region with one vertex at the center of a circle of radius 1 and the other two vertices on the circle?
+OPTIONS:
+  0: 1
+  1: 1/2
+  2: sqrt(2)
+  3: pi
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# The greatest possible area of a triangle with one vertex at the center of a circle
+# and the other two vertices on the circle is half the area of the circle.
+# The area of the circle is pi * r^2, where r is the radius of the circle.
+# Since the radius is 1, the area of the circle is pi * 1^2 = pi.
+# Therefore, the greatest possible area of the triangle is half of pi, which is pi/2.
+
+# Print the answer
+print(1)  # Option 1: 1/2
+----------------------------------------
+CODE OUTPUT: 1
+FINAL ANSWER: 1
+TIME: 5.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 22/43 (51.2%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 23/44 (52.3%)
+================================================================================
+
+================================================================================
+QUESTION: How many arithmetic sequences of consecutive odd integers sum to 240?
+OPTIONS:
+  0: 10
+  1: 12
+  2: 4
+  3: 8
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the function to find the number of arithmetic sequences
+def count_arithmetic_sequences(target_sum):
+    count = 0
+    # Iterate through possible starting points of the sequence
+    for start in range(1, target_sum, 2):  # start with odd numbers
+        # Iterate through possible lengths of the sequence
+        for length in range(1, target_sum // start + 1):
+            # Calculate the sum of the sequence
+            sequence_sum = sum(range(start, start + 2 * length, 2))
+            if sequence_sum == target_sum:
+                count += 1
+    return count
+
+# Call the function with the target sum of 240
+result = count_arithmetic_sequences(240)
+print(result)
+----------------------------------------
+CODE OUTPUT: 6
+FINAL ANSWER: 2
+TIME: 7.0s
+RESULT: WRONG [X]  |  RUNNING SCORE: 23/45 (51.1%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 23/46 (50.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 23/47 (48.9%)
+================================================================================
+
+================================================================================
+QUESTION: Simplify $(5x+3) - 2(2x-4)$.
+OPTIONS:
+  0: x+11
+  1: 7+2x
+  2: 10+x
+  3: 5x+3
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the expression
+expr = (5* symbols('x') + 3) - 2*(2* symbols('x') - 4)
+
+# Simplify the expression
+simplified_expr = sp.simplify(expr)
+
+# Print the simplified expression
+print(simplified_expr)
+----------------------------------------
+CODE OUTPUT: x + 11.0
+FINAL ANSWER: 0
+TIME: 2.9s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 24/48 (50.0%)
+================================================================================
+
+================================================================================
+QUESTION: Let $n$ be the product of the two smallest 3-digit prime numbers. Find the sum of the digits of $n$.
+OPTIONS:
+  0: 9
+  1: 3
+  2: 6
+  3: 8
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import primerange
+
+# Find the two smallest 3-digit prime numbers
+primes = list(primerange(100, 1000))
+smallest_3_digit_primes = primes[:2]
+
+# Calculate the product of the two smallest 3-digit prime numbers
+n = smallest_3_digit_primes[0] * smallest_3_digit_primes[1]
+
+# Calculate the sum of the digits of n
+sum_of_digits = sum(int(digit) for digit in str(n))
+
+# Print the sum of the digits
+print(sum_of_digits)
+----------------------------------------
+CODE OUTPUT: 8
+FINAL ANSWER: 3
+TIME: 5.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 25/49 (51.0%)
+================================================================================
+
+================================================================================
+QUESTION: The mean daily demand for bread at a popular bakery is 2,500 loaves, with a standard deviation of 225 loaves. Every morning the bakery bakes 3,000 loaves. What is the probability that today it will run out of bread? Assume that the mean daily demand for bread at this bakery is normally distributed.
+OPTIONS:
+  0: 0.0132
+  1: 0.1667
+  2: 0.8333
+  3: 0.9869
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from scipy.stats import norm
+
+mean_demand = 2500
+std_dev = 225
+baked_loaves = 3000
+
+# Calculate the z-score
+z_score = (baked_loaves - mean_demand) / std_dev
+
+# Calculate the probability
+probability = 1 - norm.cdf(z_score)
+
+print(probability)
+----------------------------------------
+CODE OUTPUT: 0.013134145691021115
+FINAL ANSWER: 0
+TIME: 3.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 26/50 (52.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 26/51 (51.0%)
+================================================================================
+
+================================================================================
+QUESTION: What is the sum of all integer solutions to $|n| < |n-3| < 9$?
+OPTIONS:
+  0: 14
+  1: -9
+  2: -14
+  3: 9
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Define the range of n based on the inequalities
+n_values = [n for n in range(-9, 10) if abs(n) < abs(n-3) < 9]
+
+# Calculate the sum of all integer solutions
+sum_n = sum(n_values)
+
+# Print the final result
+print(sum_n)
+----------------------------------------
+CODE OUTPUT: -14
+FINAL ANSWER: 2
+TIME: 3.0s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 27/52 (51.9%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 28/53 (52.8%)
+================================================================================
+
+================================================================================
+QUESTION: If $f(x) = 8x^3 - 6x^2 - 4x + 5$, find the value of $f( -2)$.
+OPTIONS:
+  0: -64
+  1: 5
+  2: -24
+  3: -75
+--------------------------------------------------------------------------------
+PYTHON CODE:
+f = lambda x: 8*x**3 - 6*x**2 - 4*x + 5
+result = f(-2)
+print(result)
+----------------------------------------
+CODE OUTPUT: -75
+FINAL ANSWER: 3
+TIME: 1.7s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 29/54 (53.7%)
+================================================================================
+
+================================================================================
+QUESTION: The area bounded by the parabola y = x^2 and the lines y = 1 and y = 9 equals
+OPTIONS:
+  0: 64\sqrt{2}/3
+  1: 84/3
+  2: 8
+  3: 104/3
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import symbols, integrate, solve
+
+x = symbols('x')
+area = integrate(9 - x**2, (x, 3, 9)) + integrate(x**2 - 1, (x, 1, 3))
+print(area)
+----------------------------------------
+CODE OUTPUT: -173.333333333333
+FINAL ANSWER: 0
+TIME: 2.6s
+RESULT: WRONG [X]  |  RUNNING SCORE: 29/55 (52.7%)
+================================================================================
+
+================================================================================
+QUESTION: What is the smallest positive integer with factors of 16, 15, and 12?
+OPTIONS:
+  0: 840
+  1: 240
+  2: 12
+  3: 22
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import lcm
+
+# Calculate the least common multiple (LCM) of 16, 15, and 12
+result = lcm(16, lcm(15, 12))
+
+print(result)
+----------------------------------------
+CODE OUTPUT: 240
+FINAL ANSWER: 1
+TIME: 2.5s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 30/56 (53.6%)
+================================================================================
+
+================================================================================
+QUESTION: Three points are chosen randomly and independently on a circle. What is the probability that all three pairwise distances between the points are less than the radius of the circle?
+OPTIONS:
+  0: \frac{1}{32}
+  1: \frac{1}{12}
+  2: \frac{1}{20}
+  3: \frac{1}{16}
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Since the problem is abstract and does not involve any concrete values,
+# we cannot directly calculate the probability. However, we can deduce
+# the correct answer based on the given options and the nature of the problem.
+
+# The correct answer is option 3: \frac{1}{16}.
+print(3)
+----------------------------------------
+CODE OUTPUT: 3
+FINAL ANSWER: 3
+TIME: 2.9s
+RESULT: WRONG [X]  |  RUNNING SCORE: 30/57 (52.6%)
+================================================================================
+
+================================================================================
+QUESTION: A point $(x,y)$ is randomly picked from inside the rectangle with vertices $(0,0)$, $(3,0)$, $(3,2)$, and $(0,2)$. What is the probability that $x < y$?
+OPTIONS:
+  0: \frac{1}{3}
+  1: \frac{2}{3}
+  2: \frac{1}{12}
+  3: \frac{1}{6}
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# The area of the rectangle is 3 * 2 = 6
+# The line x = y divides the rectangle into two triangles.
+# The triangle below the line x = y has vertices (0,0), (2,2), and (0,2).
+# The area of this triangle is 1/2 * base * height = 1/2 * 2 * 2 = 2
+# The probability that x < y is the area of the triangle divided by the area of the rectangle.
+probability = 2 / 6
+print(probability)
+----------------------------------------
+CODE OUTPUT: 0.3333333333333333
+FINAL ANSWER: 0
+TIME: 5.5s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 31/58 (53.4%)
+================================================================================
+
+================================================================================
+QUESTION: The shortest distance from the curve xy = 8 to the origin is
+OPTIONS:
+  0: 8
+  1: 2sqrt(2)
+  2: 16
+  3: 4
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import symbols, sqrt
+
+x, y = symbols('x y')
+distance = sqrt(x**2 + y**2)
+curve_eq = x * y - 8
+y_expr = solve(curve_eq, y)[0]
+distance_expr = distance.subs(y, y_expr)
+min_distance = distance_expr.diff(x).subs(x, 0)
+min_distance_value = min_distance.evalf()
+
+options = [8, 2*sqrt(2), 16, 4]
+for i, option in enumerate(options, 1):
+    if min_distance_value == option:
+        print(i)
+        break
+----------------------------------------
+CODE OUTPUT: FAILED — TypeError: Cannot convert expression to float
+FINAL ANSWER: 0
+TIME: 5.4s
+RESULT: WRONG [X]  |  RUNNING SCORE: 31/59 (52.5%)
+================================================================================
+
+================================================================================
+QUESTION: Water drips out of a hole at the vertex of an upside down cone at a rate of 3 cm^3 per minute. The
+cone’s height and radius are 2 cm and 1 cm, respectively. At what rate does the height of the water change
+when the water level is half a centimeter below the top of the cone? The volume of a cone is V = (π/3)*r^2*h,
+where r is the radius and h is the height of the cone.
+OPTIONS:
+  0: −4/(3π) cm/min
+  1: −8/(3π) cm/min
+  2: −48/π cm/min
+  3: −16/(3π) cm/min
+--------------------------------------------------------------------------------
+PYTHON CODE:
+from sympy import symbols, pi, diff, solve
+
+# Define the variables
+r, h = symbols('r h')
+
+# Given values
+V = (pi/3) * r**2 * h
+dr_dt = -3  # rate of change of volume
+h_value = 1.5  # height of water when it's half a centimeter below the top
+
+# Express r in terms of h using similar triangles
+r_expr = (r/1) * (h/2)
+
+# Substitute r in the volume equation
+V_sub = V.subs(r, r_expr)
+
+# Differentiate the volume with respect to time
+dV_dt = diff(V_sub, h)
+
+# Solve for dh/dt when dV/dt = -3
+dh_dt = solve(dV_dt + 3, diff(h, t))[0]
+
+# Substitute the value of h
+dh_dt_value = dh_dt.subs(h, h_value)
+
+print(dh_dt_value)
+----------------------------------------
+CODE OUTPUT: FAILED — NameError: name 't' is not defined
+FINAL ANSWER: 3
+TIME: 9.1s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 32/60 (53.3%)
+================================================================================
+
+================================================================================
+QUESTION: Bob rolls a fair six-sided die each morning. If Bob rolls a composite number, he eats sweetened cereal. If he rolls a prime number, he eats unsweetened cereal. If he rolls a 1, then he rolls again. In a non-leap year, what is the expected number of times Bob will roll his die?
+OPTIONS:
+  0: \frac{5}{4}
+  1: 438
+  2: \frac{1825}{4}
+  3: \frac{5}{8}
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# There are 365 days in a non-leap year.
+# Bob rolls the die once every day except when he rolls a 1.
+# The probability of rolling a 1 is 1/6.
+# The probability of rolling a composite number (4 or 6) is 2/6.
+# The probability of rolling a prime number (2, 3, or 5) is 3/6.
+# The probability of rolling a 1 and needing to roll again is 1/6.
+# The expected number of rolls per day is 1 / (1 - 1/6) = 6/5.
+# The expected number of rolls in a non-leap year is 365 * (6/5) = 438.
+
+print(1)
+----------------------------------------
+CODE OUTPUT: 1
+FINAL ANSWER: 1
+TIME: 7.2s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 33/61 (54.1%)
+================================================================================
+
+================================================================================
+QUESTION: There are three real numbers $x$ that are not in the domain of$$f(x) = \frac{1}{1+\frac{1}{1+\frac 1x}}.$$ What is the sum of those three numbers?
+OPTIONS:
+  0: 1
+  1: -1
+  2: -1.5
+  3: 0
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# The function f(x) is undefined when the denominators are zero.
+# So, we need to find the values of x that make the denominators zero.
+
+# The denominators are 1 + 1/x, 1 + 1/(1 + 1/x), and x.
+# We can set each of these equal to zero and solve for x.
+
+# For 1 + 1/x = 0
+x_denominator1 = symbols('x')
+denom1 = 1 + 1/x_denominator1
+sol1 = solve(denom1, x_denominator1)
+
+# For 1 + 1/(1 + 1/x) = 0
+denom2 = 1 + 1/(1 + 1/x_denominator1)
+sol2 = solve(denom2, x_denominator1)
+
+# For x = 0
+sol3 = [0]
+
+# Combine all solutions and remove duplicates
+all_solutions = set(sol1 + sol2 + sol3)
+
+# Calculate the sum of the solutions
+sum_of_solutions = sum(all_solutions)
+
+# Print the sum of the solutions
+print(sum_of_solutions)
+----------------------------------------
+CODE OUTPUT: -1.50000000000000
+FINAL ANSWER: 2
+TIME: 10.6s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 34/62 (54.8%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 34/63 (54.0%)
+================================================================================
+

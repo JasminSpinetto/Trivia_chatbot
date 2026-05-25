@@ -1,0 +1,3 @@
+model_class: MathDualModel
+phi_model: "phi-4-mini-dense"
+mathstral_model: "llama-8b-dense"

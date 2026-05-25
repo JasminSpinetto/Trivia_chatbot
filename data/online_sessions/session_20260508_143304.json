@@ -1,0 +1,379 @@
+[
+  {
+    "competition": "Maths",
+    "question": "If (G, .) is a group such that (ab)^-1 = a^-1b^-1, for all a, b in G, then G is a/an",
+    "options": {
+      "0": "None of these",
+      "1": "commutative semi group",
+      "2": "abelian group",
+      "3": "non-abelian group"
+    },
+    "our_answer": 2,
+    "correct": true,
+    "answer": 2
+  },
+  {
+    "competition": "Maths",
+    "question": "In sample surveys, what is meant by bias?",
+    "options": {
+      "0": "Natural variability seen between samples.",
+      "1": "Tendency for some distributions to be skewed.",
+      "2": "Prejudice, as in ethnic and gender-related studies.",
+      "3": "A systematic error in a sampling method that leads to an unrepresentative sample."
+    },
+    "our_answer": 3,
+    "correct": true,
+    "answer": 3
+  },
+  {
+    "competition": "Maths",
+    "question": "To conduct a survey of which long distance carriers are used in a particular locality, a researcher opens a telephone book to a random page, closes his eyes, puts his finger down on the page, and then calls the next 75 names. Which of the following is a correct statement?",
+    "options": {
+      "0": "While the survey design does incorporate chance, the procedure could easily result in selection bias.",
+      "1": "This is an example of cluster sampling with 26 clusters.",
+      "2": "This is an example of stratified sampling with 26 strata.",
+      "3": "The procedure results in a simple random sample."
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "A circle passes through the points (3, 4) and (5, 7). Which of the following points CANNOT lie on the circle?",
+    "options": {
+      "0": "(5, 5)",
+      "1": "(–1, –2)",
+      "2": "(6, 4)",
+      "3": "(–2, –1)"
+    },
+    "our_answer": 1,
+    "correct": true,
+    "answer": 1
+  },
+  {
+    "competition": "Maths",
+    "question": "Find the order of the factor group (Z_11 x Z_15)/(<1, 1>)",
+    "options": {
+      "0": "5",
+      "1": "1",
+      "2": "2",
+      "3": "11"
+    },
+    "our_answer": 3,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Let A and B be sets, f: A -> B and g: B -> A be functions such that for all a \\in A, g(f(a)) = a. Statement 1 | The function f must necessarily be injective. Statement 2 | The function f must necessarily be surjective.",
+    "options": {
+      "0": "True, False",
+      "1": "True, True",
+      "2": "False, False",
+      "3": "False, True"
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "Which of the following statements about any two events A and B is true?",
+    "options": {
+      "0": "P(A ∪ B) = 1 implies events A and B are mutually exclusive.",
+      "1": "P(A ∩ B) = 0 implies events A and B are mutually exclusive.",
+      "2": "P(A ∪ B) implies events A and B are independent.",
+      "3": "P(A ∩ B) = 0 implies events A and B are independent."
+    },
+    "our_answer": 1,
+    "correct": true,
+    "answer": 1
+  },
+  {
+    "competition": "Maths",
+    "question": "Compute the product in the given ring. (12)(16) in Z_24",
+    "options": {
+      "0": "4",
+      "1": "6",
+      "2": "0",
+      "3": "1"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Define a new measurement as the difference between the 60th and 40th percentile scores in a population. This measurement will give information concerning",
+    "options": {
+      "0": "symmetry.",
+      "1": "skewness.",
+      "2": "variability.",
+      "3": "central tendency."
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Using Fermat's theorem, find the remainder of 3^47 when it is divided by 23.",
+    "options": {
+      "0": "4",
+      "1": "2",
+      "2": "1",
+      "3": "3"
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "What is the probability of a Type II error when a hypothesis test is being conducted at the 10% significance level (α = 0.10)?",
+    "options": {
+      "0": "0.05",
+      "1": "0.90",
+      "2": "There is insufficient information to answer this question.",
+      "3": "0.10"
+    },
+    "our_answer": 2,
+    "correct": true,
+    "answer": 2
+  },
+  {
+    "competition": "Maths",
+    "question": "Which of these is the best description of a P-value?",
+    "options": {
+      "0": "The probability of making a Type II error.",
+      "1": "The probability of making a Type I error.",
+      "2": "The probability of getting a test statistic at least as extreme as the observed test statistic, if the null hypothesis is true.",
+      "3": "The probability of rejecting the null hypothesis if it is, in fact, false."
+    },
+    "our_answer": 2,
+    "correct": true,
+    "answer": 2
+  },
+  {
+    "competition": "Maths",
+    "question": "Find the area bounded by the spiral r = ln θ on the interval π <= θ <= 2π.",
+    "options": {
+      "0": "2.405",
+      "1": "2.931",
+      "2": "4.81",
+      "3": "3.743"
+    },
+    "our_answer": 2,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "A newspaper reporter examined police reports of accidents during the past 12 months to collect data about the speed of a car and its stopping distance. The reporter then constructed a scatterplot and computed a correlation coefficient to show the relation between a car’s speed and its stopping distance. This is an example of",
+    "options": {
+      "0": "a study involving no blinding at all",
+      "1": "a single-blind study",
+      "2": "a double-blind study",
+      "3": "an observational study"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Let S, T, and U be nonempty sets, and let f: S -> T and g: T -> U be functions such that the function g ∘ f : S -> U is one-to-one (injective). Which of the following must be true?",
+    "options": {
+      "0": "f is onto.",
+      "1": "g is one-to-one.",
+      "2": "f is one-to-one.",
+      "3": "g is onto."
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Which of the following is not important in the design of experiments?",
+    "options": {
+      "0": "Replication of the experiment using sufficient numbers of subjects",
+      "1": "Randomization in assigning subjects to different treatments",
+      "2": "Use of a confounding variable to control the placebo effect",
+      "3": "Control of confounding variables"
+    },
+    "our_answer": 2,
+    "correct": true,
+    "answer": 2
+  },
+  {
+    "competition": "Maths",
+    "question": "Simplify $(5x+3) - 2(2x-4)$.",
+    "options": {
+      "0": "10+x",
+      "1": "x+11",
+      "2": "7+2x",
+      "3": "5x+3"
+    },
+    "our_answer": 1,
+    "correct": true,
+    "answer": 1
+  },
+  {
+    "competition": "Maths",
+    "question": "Suppose that $f(x)$ is a polynomial that has degree $6$ and $g(x)$ is a polynomial that has degree $3$. If $h(x)$ is also a polynomial such that $f(g(x)) + g(h(x)) + h(f(x))$ is a polynomial of degree $36$, then what is the degree of the polynomial $h$?",
+    "options": {
+      "0": "72",
+      "1": "12",
+      "2": "6",
+      "3": "18"
+    },
+    "our_answer": 2,
+    "correct": true,
+    "answer": 2
+  },
+  {
+    "competition": "Maths",
+    "question": "How many palindromes (arrangements reading the same forward as backward) of 2 letters or more, containing the letter M, can be formed by rearranging any subset of the letters MISSISSIPPI?",
+    "options": {
+      "0": "66",
+      "1": "86",
+      "2": "2012",
+      "3": "89"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The least common multiple of two integers is 240, and the greatest common divisor is 24. Given that one of the integers is 48, what is the other integer?",
+    "options": {
+      "0": "1",
+      "1": "20",
+      "2": "120",
+      "3": "12"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Statement 1 | If a group has an element of order 15 it must have at least 8 elements of order 15. Statement 2 | If a group has more than 8 elements of order 15, it must have at least 16 elements of order 15.",
+    "options": {
+      "0": "False, False",
+      "1": "True, False",
+      "2": "False, True",
+      "3": "True, True"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Exits on a highway are numbered consecutively from 1 to 50. The distance from exit 41 to exit 50 is 100 km. If each exit is at least 6 km from the next exit, what is the longest possible distance, in kilometers, between exit 47 and exit 48?",
+    "options": {
+      "0": "50",
+      "1": "52",
+      "2": "51",
+      "3": "49"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "The average number of calories in Yum-Yum Good candy bars is 210, with a standard deviation of 10. If the number of calories per candy bar is normally distributed, what percent of candy bars contain more than 225 calories?",
+    "options": {
+      "0": "6.68%",
+      "1": "43.30%",
+      "2": "66.80%",
+      "3": "47.70%"
+    },
+    "our_answer": 0,
+    "correct": true,
+    "answer": 0
+  },
+  {
+    "competition": "Maths",
+    "question": "Suppose that 60% of a particular electronic part last over 3 years, while 70% last less than 6 years. Assuming a normal distribution, what are the mean and standard deviation with regard to length of life of these parts?",
+    "options": {
+      "0": "μ = 3.977, σ = 3.861",
+      "1": "μ = 4.177, σ = 3.561",
+      "2": "μ = 4.377, σ = 3.261",
+      "3": "μ = 3.677, σ = 3.561"
+    },
+    "our_answer": 3,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "In a high school of 1650 students, 132 have personal investments in the stock market. To estimate the total stock investment by students in this school, two plans are proposed. Plan I would sample 30 students at random, find a confidence interval estimate of their average investment, and then multiply both ends of this interval by 1650 to get an interval estimate of the total investment. Plan II would sample 30 students at random from among the 132 who have investments in the market, find a confidence interval estimate of their average investment, and then multiply both ends of this interval by 132 to get an interval estimate of the total investment. Which is the better plan for estimating the total stock market investment by students in this school?",
+    "options": {
+      "0": "Neither plan will give an accurate estimate.",
+      "1": "Plan II",
+      "2": "Both plans use random samples and so will produce equivalent results.",
+      "3": "Plan I"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Which of the following sets has the greatest cardinality?",
+    "options": {
+      "0": "The set of all functions from Z to Z",
+      "1": "The set of all finite subsets of R",
+      "2": "The set of all functions from R to {0, 1}",
+      "3": "R"
+    },
+    "our_answer": 3,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "Statement 1 | Every solvable group is of prime-power order. Statement 2 | Every group of prime-power order is solvable.",
+    "options": {
+      "0": "True, True",
+      "1": "False, False",
+      "2": "True, False",
+      "3": "False, True"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  },
+  {
+    "competition": "Maths",
+    "question": "For a class project, Charlotte recorded the heights of all 28 students in her class and calculated several statistics. She then realized she made an error recording the height of the tallest person in the class. She correctly had him listed as the tallest, but needed to add two inches to his recorded height to correct it. Which of these measures of spread must remain unchanged?",
+    "options": {
+      "0": "Variance",
+      "1": "Interquartile range",
+      "2": "Standard deviation",
+      "3": "Mean absolute deviation"
+    },
+    "our_answer": 1,
+    "correct": true,
+    "answer": 1
+  },
+  {
+    "competition": "Maths",
+    "question": "Exits on a highway are numbered consecutively from 1 to 50. The distance from exit 41 to exit 50 is 100 km. If each exit is at least 6 km from the next exit, what is the longest possible distance, in kilometers, between exit 47 and exit 48?",
+    "options": {
+      "0": "50",
+      "1": "49",
+      "2": "52",
+      "3": "51"
+    },
+    "our_answer": 0,
+    "correct": false,
+    "answer": null
+  }
+]

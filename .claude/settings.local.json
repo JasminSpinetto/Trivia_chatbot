@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(rm -rf ~/.cache/huggingface/hub/ && echo \"Done\")",
+      "Bash(ls ~/.cache/huggingface/ 2>/dev/null)",
+      "Read(//c/Users/PC/.cache/huggingface/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\PC\\.cache\\huggingface\\hub"
     ]
   }
 }

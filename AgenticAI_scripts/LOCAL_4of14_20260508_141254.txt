@@ -1,0 +1,115 @@
+SCORE: 4/14 (28.6%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 1/1 (100.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 1/2 (50.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 1/3 (33.3%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 1/4 (25.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 1/5 (20.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 1/6 (16.7%)
+================================================================================
+
+================================================================================
+QUESTION: To conduct a survey of which long distance carriers are used in a particular locality, a researcher opens a telephone book to a random page, closes his eyes, puts his finger down on the page, and then calls the next 75 names. Which of the following is a correct statement?
+OPTIONS:
+  0: While the survey design does incorporate chance, the procedure could easily result in selection bias.
+  1: The procedure results in a simple random sample.
+  2: This is an example of cluster sampling with 26 clusters.
+  3: This is an example of stratified sampling with 26 strata.
+--------------------------------------------------------------------------------
+PYTHON CODE:
+0
+----------------------------------------
+CODE OUTPUT: 0
+FINAL ANSWER: 0
+TIME: 0.4s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 2/7 (28.6%)
+================================================================================
+
+================================================================================
+QUESTION: How many numbers are in the list $ -36, -29, -22, \ldots, 41, 48?$
+OPTIONS:
+  0: 11
+  1: 10
+  2: 13
+  3: 12
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Calculate the number of terms in the arithmetic sequence
+a1 = -36
+an = 48
+d = 7
+
+# Use the formula for the nth term of an arithmetic sequence: an = a1 + (n-1)*d
+# Rearranging the formula to solve for n: n = (an - a1) / d + 1
+n = (an - a1) / d + 1
+
+# Print the number of terms rounded to the nearest whole number
+print(round(n))
+----------------------------------------
+CODE OUTPUT: 13
+FINAL ANSWER: 2
+TIME: 5.2s
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 3/8 (37.5%)
+================================================================================
+
+================================================================================
+QUESTION: The midterm scores for a statistics course were approximately normally distributed with a mean of 52 points and a standard deviation of 4 points. The final exam scores were approximately normally distributed with a mean of 112 points and a standard deviation of 10 points. One student had a score of 58 points on the midterm. If she had the same standardized score (z-score) on the final exam, what must her score have been?
+OPTIONS:
+  0: 127 points
+  1: 58 points
+  2: 15 points
+  3: 118 points
+--------------------------------------------------------------------------------
+PYTHON CODE:
+# Given values
+midterm_mean = 52
+midterm_std = 4
+final_mean = 112
+final_std = 10
+midterm_score = 58
+
+# Calculate the z-score for the midterm
+z_score = (midterm_score - midterm_mean) / midterm_std
+
+# Calculate the corresponding final exam score using the z-score
+final_exam_score = z_score * final_std + final_mean
+
+# Print the final exam score
+print(final_exam_score)
+
+# Print the option number
+print(3)
+----------------------------------------
+CODE OUTPUT: 127.0
+3
+FINAL ANSWER: 2
+TIME: 4.7s
+RESULT: WRONG [X]  |  RUNNING SCORE: 3/9 (33.3%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 3/10 (30.0%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 3/11 (27.3%)
+================================================================================
+
+RESULT: CORRECT [OK]  |  RUNNING SCORE: 4/12 (33.3%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 4/13 (30.8%)
+================================================================================
+
+RESULT: WRONG [X]  |  RUNNING SCORE: 4/14 (28.6%)
+================================================================================
+
