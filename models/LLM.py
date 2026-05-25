@@ -19,18 +19,22 @@ SYSTEM_PROMPTS = {
     ),
 }
 
-TOOL_SELECTION_PROMPT = (
-    "You are deciding which information source to use to answer a quiz question.\n\n"
+TOOL_QUERY_PROMPT = (
+    "You are selecting an information source and writing a search query for a quiz question.\n\n"
     "Sources:\n"
-    "  0 = memory      — answer from your own knowledge (no lookup needed)\n"
-    "  1 = wikipedia   — encyclopedia: historical events, named people, movements,\n"
-    "                    places, scientific discoveries, cultural practices\n"
-    "  2 = wiktionary  — ONLY for word/term meaning: definitions, etymology,\n"
-    "                    linguistic origin of Greek, Latin, or ancient vocabulary\n"
-    "  3 = duckduckgo  — general web search for anything else\n\n"
+    "  0 = memory      — answer from your own knowledge (no search needed)\n"
+    "  1 = wikipedia   — encyclopedia: historical events, people, places, cultural practices\n"
+    "  2 = wiktionary  — word definitions and etymology ONLY (NOT historical/cultural facts)\n"
+    "  3 = duckduckgo  — general web search\n\n"
     "IMPORTANT: use wiktionary ONLY when the question asks what a word or term MEANS "
-    "linguistically — NOT for historical or cultural facts about an entity.\n\n"
-    "Choose the SINGLE most appropriate source. Reply with ONLY the digit (0, 1, 2, or 3)."
+    "linguistically — NOT for facts about a historical entity, person, or event.\n\n"
+    "Reply on ONE line in this exact format:  <digit> | <search query>\n"
+    "For digit=0 write:  0 | none\n\n"
+    "Examples:\n"
+    "  1 | Roman citizens body ancient Rome\n"
+    "  2 | logos\n"
+    "  0 | none\n"
+    "  3 | Who Wants to Be a Millionaire lifelines rules"
 )
 
 _TOOL_MAP = {"0": "none", "1": "wikipedia", "2": "wiktionary", "3": "ddg"}
@@ -79,6 +83,24 @@ _LATIN_GREEK_SUFFIX_RE = re.compile(
 
 # "translates to/from/as" — only a reliable Wiktionary signal when paired with a quoted term
 _WIKT_TRANSLATE_RE = re.compile(r"\btranslates?\s+(?:to|from|as)\b", re.IGNORECASE)
+
+
+def _parse_tool_query(raw: str) -> tuple:
+    """Parse '<digit> | <query>' → (tool, query_or_None).
+
+    Handles missing pipe, missing query, 'none' query, and unexpected text gracefully.
+    """
+    raw = raw.strip()
+    if "|" in raw:
+        digit_part, query_part = raw.split("|", 1)
+        digit = digit_part.strip().strip(".,!?:;")
+        query = query_part.strip()
+    else:
+        digit = raw.split()[0].strip(".,!?:;") if raw else ""
+        query = ""
+    tool  = _TOOL_MAP.get(digit, "wikipedia")
+    query = None if not query or query.lower() in ("none", "-", "n/a") else query
+    return tool, query
 
 
 def _extract_quoted(question: str) -> list:
@@ -231,29 +253,31 @@ class LLMModel:
         self._game_info    = competition_name
 
     def _select_tool(self, question_text: str, options: dict) -> tuple:
-        """Return (source_tag, tool_name, prob_dict) for the best retrieval tool.
+        """Return (source_tag, tool_name, prob_dict, query) for retrieval.
 
-        Fast path  : heuristic pre-filter — no LLM call, prob_dict is None.
-        Slow path  : single forward pass with output_scores to get exact token
-                     probabilities for digits 0-3. Falls back to wikipedia when
-                     the top pick is below _TOOL_MIN_CONF (avoids confident-but-wrong).
+        Fast path  : heuristic pre-filter — no LLM call, query=None (retrieval
+                     uses its own term extraction for that tool).
+        Slow path  : one forward pass (max_new_tokens=30) generates '<digit> | <query>'.
+                     First-token logits give exact probabilities over 0-3.
+                     Low-confidence picks fall back to wikipedia.
 
-        source_tag : 'heuristic' | raw generated text (possibly with override note)
+        source_tag : 'heuristic' | raw generated text
         tool_name  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
         prob_dict  : None | {'none': %, 'wikipedia': %, 'wiktionary': %, 'ddg': %}
+        query      : None | LLM-written search string (replaces auto-generated queries)
         """
         hint = _heuristic_tool(question_text)
         if hint is not None:
-            return "heuristic", hint, None
+            return "heuristic", hint, None, None
 
         options_str = "\n".join(f"  {k}: {v}" for k, v in options.items())
         messages = [
-            {"role": "system", "content": TOOL_SELECTION_PROMPT},
+            {"role": "system", "content": TOOL_QUERY_PROMPT},
             {"role": "user",   "content": f"Question: {question_text}\n\nOptions:\n{options_str}"},
         ]
 
-        # Build input via chat template so we can call model.generate() directly
-        # and capture per-token logits — the pipeline API doesn't expose scores.
+        # Call model.generate() directly to capture per-token scores.
+        # The pipeline API doesn't expose output_scores.
         text   = self.pipe.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -264,19 +288,18 @@ class LLMModel:
         with torch.no_grad():
             out = self.pipe.model.generate(
                 **inputs,
-                max_new_tokens=1,
+                max_new_tokens=30,
                 output_scores=True,
                 return_dict_in_generate=True,
                 do_sample=False,
             )
 
-        # Decode the single generated token for the raw label
+        input_len = inputs["input_ids"].shape[1]
         raw = self.pipe.tokenizer.decode(
-            out.sequences[0, inputs["input_ids"].shape[1]:],
-            skip_special_tokens=True,
+            out.sequences[0, input_len:], skip_special_tokens=True
         ).strip()
 
-        # Extract logits for the digit tokens "0"-"3" at the first generated position
+        # Probabilities: digit 0-3 are the first generated token (format: '<digit> | …')
         first_logits = out.scores[0][0]  # [vocab_size]
         digit_ids = {}
         for d in "0123":
@@ -286,31 +309,33 @@ class LLMModel:
 
         if len(digit_ids) == 4:
             digit_logits = torch.stack([first_logits[digit_ids[d]] for d in "0123"])
-            probs        = torch.softmax(digit_logits, dim=0)
-            best_i       = probs.argmax().item()
-            best_digit   = "0123"[best_i]
-            best_prob    = probs[best_i].item()
-            prob_dict    = {_TOOL_MAP[d]: round(probs[i].item() * 100, 1)
-                            for i, d in enumerate("0123")}
-            tool = _TOOL_MAP.get(best_digit, "wikipedia")
-
-            # Low-confidence override: defer to wikipedia when the model is unsure
-            min_conf = _TOOL_MIN_CONF.get(tool, 0.0)
-            if best_prob < min_conf:
-                tool = "wikipedia"
-                raw  = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
+            probs      = torch.softmax(digit_logits, dim=0)
+            best_i     = probs.argmax().item()
+            best_prob  = probs[best_i].item()
+            prob_dict  = {_TOOL_MAP[d]: round(probs[i].item() * 100, 1)
+                          for i, d in enumerate("0123")}
         else:
-            # Tokenizer encodes digits as multi-token sequences — fall back to
-            # greedy text parsing without probability info
-            prob_dict = None
-            tool = "wikipedia"
-            for token in raw.split():
-                t = token.strip(".,!?:;")
-                if t in _TOOL_MAP:
-                    tool = _TOOL_MAP[t]
-                    break
+            probs, prob_dict, best_prob = None, None, 1.0
+            best_i = 1  # default to wikipedia index
 
-        return raw, tool, prob_dict
+        # Parse tool and query from '<digit> | <query>'
+        tool, query = _parse_tool_query(raw)
+
+        # Probabilities override when best_i disagrees with parsed digit
+        # (guards against format deviations like the model writing "wikipedia" instead of "1")
+        if probs is not None:
+            best_digit = "0123"[best_i]
+            if _TOOL_MAP.get(best_digit) != tool:
+                tool = _TOOL_MAP.get(best_digit, "wikipedia")
+
+        # Low-confidence fallback to wikipedia
+        min_conf = _TOOL_MIN_CONF.get(tool, 0.0)
+        if best_prob < min_conf:
+            tool  = "wikipedia"
+            query = query  # keep the query even when overriding the tool
+            raw   = f"{raw}→wiki(conf={best_prob:.0%}<{min_conf:.0%})"
+
+        return raw, tool, prob_dict, query
 
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
@@ -375,7 +400,7 @@ class LLMModel:
 
         if self._retriever:
             if self._use_tool_selection:
-                source_tag, tool, prob_dict = self._select_tool(question_text, options)
+                source_tag, tool, prob_dict, query = self._select_tool(question_text, options)
                 if source_tag == "heuristic":
                     self._log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
                 else:
@@ -383,7 +408,11 @@ class LLMModel:
                     if prob_dict:
                         prob_str = "  ".join(f"{k}:{v}%" for k, v in prob_dict.items())
                         self._log(f"{'TOOL PROBS':<17}: {prob_str}")
-                context = self._retriever.get_context_for_tool(tool, question_text, options)
+                    if query:
+                        self._log(f"{'QUERY (LLM)':<17}: {query!r}")
+                context = self._retriever.get_context_for_tool(
+                    tool, question_text, options, query=query
+                )
             else:
                 self._log(f"{'RETRIEVAL MODE':<17}: waterfall (wikipedia → ddg)")
                 context = self._retriever.get_context(question_text, options)

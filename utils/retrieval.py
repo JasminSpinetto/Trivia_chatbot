@@ -509,29 +509,37 @@ class Retriever:
 
     # ── individual tool retrieval methods ──────────────────────────────────────
 
-    def _get_wikipedia_context(self, question: str, options: dict) -> str:
-        """Wikipedia-only retrieval — no DDG fallback."""
-        proper_only = " ".join(
-            re.sub(r"'s?$", "", w)
-            for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
-            if i > 0 and w[0].isupper() and len(w) > 2
-        )
-        focused    = _focused_query(question)
-        opts_query = _options_query(question, options)
-        keywords   = _keywords(question)
-        quoted     = _quoted_terms(question)
+    def _get_wikipedia_context(self, question: str, options: dict, query: str = None) -> str:
+        """Wikipedia-only retrieval — no DDG fallback.
 
-        quoted_queries = [f"{t} {' '.join(keywords[:2])}" for t in quoted] if quoted else []
-        seen_q, queries = set(), []
-        for q in quoted_queries + [proper_only, focused, opts_query]:
-            if q and q.lower() not in seen_q:
-                seen_q.add(q.lower())
-                queries.append(q)
+        If query is provided (LLM-generated), it is used directly instead of the
+        automatic multi-query generation, keeping the search focused and fast.
+        """
+        if query:
+            self._log(f"WIKI QUERIES     : [{query!r}]  (llm-generated)")
+            queries = [query]
+        else:
+            proper_only = " ".join(
+                re.sub(r"'s?$", "", w)
+                for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
+                if i > 0 and w[0].isupper() and len(w) > 2
+            )
+            focused    = _focused_query(question)
+            opts_query = _options_query(question, options)
+            keywords   = _keywords(question)
+            quoted     = _quoted_terms(question)
 
-        if not queries:
-            self._log("WIKI QUERIES     : (none generated)")
-            return ""
-        self._log(f"WIKI QUERIES     : {queries}")
+            quoted_queries = [f"{t} {' '.join(keywords[:2])}" for t in quoted] if quoted else []
+            seen_q, queries = set(), []
+            for q in quoted_queries + [proper_only, focused, opts_query]:
+                if q and q.lower() not in seen_q:
+                    seen_q.add(q.lower())
+                    queries.append(q)
+
+            if not queries:
+                self._log("WIKI QUERIES     : (none generated)")
+                return ""
+            self._log(f"WIKI QUERIES     : {queries}")
 
         extracts, _ = self._run_queries(queries)
         seen_text, unique = set(), []
@@ -545,9 +553,13 @@ class Retriever:
                     self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
         return self._score_and_combine(unique, question)
 
-    def _get_wiktionary_context(self, question: str, options: dict) -> str:
+    def _get_wiktionary_context(self, question: str, options: dict, query: str = None) -> str:
         """Wiktionary-only lookup — best for word definitions and etymology."""
-        terms = _quoted_terms(question)
+        if query:
+            terms = [query]
+            self._log(f"WIKT LOOKUP      : {terms}  (llm-generated)")
+        else:
+            terms = _quoted_terms(question)
         if not terms:
             # Fall back: capitalised words from question that might be terms
             words = re.findall(r"\b[a-zA-Z]+\b", question)
@@ -574,18 +586,22 @@ class Retriever:
             self._log("WIKT             : no entries found")
         return self._score_and_combine(unique, question)
 
-    def _get_ddg_context(self, question: str, options: dict) -> str:
+    def _get_ddg_context(self, question: str, options: dict, query: str = None) -> str:
         """DuckDuckGo-only search — with Wikipedia URL extraction as primary pass."""
         if not _DDGS_AVAILABLE:
             self._log("DDG              : ddgs package not installed")
             return ""
-        proper_only = " ".join(
-            re.sub(r"'s?$", "", w)
-            for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
-            if i > 0 and w[0].isupper() and len(w) > 2
-        )
-        ddgs_queries = [q for q in [question, proper_only] if q]
-        self._log(f"DDG QUERIES      : {ddgs_queries}")
+        if query:
+            ddgs_queries = [query]
+            self._log(f"DDG QUERIES      : {ddgs_queries}  (llm-generated)")
+        else:
+            proper_only = " ".join(
+                re.sub(r"'s?$", "", w)
+                for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
+                if i > 0 and w[0].isupper() and len(w) > 2
+            )
+            ddgs_queries = [q for q in [question, proper_only] if q]
+            self._log(f"DDG QUERIES      : {ddgs_queries}")
 
         all_ddgs = []
         with ThreadPoolExecutor(max_workers=2) as ex:
@@ -636,10 +652,13 @@ class Retriever:
 
         return self._score_and_combine(unique, question)
 
-    def get_context_for_tool(self, tool: str, question: str, options: dict = None) -> str:
-        """Route retrieval to a named tool.
+    def get_context_for_tool(self, tool: str, question: str,
+                             options: dict = None, query: str = None) -> str:
+        """Route retrieval to a named tool, optionally using an LLM-generated query.
 
-        tool: 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        tool  : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
+        query : LLM-written search string; when provided it replaces the automatic
+                multi-query generation inside each tool method.
         Falls back to the full waterfall for unrecognised tool names.
         """
         options = options or {}
@@ -648,12 +667,12 @@ class Retriever:
             return ""
         if tool == "wikipedia":
             self._log("TOOL ROUTE       : wikipedia")
-            return self._get_wikipedia_context(question, options)
+            return self._get_wikipedia_context(question, options, query=query)
         if tool == "wiktionary":
             self._log("TOOL ROUTE       : wiktionary")
-            return self._get_wiktionary_context(question, options)
+            return self._get_wiktionary_context(question, options, query=query)
         if tool == "ddg":
             self._log("TOOL ROUTE       : duckduckgo")
-            return self._get_ddg_context(question, options)
+            return self._get_ddg_context(question, options, query=query)
         self._log(f"TOOL ROUTE       : unknown '{tool}' → waterfall fallback")
         return self.get_context(question, options)
