@@ -365,10 +365,12 @@ class LLMModel:
             return tag, "none", None
 
         # ── 3. LLM tool + query call ──────────────────────────────────────────
-        options_str = "\n".join(f"  {k}: {v}" for k, v in options.items())
+        # Options are intentionally hidden — seeing them causes the model to
+        # anchor on a guessed answer and write a confirmation query rather than
+        # a genuine search for the underlying fact.
         messages = [
             {"role": "system", "content": TOOL_QUERY_PROMPT},
-            {"role": "user",   "content": f"Question: {question_text}\n\nOptions:\n{options_str}"},
+            {"role": "user",   "content": f"Question: {question_text}"},
         ]
         text   = self.pipe.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
