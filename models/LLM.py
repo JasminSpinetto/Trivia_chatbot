@@ -657,7 +657,10 @@ class LLMModel:
                 self._log(f"{'ELIMINATED':<17}: {eliminated_labels}  (llm: {elim_raw!r})")
                 effective_options = surviving
             else:
-                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated  (llm: {elim_raw!r})")
+                # Context too generic — LLM found nothing to eliminate.
+                # Discard context so the model answers from memory.
+                self._log(f"{'ELIM SCOPE':<17}: nothing eliminated → discarding context (memory fallback)")
+                effective_context = ""
 
         response, answer_probs = self._generate(question_text, effective_options, effective_context, mem_bias=mem_option)
         answer = self._parse_token(response, options)
