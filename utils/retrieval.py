@@ -527,6 +527,27 @@ class Retriever:
                         self._log(f"WIKI ACCEPTED    : [{title}]")
                     else:
                         self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+
+            if not unique:
+                # LLM query matched nothing useful — retry with proper nouns
+                # already present in the question (e.g. 'Acropolis', 'Caesar').
+                words = re.findall(r"\b[a-zA-Z']+\b", question)
+                direct_terms = list(dict.fromkeys(
+                    w for i, w in enumerate(words)
+                    if i > 0 and w[0].isupper() and len(w) >= 4
+                ))
+                if direct_terms:
+                    self._log(f"WIKI FALLBACK    : {direct_terms}  (proper nouns, top-1 each)")
+                    fb_extracts, _ = self._run_queries(direct_terms, srlimit=1)
+                    for title, ctx in fb_extracts.items():
+                        if ctx[:80] not in seen_text:
+                            if _is_relevant(question, ctx):
+                                seen_text.add(ctx[:80])
+                                unique.append(ctx)
+                                self._log(f"WIKI FB ACCEPTED : [{title}]")
+                            else:
+                                self._log(f"WIKI FB REJECTED : [{title}] (relevance too low)")
+
             return self._score_and_combine(unique, question)
         else:
             proper_only = " ".join(
