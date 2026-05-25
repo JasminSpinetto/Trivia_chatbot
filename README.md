@@ -7,7 +7,7 @@
 - **Professor:** Mark Carman James
 
 ### Team Members
-- Jasmine Spinetto
+- Jasmin Spinetto
 - Olga Eskarous
 - Luca Colangelo
 - Hossam Eldin Ahmed Hussien
@@ -114,6 +114,8 @@ Note: only the math category has a dedicated flag since it's the trickiest categ
 | `qwen-7b-code.yaml` | Qwen 2.5 Math 7B + code executor | Agentic AI: generates and runs Python to solve computation problems |
 | `llama-3b-wiki.yaml` | Meta LLaMA 3.2 3B Instruct | Wikipedia → DuckDuckGo RAG retrieval |
 | `llama-8b-wiki.yaml` | Meta LLaMA 3.1 8B Instruct (4-bit) | Wikipedia → DuckDuckGo RAG retrieval |
+| `tfidf-base.yaml` | TF-IDF Base Model | Matches answers using Cosine Similarity on TF-IDF representation |
+| `tfidf-web.yaml` | TF-IDF Web Model | Retrieves top web search document and matches answers using TF-IDF |
 
 ### Adding a new experiment
 
@@ -176,6 +178,15 @@ log_files = sorted(glob.glob("logs/*.log"))
 with open(log_files[-1]) as f:
     print(f.read())
 ```
+=======
+| Model key | Description |
+|-----------|-------------|
+| `random` | Random baseline — picks a uniformly random answer (`models/random.py`) |
+| `llama-1b` | Meta LLaMA 3.2 1B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
+| `llama-3b` | Meta LLaMA 3.2 3B Instruct, locally hosted via HuggingFace (`models/LLM.py`) |
+| `llama-8b` | Meta LLaMA 3.1 8B Instruct (4-bit), locally hosted via HuggingFace (`models/LLM.py`) |
+| `tfidf-base` | Matches answers to the question using Cosine Similarity on TF-IDF representation (`models/tfidf.py`) |
+| `tfidf-web` | Retrieves top web search document for the question and matches answers to it using TF-IDF (`models/tfidf.py`) |
 
 > **Note:** The quiz platform will be taken offline at the end of the course. Once unavailable, all model testing must be performed using offline datasets. In `main.py` change `ONLINE` variable to False.
 

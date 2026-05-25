@@ -1,0 +1,607 @@
+{
+  "id": 1,
+  "name": "Ancient History and Politics",
+  "description": "The Roman Empire, The Greeks, and more",
+  "objects": [
+    {
+      "question": "Which architectural order is recognized by its voluted capital, featuring acanthus leaves and volutes similar to those of a ram's horn?",
+      "options": {
+        "0": "Doric order",
+        "1": "Ionic order",
+        "2": "Hellenistic order",
+        "3": "Corinthian order"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is the fundamental principle behind the modern Roman salute?",
+      "options": {
+        "0": "It was used in ancient Roman military ceremonies.",
+        "1": "It originated from a painting by Jacques-Louis David.",
+        "2": "It was adopted by fascist movements in the 20th century.",
+        "3": "It was a common greeting in ancient Rome."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which term describes Julius Caesar's famous statement 'veni, vidi, vici'?",
+      "options": {
+        "0": "A battle cry",
+        "1": "A victory declaration",
+        "2": "A diplomatic message",
+        "3": "A military strategy"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What role did Augustus play in the construction and maintenance of Roman roads during his reign?",
+      "options": {
+        "0": "He banned the construction of new roads.",
+        "1": "He left road maintenance to local communities.",
+        "2": "He personally funded all road construction.",
+        "3": "He oversaw the construction and repair of roads through Agrippa."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following is a key distinction between the pronunciation of Classical Attic and Koine Greek?",
+      "options": {
+        "0": "Koine Greek had more diphthongs than Classical Attic",
+        "1": "Classical Attic had more consonants than Koine Greek",
+        "2": "Classical Attic had a three-way distinction between /b/, /p/, and /pʰ/",
+        "3": "Koine Greek had a different system of accentuation"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes the region centered around the city of Babylon in central-southern Mesopotamia?",
+      "options": {
+        "0": "Sumeria",
+        "1": "Elam",
+        "2": "Assyria",
+        "3": "Babylonia"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What was the primary material used for roofing in ancient Greek architecture during the Archaic period?",
+      "options": {
+        "0": "Stone tiles",
+        "1": "Wood shingles",
+        "2": "Clay tiles",
+        "3": "Thatch"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes the body of Roman citizens during the Roman Kingdom, Republic, and Empire?",
+      "options": {
+        "0": "The Roman people",
+        "1": "The Legion",
+        "2": "The Praetorian Guard",
+        "3": "The Senate"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term describes the flat-topped rock that the Acropolis is located on?",
+      "options": {
+        "0": "Acropolis",
+        "1": "Citadel",
+        "2": "Acroterion",
+        "3": "Propylaea"
+      },
+      "answer": 1
+    },
+    {
+      "question": "In Homer's works, which term is one of the primary names used to refer to the Greeks as a whole, appearing 598 times in the Iliad?",
+      "options": {
+        "0": "Achaeans",
+        "1": "Panhellenes",
+        "2": "Danaans",
+        "3": "Argives"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What was the primary material used in constructing the Parthenon?",
+      "options": {
+        "0": "Wood",
+        "1": "Brick",
+        "2": "Stone",
+        "3": "Marble"
+      },
+      "answer": 3
+    },
+    {
+      "question": "How did the Neo-Assyrian Empire ensure the loyalty of its conquered territories?",
+      "options": {
+        "0": "By relocating entire populations to new regions",
+        "1": "By allowing local rulers to maintain power as vassals",
+        "2": "By destroying local cultures and identities",
+        "3": "By imposing a common language and religion"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term best describes the primary method of deploying Greek fire on enemy ships?",
+      "options": {
+        "0": "Light catapult",
+        "1": "Siphon",
+        "2": "Tube projector",
+        "3": "Projectile"
+      },
+      "answer": 1
+    },
+    {
+      "question": "How does the soul relate to the body according to Plato's philosophy?",
+      "options": {
+        "0": "The soul and body are unrelated and independent.",
+        "1": "The body is the true form of the soul.",
+        "2": "The soul is a part of the body and dies with it.",
+        "3": "The soul is immortal and is the essence of life."
+      },
+      "answer": 3
+    },
+    {
+      "question": "What was the primary location of the capital of ancient Egypt during the Early Dynastic Period?",
+      "options": {
+        "0": "Abydos",
+        "1": "Luxor",
+        "2": "Memphis",
+        "3": "Thinis"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was Nero's primary method for gaining popularity among the lower-class citizens of Rome?",
+      "options": {
+        "0": "Promoting public entertainments",
+        "1": "Reducing taxes for the wealthy",
+        "2": "Increasing military spending",
+        "3": "Building new temples"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term describes the earliest known Greek writings that are written in Linear B syllabary on clay tablets?",
+      "options": {
+        "0": "Hellenistic literature",
+        "1": "Homeric literature",
+        "2": "Mycenaean literature",
+        "3": "Classical literature"
+      },
+      "answer": 2
+    },
+    {
+      "question": "How does the Doric order differ from the Ionic order in terms of column design?",
+      "options": {
+        "0": "The Doric order has more flutes on the column shaft.",
+        "1": "The Doric order has a simpler, more plain capital.",
+        "2": "The Doric order uses volutes in the capital.",
+        "3": "The Doric order has a taller column shaft."
+      },
+      "answer": 1
+    },
+    {
+      "question": "What term describes the geographical regions most directly influenced by Greek and Roman language, culture, government, and religion?",
+      "options": {
+        "0": "The Greco-Roman World",
+        "1": "The Carolingian World",
+        "2": "The Nordic World",
+        "3": "The Anglo-Saxon World"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the fundamental principle of Xenia according to ancient Greek culture?",
+      "options": {
+        "0": "Hospitality and generosity towards strangers",
+        "1": "Warfare and conquest",
+        "2": "Slavery and servitude",
+        "3": "Trade and commerce"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term describes the period of political instability and division in ancient Egypt that began with the death of Pharaoh Ramesses XI?",
+      "options": {
+        "0": "New Kingdom",
+        "1": "First Intermediate Period",
+        "2": "Late Period",
+        "3": "Third Intermediate Period"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What term describes the Herodian dynasty's rule over Judea?",
+      "options": {
+        "0": "Hasmonean Kingdom",
+        "1": "Sassanid Empire",
+        "2": "Herodian tetrarchy",
+        "3": "Roman province"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was the primary punishment that slaves feared in the Republican era of ancient Rome?",
+      "options": {
+        "0": "Hard labor in chains at quarries or mills",
+        "1": "Execution by crucifixion",
+        "2": "Forced military service",
+        "3": "Flogging and imprisonment"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary difference between Roman and Greek temples in terms of design?",
+      "options": {
+        "0": "Greek temples were more focused on columns",
+        "1": "Greek temples used concrete",
+        "2": "Roman temples were more elaborate",
+        "3": "Roman temples were smaller"
+      },
+      "answer": 2
+    },
+    {
+      "question": "How does the concept of 'labarum' relate to Constantine's rule and propaganda?",
+      "options": {
+        "0": "It was a Christian symbol that appeared in his standards",
+        "1": "It represented a pagan deity",
+        "2": "It was a symbol of Roman military power",
+        "3": "It was a title given to his son Crispus"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary principle that Aristotle uses to define a 'polis' or political community?",
+      "options": {
+        "0": "A community where people live well together and pursue the common good",
+        "1": "A territory ruled by a monarch",
+        "2": "A group of people bound by economic interests",
+        "3": "A collection of independent city-states"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What was the significance of the Byrsa in the layout of Carthage?",
+      "options": {
+        "0": "It was the location of the city's amphitheater.",
+        "1": "It was the residential area for the common people.",
+        "2": "It was the main marketplace and trade center.",
+        "3": "It was the site of the Temple of Tanit and luxury homes."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following best describes the Temple of Olympian Zeus in Athens?",
+      "options": {
+        "0": "It was completed in the 6th century BC.",
+        "1": "It was primarily dedicated to the god Poseidon.",
+        "2": "It was the largest temple in the ancient world during its completion.",
+        "3": "It was never used after its completion."
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was the primary material used to make the mummies of ancient Egypt?",
+      "options": {
+        "0": "Stone",
+        "1": "Preserved human tissue",
+        "2": "Clay",
+        "3": "Wood"
+      },
+      "answer": 1
+    },
+    {
+      "question": "How did the empire's governance change in the 4th century under Diocletian and Constantine?",
+      "options": {
+        "0": "It remained as a single-person rule with no significant changes",
+        "1": "It was divided into eastern and western halves",
+        "2": "It was ruled by multiple soldier-emperors",
+        "3": "It was governed by regional armies"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which term best describes the geographical regions and countries that were culturally and historically directly influenced by the ancient Greeks and Romans?",
+      "options": {
+        "0": "The Caribbean",
+        "1": "The Greco-Roman world",
+        "2": "The Silk Road",
+        "3": "The Middle East"
+      },
+      "answer": 1
+    },
+    {
+      "question": "According to the article, which of the following best describes the relationship between Socrates and Xenophon's depiction of him?",
+      "options": {
+        "0": "Xenophon portrays Socrates as a sophist",
+        "1": "Xenophon's depiction of Socrates is considered more authentic by modern scholars",
+        "2": "Xenophon and Plato both present identical versions of Socrates",
+        "3": "Xenophon portrays Socrates as more humble and less ironic"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What method would you use to determine the genetic makeup of ancient Egyptian populations?",
+      "options": {
+        "0": "Written literary references",
+        "1": "Craniofacial analysis",
+        "2": "Artistic depictions",
+        "3": "Historical document analysis"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What was the primary reason for the expansion of the New Kingdom into the Levant and Nubia?",
+      "options": {
+        "0": "To convert local populations to Egyptian culture",
+        "1": "To spread Egyptian religion",
+        "2": "To establish trade routes",
+        "3": "To secure resources and wealth"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What was the primary reason for the use of mules in the Neo-Assyrian Empire's communication system?",
+      "options": {
+        "0": "To plow fields and maintain farmland",
+        "1": "To carry military personnel",
+        "2": "To ensure rapid and efficient delivery of messages",
+        "3": "To transport heavy goods and supplies"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes the period of Roman history from the founding of Rome in 753 BC to the establishment of the Roman Republic in 509 BC?",
+      "options": {
+        "0": "Roman Republic",
+        "1": "Byzantine Empire",
+        "2": "Roman Empire",
+        "3": "Roman Kingdom"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following best describes the significance of the Battle of Gaugamela in 331 BC?",
+      "options": {
+        "0": "It was the first battle where Alexander used the phalanx formation",
+        "1": "It was where Alexander first met Darius III",
+        "2": "It marked the final defeat of the Persian Empire",
+        "3": "It was the site where Alexander founded the city of Alexandria"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term best describes Socrates's approach to teaching and philosophy, as depicted in Plato's dialogues?",
+      "options": {
+        "0": "Realism",
+        "1": "Rationalism",
+        "2": "Empiricism",
+        "3": "Positivism"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Which of the following best describes the relationship between the Iliad and the Odyssey in ancient Greek literature?",
+      "options": {
+        "0": "They are historical accounts written by Herodotus and Thucydides.",
+        "1": "They are the earliest surviving works of Greek literature and are epic poems set in the Mycenaean era.",
+        "2": "They are philosophical dialogues by Plato.",
+        "3": "They are both comedic plays."
+      },
+      "answer": 1
+    },
+    {
+      "question": "What was the primary economic activity that contributed to the prosperity of ancient Greek city-states?",
+      "options": {
+        "0": "Slavery",
+        "1": "Agriculture",
+        "2": "Trade",
+        "3": "Manufacturing"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What was the primary purpose of the Parthenon in ancient Greece?",
+      "options": {
+        "0": "It was used as a marketplace.",
+        "1": "It was a residential palace for the king.",
+        "2": "It functioned as a public bathhouse.",
+        "3": "It served as a treasury and temple."
+      },
+      "answer": 3
+    },
+    {
+      "question": "According to Hittite documents, which term is believed to be related to the name of the Achaeans?",
+      "options": {
+        "0": "Madduwatta",
+        "1": "Wilusa",
+        "2": "Ahhiyawa",
+        "3": "Tawagalawa"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes the period of reunification that marks the beginning of the Middle Kingdom of Egypt?",
+      "options": {
+        "0": "Second Intermediate Period",
+        "1": "New Kingdom",
+        "2": "First Intermediate Period",
+        "3": "Period of Reunification"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which term in Homer's works is used to refer to the Greeks as a whole, often accompanied by the epithet 'long-haired'?",
+      "options": {
+        "0": "Danaans",
+        "1": "Achaeans",
+        "2": "Panhellenes",
+        "3": "Argives"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the fundamental principle of Constantine's religious policy during his reign?",
+      "options": {
+        "0": "Promotion of Arianism",
+        "1": "Exclusive support for traditional Roman religion",
+        "2": "Persecution of Christianity",
+        "3": "Tolerance of all religions"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What was the primary goal of the Neo-Assyrian Empire's military campaigns?",
+      "options": {
+        "0": "To expand and conquer as much territory as possible",
+        "1": "To establish peace and stability in the region",
+        "2": "To build trade relations with distant lands",
+        "3": "To promote cultural exchange and diversity"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which concept refers to the practice of calling the Holy Roman Empire 'holy' in the 12th century?",
+      "options": {
+        "0": "The Investiture Controversy",
+        "1": "The reference to Germany",
+        "2": "The practice of calling the Empire 'holy'",
+        "3": "The Tetrarchy"
+      },
+      "answer": 2
+    },
+    {
+      "question": "What term describes the period of Egyptian history during which the Nineteenth Dynasty ruled?",
+      "options": {
+        "0": "Late Period",
+        "1": "Middle Kingdom",
+        "2": "Old Kingdom",
+        "3": "New Kingdom"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What was the primary reason for the conflicts between Egypt and the Hittites during the 19th Dynasty?",
+      "options": {
+        "0": "Territorial disputes over control of Syria",
+        "1": "Trade disputes over spice routes",
+        "2": "Religious differences and conversions",
+        "3": "Differences in architectural styles"
+      },
+      "answer": 0
+    },
+    {
+      "question": "How does Socrates' role as a gadfly relate to his impact on Athenian society, according to the passage?",
+      "options": {
+        "0": "He was a controversial figure who challenged societal norms",
+        "1": "He was a military leader who fought against Sparta",
+        "2": "He was a religious figure who led worship",
+        "3": "He was a peaceful philosopher with no impact"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the primary function of the Antikythera mechanism?",
+      "options": {
+        "0": "It was a device to calculate the tides.",
+        "1": "It was a map to navigate the seas.",
+        "2": "It was used to predict solar and lunar eclipses.",
+        "3": "It was a simple clock to measure time."
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which of the following best describes the role of the 'archon' in ancient Athens?",
+      "options": {
+        "0": "A religious figure",
+        "1": "A chief magistrate",
+        "2": "A hereditary king",
+        "3": "A military leader"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the fundamental principle of the Roman Empire's legitimacy as described in the article?",
+      "options": {
+        "0": "Territorial control over Constantinople",
+        "1": "Acclamation by the army",
+        "2": "Control over Rome and Milan",
+        "3": "Dynastic succession and imperial ideology"
+      },
+      "answer": 3
+    },
+    {
+      "question": "How did Diocletian's tetrarchic system aim to address the issues of the Roman Empire?",
+      "options": {
+        "0": "By dividing the empire into four equal parts",
+        "1": "By consolidating all military powers in a single emperor",
+        "2": "By reducing the size of the empire",
+        "3": "By appointing four co-emperors to rule simultaneously"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following best describes the method of questioning used by Socrates in his dialogues?",
+      "options": {
+        "0": "Elenchus, a process of critical questioning to expose contradictions",
+        "1": "Rhetorical questions to persuade his audience",
+        "2": "Lectures on metaphysics and cosmology",
+        "3": "Narrative storytelling to convey moral lessons"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What term describes the period when Upper and Lower Egypt were unified under a single ruler?",
+      "options": {
+        "0": "Middle Kingdom period",
+        "1": "Archaic Period",
+        "2": "Old Kingdom period",
+        "3": "Naqada III period"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What term describes the use of arches, vaults, and domes in Roman architecture?",
+      "options": {
+        "0": "Greek Revival",
+        "1": "Etruscan Reconstruction",
+        "2": "Roman Architectural Innovation",
+        "3": "Concrete Revolution"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which term describes the ancient Macedonian people's name origin?",
+      "options": {
+        "0": "It comes from the Dorian tribe that migrated to the region.",
+        "1": "They were named after their king, Makedon.",
+        "2": "The name is of Illyrian origin.",
+        "3": "The name is derived from the Greek adjective meaning 'tall' or 'slim'."
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is the primary purpose of Aristotle's classification of living things?",
+      "options": {
+        "0": "To demonstrate the superiority of humans",
+        "1": "To create a system for naming species",
+        "2": "To establish a hierarchy of life forms",
+        "3": "To explain the mechanisms of evolution"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Which pharaoh is credited with the reunification of Egypt, thus marking the start of the Middle Kingdom?",
+      "options": {
+        "0": "Neferhotep I",
+        "1": "Amenemhet III",
+        "2": "Mentuhotep II",
+        "3": "Sobekneferu"
+      },
+      "answer": 2
+    }
+  ]
+}

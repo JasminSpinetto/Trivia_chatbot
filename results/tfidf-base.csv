@@ -1,0 +1,13 @@
+================================================================================
+MODEL: tfidf-base | 2026-04-28 22:25:49
+Name: TF-IDF Base
+Description: Matches answers to the question using Cosine Similarity on TF-IDF representation.
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Entertainment,5,1.20,8.0%
+Ancient History and Politics,5,0.20,1.3%
+Science and Nature,5,0.20,1.3%
+Maths,5,0.20,1.3%
+OVERALL,20,0.45,3.0%
+================================================================================
+

@@ -1,0 +1,607 @@
+{
+  "id": 3,
+  "name": "Maths",
+  "description": "Mathematics and Statistics from High School and College",
+  "objects": [
+    {
+      "question": "Simplify the fraction by rationalizing the denominator: $$\\frac{4}{\\sqrt{108}+2\\sqrt{12}+2\\sqrt{27}}.$$",
+      "options": {
+        "0": "\\frac{\\sqrt{3}}{12}",
+        "1": "\\frac{4\\sqrt{3}}{33}",
+        "2": "\\frac{1}{4\\sqrt{3}}",
+        "3": "2\\sqrt{27}"
+      },
+      "answer": 0
+    },
+    {
+      "question": "The element (4, 2) of Z_12 x Z_8 has order",
+      "options": {
+        "0": "12",
+        "1": "6",
+        "2": "8",
+        "3": "4"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Which of the following can affect the value of the correlation r?",
+      "options": {
+        "0": "A change in which variable is called x and which is called y",
+        "1": "Adding the same constant to all values of the x-variable",
+        "2": "None of the above can affect the r value.",
+        "3": "A change in measurement units"
+      },
+      "answer": 2
+    },
+    {
+      "question": "A farmer wants to know whether a new fertilizer has increased the mean weight of his apples. With the old fertilizer, the mean weight was 4.0 ounces per apple. The farmer decides to test H0: μ = 4.0 ounces versus Ha : μ > 4.0 ounces, at a 5 percent level of significance, where μ = the mean weight of apples using the new fertilizer. The weights of apples are approximately normally distributed. The farmer takes a random sample of 16 apples and computes a mean of 4.3 ounces and a standard deviation of 0.6 ounces. Which of the following gives the p-value for this test?",
+      "options": {
+        "0": "P(t < 2) with 15 degrees of freedom",
+        "1": "P(t > 2) with 15 degrees of freedom",
+        "2": "P(Z < 2)",
+        "3": "P(Z > 2)"
+      },
+      "answer": 1
+    },
+    {
+      "question": "At Academic Academy, to pass an algebra test you must score at least $80\\%$. If there are 35 problems on the test, what is the greatest number you can miss and still pass?",
+      "options": {
+        "0": "7",
+        "1": "35",
+        "2": "8",
+        "3": "28"
+      },
+      "answer": 0
+    },
+    {
+      "question": "The longest side of a triangle is 10. Which of the following could NOT be the lengths of the other two sides?",
+      "options": {
+        "0": "9, 8",
+        "1": "4, 7",
+        "2": "3, 9",
+        "3": "5, 5"
+      },
+      "answer": 3
+    },
+    {
+      "question": "What is the greatest possible area of a triangular region with one vertex at the center of a circle of radius 1 and the other two vertices on the circle?",
+      "options": {
+        "0": "sqrt(2)",
+        "1": "1/2",
+        "2": "1",
+        "3": "pi"
+      },
+      "answer": 1
+    },
+    {
+      "question": "The Department of Health plans to test the lead level in a specific park. Because a high lead level is harmful to children, the park will be closed if the lead level exceeds the allowed limit. The department randomly selects several locations in the park, gets soil samples from those locations, and tests the samples for their lead levels. Which of the following decisions would result from the type I error?",
+      "options": {
+        "0": "Closing the park when the lead levels are within the allowed limit",
+        "1": "Closing the park when the lead levels are in excess of the allowed limit",
+        "2": "Keeping the park open when the lead levels are in excess of the allowed limit",
+        "3": "Keeping the park open when the lead levels are within the allowed limit"
+      },
+      "answer": 0
+    },
+    {
+      "question": "A person walked 3 miles to the east, then turned north and walked 10 miles, then turned west and walked 6 miles, and finally turned south and walked 16 miles. Approximately how far is the person from his starting point in miles?",
+      "options": {
+        "0": "3.4",
+        "1": "12.8",
+        "2": "9.2",
+        "3": "6.7"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Semir rolls a six-sided die every morning to determine what he will have for breakfast. If he rolls a 1 or 2, he takes time to cook himself a big breakfast. If he rolls a 3 or larger he grabs a quick lighter breakfast. When he cooks himself a big breakfast, there is a 15% chance he will be late for school. If he has a lighter breakfast, there is a 6% chance he will be late for school. What is the probability Semir will be on time for school any given day?",
+      "options": {
+        "0": "0.21",
+        "1": "0.91",
+        "2": "0.8",
+        "3": "0.09"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Planets X, Y and Z take 360, 450 and 540 days, respectively, to rotate around the same sun. If the three planets are lined up in a ray having the sun as its endpoint, what is the minimum positive number of days before they are all in the exact same locations again?",
+      "options": {
+        "0": "360",
+        "1": "900",
+        "2": "5400",
+        "3": "1200"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Alex grows an initial culture of 100 Rhizopus stolonifer fungi on a sample of bread. She wants to model the growth of the fungi according to the exponential equation A = Pe^(rt), where A is the final number of fungi, P is the initial number, r is the growth rate, and t is time elapsed in hours. If after 5 hours she measures the number of fungi to be 750, what is the value of r?",
+      "options": {
+        "0": "0.863",
+        "1": "0.403",
+        "2": "4.317",
+        "3": "2.015"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the largest order of an element in the group of permutations of 5 objects?",
+      "options": {
+        "0": "12",
+        "1": "6",
+        "2": "5",
+        "3": "15"
+      },
+      "answer": 1
+    },
+    {
+      "question": "John divided his souvenir hat pins into two piles. The two piles had an equal number of pins. He gave his brother one-half of one-third of one pile. John had 66 pins left. How many pins did John originally have?",
+      "options": {
+        "0": "396",
+        "1": "66",
+        "2": "72",
+        "3": "36"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Six positive integers are written on the faces of a cube. Each vertex is labeled with the product of the three numbers on the faces adjacent to the vertex. If the sum of the numbers on the vertices is equal to $1001$, then what is the sum of the numbers written on the faces?",
+      "options": {
+        "0": "31",
+        "1": "13",
+        "2": "18",
+        "3": "1001"
+      },
+      "answer": 0
+    },
+    {
+      "question": "The least common multiple of two integers is 240, and the greatest common divisor is 24. Given that one of the integers is 48, what is the other integer?",
+      "options": {
+        "0": "12",
+        "1": "1",
+        "2": "120",
+        "3": "20"
+      },
+      "answer": 2
+    },
+    {
+      "question": "After receiving several complaints from his customers about the store being closed on Sundays, a storekeeper decided to conduct a survey. He randomly selected 100 female customers and 120 male customers, and asked them, \"Are you interested in shopping at this store on Sundays?\" He counted the number of customers answering \"yes\" and constructed a 95 percent confidence interval for the difference by subtracting the proportions of female from the proportion of male customers in favor of shopping on Sundays. The resulting interval was (–0.23, –0.18). Which of the following is a correct interpretation of the interval?",
+      "options": {
+        "0": "Because the interval contains negative values, it is invalid and should not be interpreted.",
+        "1": "We are 95 percent confident that the proportion of men interested in shopping on Sundays exceeds the proportion of women interested in shopping on Sundays.",
+        "2": "We are 95 percent confident that the proportion of women interested in shopping on Sundays is equal to the proportion of men interested in shopping on Sundays.",
+        "3": "We are 95 percent confident that the proportion of women interested in shopping on Sundays exceeds the proportion of men interested in shopping on Sundays."
+      },
+      "answer": 3
+    },
+    {
+      "question": "If all the values of a data set are the same, all of the following must equal zero except for which one?",
+      "options": {
+        "0": "Mean",
+        "1": "Standard deviation",
+        "2": "Range",
+        "3": "Variance"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Fifty oranges of one variety were selected at random and weighed. A 95 percent confidence interval computed from the sample weights to estimate the mean weight of oranges of this variety is (7.58, 8.72) ounces. Which of the following statements is true with respect to the confidence level used?",
+      "options": {
+        "0": "In repeated samplings of the same size, 95 percent of the intervals constructed will contain the sampled mean weight of the oranges.",
+        "1": "In repeated samplings of the same size, 95 percent of the intervals constructed will contain the true mean weight of the oranges of this variety.",
+        "2": "Ninety-five percent of the oranges in this sample weigh between 7.58 and 8.72 ounces.",
+        "3": "Ninety-five percent of the oranges of this variety weigh between 7.58 and 8.72 ounces."
+      },
+      "answer": 1
+    },
+    {
+      "question": "In the xy-plane, the curve with parametric equations x = cos t and y = sin t, 0 <= t <= pi, has length",
+      "options": {
+        "0": "3",
+        "1": "pi",
+        "2": "3/2",
+        "3": "3pi"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Solve for $x$: $(-\\frac{1}{3})(-4 -3x)=\\frac{1}{2}$",
+      "options": {
+        "0": "\\frac{5}{3}",
+        "1": "\\frac{7}{6}",
+        "2": "\\frac{1}{6}",
+        "3": "-\\frac{5}{6}"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Let V be the vector space, under the usual operations, of real polynomials that are of degree at most 3. Let W be the subspace of all polynomials p (x) in V such that p (0) = p(1) = p(-1) = 0. Then dim V + dim W is",
+      "options": {
+        "0": "7",
+        "1": "5",
+        "2": "6",
+        "3": "4"
+      },
+      "answer": 1
+    },
+    {
+      "question": "The mean Law School Aptitude Test (LSAT) score for applicants to a particular law school is 650 with a standard deviation of 45. Suppose that only applicants with scores above 700 are considered. What percentage of the applicants considered have scores below 740? (Assume the scores are normally distributed.)",
+      "options": {
+        "0": "17.1%",
+        "1": "13.3%",
+        "2": "82.9%",
+        "3": "86.7%"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Suppose X and Y are random variables with μx = 32, σx = 5, μy = 44, and σy = 12. Given that X and Y are independent, what are the mean and standard deviation of the random variable X + Y?",
+      "options": {
+        "0": "μx+y = 76, σx+y = 17",
+        "1": "μx+y = 76, σx+y = 8.5",
+        "2": "μx+y = 38, σx+y = 17",
+        "3": "μx+y = 76, σx+y = 13"
+      },
+      "answer": 3
+    },
+    {
+      "question": "We roll a fair 6-sided die 5 times. What is the probability that we get a 6 in at most 2 of the rolls?",
+      "options": {
+        "0": "\\frac{1}{648}",
+        "1": "\\frac{125}{648}",
+        "2": "\\frac{25}{648}",
+        "3": "\\frac{625}{648}"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Which of the following are examples of continuous data? I. The speed your car goes II. The number of outcomes of a binomial experiment III. The average temperature in San Francisco IV. The wingspan of a bird V. The jersey numbers of a football team",
+      "options": {
+        "0": "II, III, and IV only",
+        "1": "I, III, and IV only",
+        "2": "I, III, and V only",
+        "3": "II and V only"
+      },
+      "answer": 1
+    },
+    {
+      "question": "A study was conducted to test a new style of keyboard in preventing repetitive stress disorders. Volunteers who have had problems with such injuries were randomly assigned to use either a traditional keyboard or the new design. A significance test was conducted with the alternative hypothesis that a smaller proportion of those using the new keyboard will suffer injuries than those using the traditional keyboard. The resulting P-value was 0.07. Which is a correct interpretation of this P-value?",
+      "options": {
+        "0": "There is a 7% chance that the null hypothesis is correct.",
+        "1": "There is a 7% chance of getting a difference between the two groups at least as large as the observed difference if the new keyboard is really no better at preventing injuries.",
+        "2": "The null hypothesis should be rejected.",
+        "3": "The null hypothesis should be accepted."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Let S, T, and U be nonempty sets, and let f: S -> T and g: T -> U be functions such that the function g ∘ f : S -> U is one-to-one (injective). Which of the following must be true?",
+      "options": {
+        "0": "g is one-to-one.",
+        "1": "f is onto.",
+        "2": "f is one-to-one.",
+        "3": "g is onto."
+      },
+      "answer": 2
+    },
+    {
+      "question": "Suppose there is a correlation of r = 0.9 between number of hours per day students study and GPAs. Which of the following is a reasonable conclusion?",
+      "options": {
+        "0": "90% of students who receive high grades study a lot.",
+        "1": "81% of the variation in GPAs can be explained by variation in number of study hours per day.",
+        "2": "90% of the variation in GPAs can be explained by variation in number of study hours per day.",
+        "3": "90% of students who study receive high grades."
+      },
+      "answer": 1
+    },
+    {
+      "question": "The financial aid office at a state university conducts a study to determine the total student costs per semester. All students are charged $4500 for tuition. The mean cost for books is $350 with a standard deviation of $65. The mean outlay for room and board is $2800 with a standard deviation of $380. The mean personal expenditure is $675 with a standard deviation of $125. Assuming independence among categories, what is the standard deviation of the total student costs?",
+      "options": {
+        "0": "$405",
+        "1": "$190",
+        "2": "$24",
+        "3": "$91"
+      },
+      "answer": 0
+    },
+    {
+      "question": "The sampling distribution of the sample mean is close to the normal distribution",
+      "options": {
+        "0": "no matter what the value of n or what the distribution of the original population.",
+        "1": "if the standard deviation of the original population is known.",
+        "2": "if n is large, no matter what the distribution of the original population.",
+        "3": "only if both the original population has a normal distribution and n is large."
+      },
+      "answer": 2
+    },
+    {
+      "question": "Let A be a real 2x2 matrix. Which of the following statements must be true?\r\nI. All of the entries of A^2 are nonnegative.\r\nII. The determinant of A^2 is nonnegative.\r\nIII. If A has two distinct eigenvalues, then A^2 has two distinct eigenvalues.",
+      "options": {
+        "0": "I only",
+        "1": "III only",
+        "2": "II only",
+        "3": "II and III only"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Ben rolls two fair six-sided dice. What is the expected value of the larger of the two numbers rolled? Express your answer as a fraction. (If the two numbers are the same, we take that number to be the \"larger\" number.)",
+      "options": {
+        "0": "\\frac{161}{3}",
+        "1": "\\frac{161}{36}",
+        "2": "\\frac{161}{6}",
+        "3": "161"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Two events A and B each have a nonzero probability. If A and B are independent, which of the following statements is true?",
+      "options": {
+        "0": "A and B must be mutually exclusive.",
+        "1": "P(A and B) = P(A) · P(B)",
+        "2": "P(A| B) = P(B| A)",
+        "3": "A and B may or may not be mutually exclusive."
+      },
+      "answer": 1
+    },
+    {
+      "question": "Mr. Bee's statistics class had a standard deviation of 11.2 on a standardized test, while Mr. Em's class had a standard deviation of 5.6 on the same test. Which of the following is the most reasonable conclusion concerning the two classes' performance on the test?",
+      "options": {
+        "0": "Mr. Em's class did not do as well as Mr. Bee's.",
+        "1": "Mr. Bee's class performed twice as well as Mr. Em's.",
+        "2": "Mr. Bee's class is less heterogeneous than Mr. Em's.",
+        "3": "Mr. Em's class is more homogeneous than Mr. Bee's."
+      },
+      "answer": 3
+    },
+    {
+      "question": "Mr. Cleary's class and Ms. Ntuala's class go to use the computer lab. There are 20 computers available, two of which do not work. Mr. Cleary's class has 14 kids, and Ms. Ntuala's class has 12 kids. If every student must use a computer and there can only be 2 students on a computer at most, what is the maximum number of students who can have a computer to themselves?",
+      "options": {
+        "0": "2",
+        "1": "14",
+        "2": "10",
+        "3": "6"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Statement 1 | A ring homomorphism is one to one if and only if the kernel is {0}. Statement 2 | Q is an ideal in R.",
+      "options": {
+        "0": "False, True",
+        "1": "True, False",
+        "2": "False, False",
+        "3": "True, True"
+      },
+      "answer": 1
+    },
+    {
+      "question": "What is the product of the greatest even prime number and the least odd prime number?",
+      "options": {
+        "0": "9",
+        "1": "6",
+        "2": "12",
+        "3": "14"
+      },
+      "answer": 1
+    },
+    {
+      "question": "For which of the following purposes would it be most unreasonable to use a census?",
+      "options": {
+        "0": "To determine the proportion of students with a learning disability in a small rural area high school",
+        "1": "To determine the proportion of red snappers with a high mercury level in the Gulf of Mexico",
+        "2": "To determine the mean wage earned by construction workers in a small town",
+        "3": "To determine the difference between the proportion of engineering professors and the proportion of business professors in favor of the new teaching initiative at a large university"
+      },
+      "answer": 1
+    },
+    {
+      "question": "A relative maximum value of the function y = (ln x)/x is",
+      "options": {
+        "0": "2/e",
+        "1": "e",
+        "2": "1/e",
+        "3": "1"
+      },
+      "answer": 2
+    },
+    {
+      "question": "A number $x$ factors as $107\\cdot109^5$, and $107$ and $109$ are primes. What is the exponent of $109$ in the prime factorization of $x^{11}$?",
+      "options": {
+        "0": "11",
+        "1": "55",
+        "2": "9",
+        "3": "21"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Statement 1 | R is a splitting field of some polynomial over Q. Statement 2 | There is a field with 60 elements.",
+      "options": {
+        "0": "False, True",
+        "1": "False, False",
+        "2": "True, True",
+        "3": "True, False"
+      },
+      "answer": 1
+    },
+    {
+      "question": "How many ways are there to put 4 distinguishable balls into 2 indistinguishable boxes?",
+      "options": {
+        "0": "16",
+        "1": "8",
+        "2": "7",
+        "3": "11"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Suppose X is a discrete random variable on the set of positive integers such that for each positive integer n, the probability that X = n is 1/2^n. If Y is a random variable with the same probability distribution and X and Y are independent, what is the probability that the value of at least one of the variables X and Y is greater than 3 ?",
+      "options": {
+        "0": "15/64",
+        "1": "3/8",
+        "2": "1/64",
+        "3": "1/4"
+      },
+      "answer": 0
+    },
+    {
+      "question": "When $\\sqrt[3]{-128}$ is simplified, the result is $a\\sqrt[3]{b}$, where $a$ is an integer, and $b$ is a positive integer. If $b$ is as small as possible, then what is $a+b$?",
+      "options": {
+        "0": "-2",
+        "1": "2",
+        "2": "6",
+        "3": "-4"
+      },
+      "answer": 0
+    },
+    {
+      "question": "A study looked at medical records of about 23,000 patients, mostly in Asia. They found that patients who drank at least three cups of green tea per day had a much lower incidence of depression. In an American newspaper article about this study, which of the following statements should not be made?",
+      "options": {
+        "0": "Because this is observational data, the association between drinking green tea and a lower incidence of depression is not an indication of a causal relationship.",
+        "1": "It is possible that people who drink green tea also tend to have healthier lifestyles than those who don't.",
+        "2": "It is possible that people who drink green tea also tend to have a more positive outlook on life than those who don't.",
+        "3": "People who want to avoid depression should consider drinking green tea on a daily basis."
+      },
+      "answer": 3
+    },
+    {
+      "question": "We are interested in the proportion p of people who are unemployed in a large city. Eight percent of a simple random sample of 500 people are unemployed. What is the midpoint for a 95% confidence interval estimate of p?",
+      "options": {
+        "0": "None of the above.",
+        "1": "0.475",
+        "2": "0.012",
+        "3": "0.025"
+      },
+      "answer": 0
+    },
+    {
+      "question": "What is the magnitude of the vector v = (5, 0, 7)?",
+      "options": {
+        "0": "0",
+        "1": "4.2",
+        "2": "3.5",
+        "3": "8.6"
+      },
+      "answer": 3
+    },
+    {
+      "question": "The midterm scores for a statistics course were approximately normally distributed with a mean of 52 points and a standard deviation of 4 points. The final exam scores were approximately normally distributed with a mean of 112 points and a standard deviation of 10 points. One student had a score of 58 points on the midterm. If she had the same standardized score (z-score) on the final exam, what must her score have been?",
+      "options": {
+        "0": "118 points",
+        "1": "127 points",
+        "2": "58 points",
+        "3": "15 points"
+      },
+      "answer": 1
+    },
+    {
+      "question": "For what value of c on 0 < x < 1 is the tangent to the graph of f (x) = e^x - x^2 parallel to the secant line on the interval [0,1]?",
+      "options": {
+        "0": "-0.248",
+        "1": "0.5",
+        "2": "0.693",
+        "3": "0.351"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Statement 1 | Some abelian group of order 45 has a subgroup of order 10. Statement 2 | A subgroup H of a group G is a normal subgroup if and only if the number of left cosets of H is equal to the number of right cosets of H.",
+      "options": {
+        "0": "False, True",
+        "1": "True, True",
+        "2": "False, False",
+        "3": "True, False"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Ramanujan and Hardy played a game where they both picked a complex number. If the product of their numbers was $32-8i$, and Hardy picked $5+3i$, what number did Ramanujan pick?",
+      "options": {
+        "0": "4-i",
+        "1": "4-4i",
+        "2": "5+3i",
+        "3": "32-8i"
+      },
+      "answer": 1
+    },
+    {
+      "question": "If A = {1, 2, 3} then relation S = {(1, 1), (2, 2)} is",
+      "options": {
+        "0": "an equivalence relation",
+        "1": "both symmetric and anti-symmetric",
+        "2": "symmetric only",
+        "3": "anti-symmetric only"
+      },
+      "answer": 1
+    },
+    {
+      "question": "If A = (1, 2, 3, 4). Let ~= {(1, 2), (1, 3), (4, 2)}. Then ~ is",
+      "options": {
+        "0": "reflexive",
+        "1": "transitive",
+        "2": "symmetric",
+        "3": "not anti-symmetric"
+      },
+      "answer": 1
+    },
+    {
+      "question": "Find the generator for the finite field Z_11.",
+      "options": {
+        "0": "3",
+        "1": "2",
+        "2": "1",
+        "3": "4"
+      },
+      "answer": 1
+    },
+    {
+      "question": "3 cards are chosen at random from a standard 52-card deck. What is the probability that they form a pair? (A 3-card hand is a 'pair' if two of the cards match in rank but the third card is different. For example, 668 is a pair, but 999 is not.)",
+      "options": {
+        "0": "\\frac{1}{78}",
+        "1": "\\frac{1}{8}",
+        "2": "\\frac{72}{425}",
+        "3": "\\frac{1}{36}"
+      },
+      "answer": 2
+    },
+    {
+      "question": "A manufacturer of ready-bake cake mixes is interested in designing an experiment to test the effects of four different temperature levels (300, 325, 350, and 375F), two different types of pans (glass and metal), and three different types of ovens (gas, electric, and microwave) on the texture of its cakes, in all combinations. Which of the following below is the best description of the design of the necessary experiment?",
+      "options": {
+        "0": "A completely randomized design with 24 treatment groups",
+        "1": "A randomized block design, blocked on type of pan, with 12 treatment groups",
+        "2": "A randomized block design, blocked on temperature, with six treatment groups",
+        "3": "A completely randomized design with nine treatment groups"
+      },
+      "answer": 0
+    },
+    {
+      "question": "Sam has $\\frac{5}{8}$ of a pound of chocolate. If he eats $\\frac{1}{3}$ of the chocolate he has, how many pounds of chocolate does he eat?",
+      "options": {
+        "0": "\\frac{5}{12}",
+        "1": "\\frac{3}{24}",
+        "2": "\\frac{3}{24}",
+        "3": "\\frac{5}{24}"
+      },
+      "answer": 3
+    },
+    {
+      "question": "Jane's quiz scores were 98, 97, 92, 85 and 93. What was her mean score?",
+      "options": {
+        "0": "94.5",
+        "1": "92",
+        "2": "95",
+        "3": "93"
+      },
+      "answer": 2
+    },
+    {
+      "question": "Simplify the following expression: $(9x^9+7x^8+4x^7) + (x^{11}+x^9+2x^7+3x^3+5x+8).$ Express your answer as a polynomial with the degrees of the terms in decreasing order.",
+      "options": {
+        "0": "x^{11}-6x^8+6x^7+3x^3+5x+8",
+        "1": "x^{11}+2x^9+2x^8",
+        "2": "x^11 + 10x^9 + 7x^8+6x^73x^3+5x+8",
+        "3": "x^{11}+10x^9+7x^8+6x^7+3x^3+5x+8"
+      },
+      "answer": 3
+    }
+  ]
+}
