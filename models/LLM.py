@@ -481,7 +481,7 @@ class LLMModel:
 
         input_len = inputs["input_ids"].shape[1]
         raw = self.pipe.tokenizer.decode(
-            out.sequences[0, input_len:], skip_special_tokens=True
+            out[0, input_len:], skip_special_tokens=True
         ).strip()
 
         if "none" in raw.lower():
