@@ -605,18 +605,13 @@ class LLMModel:
             info["retrieval"] = mode
         return info
 
-    def answer(self, question_text: str, options: dict) -> int:
-        self._question_num += 1
-        self._last_options = options
-        game_label = f"  [{self._game_info}]" if self._game_info else ""
+    def _prepare(self, question_text: str, options: dict) -> tuple:
+        """Run tool selection, retrieval, and elimination.
 
-        self._log(_SEP)
-        self._log(f"Q #{self._question_num:>3}{game_label}")
-        self._log(_SEP)
-        self._log(f"{'QUESTION':<17}: {question_text}")
-        self._log(f"{'OPTIONS':<17}: {'  '.join(f'{k}: {v}' for k, v in options.items())}")
-        self._log("")
-
+        Returns (context, surviving_options, mem_bias) where mem_bias is the
+        memory-probe best option key to inject as a bias warning, or None.
+        Shared by answer() and EnsembleModel so retrieval runs only once.
+        """
         if self._retriever:
             if self._use_tool_selection:
                 source_tag, tool, query, mem_option, mem_probs = self._select_tool(question_text, options)
@@ -633,7 +628,9 @@ class LLMModel:
                 )
             else:
                 self._log(f"{'RETRIEVAL MODE':<17}: waterfall (wikipedia → ddg)")
-                context = self._retriever.get_context(question_text, options)
+                context    = self._retriever.get_context(question_text, options)
+                mem_option = None
+                mem_probs  = {}
         else:
             context    = ""
             mem_option = None
@@ -645,12 +642,6 @@ class LLMModel:
             self._log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         self._log("")
 
-        # ── Pipeline ──────────────────────────────────────────────────────────
-        # 1. Memory probe already ran inside _select_tool → mem_option is the
-        #    model's initial guess without any context.
-        # 2. LLM reads the context and eliminates contradicted options.
-        # 3. If eliminations happened → re-generate with survivors + context.
-        # 4. If nothing eliminated → context was too generic; return initial guess.
         if context:
             surviving, elim_raw = self._eliminate_options(question_text, options, context)
             n_total    = len(options)
@@ -658,39 +649,44 @@ class LLMModel:
             if n_survived < n_total:
                 eliminated_labels = [v for k, v in options.items() if k not in surviving]
                 self._log(f"{'ELIMINATED':<17}: {eliminated_labels}  (llm: {elim_raw!r})")
-                response, answer_probs = self._generate(
-                    question_text, surviving, context, mem_bias=mem_option
-                )
-                answer = self._parse_token(response, options)
-                self._log(f"{'RESPONSE':<17}: {response!r}")
-                if answer_probs:
-                    prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
-                    self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
+                mem_bias = mem_option
             else:
-                # Nothing eliminated — manually drop bottom-2 by memory probe probability,
-                # then re-generate fresh with top-2 survivors (no bias warning).
+                # Nothing eliminated — manually drop bottom-2 by memory probe probability
                 if mem_probs and len(mem_probs) >= 2:
                     sorted_keys = sorted(mem_probs, key=mem_probs.get, reverse=True)
-                    top2    = {k: options[k] for k in sorted_keys[:2] if k in options}
-                    dropped = [options[k] for k in sorted_keys[2:] if k in options]
+                    surviving   = {k: options[k] for k in sorted_keys[:2] if k in options}
+                    dropped     = [options[k] for k in sorted_keys[2:] if k in options]
                     self._log(f"{'MANUAL ELIM':<17}: dropped bottom-2 by memory prob → {dropped}  (llm: {elim_raw!r})")
                 else:
-                    top2 = options
-                    self._log(f"{'MANUAL ELIM':<17}: no mem probs available → keeping all options  (llm: {elim_raw!r})")
-                response, answer_probs = self._generate(question_text, top2, context)
-                answer = self._parse_token(response, options)
-                self._log(f"{'RESPONSE':<17}: {response!r}")
-                if answer_probs:
-                    prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
-                    self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
+                    surviving = options
+                    self._log(f"{'MANUAL ELIM':<17}: no mem probs → keeping all options  (llm: {elim_raw!r})")
+                mem_bias = None
         else:
-            response, answer_probs = self._generate(question_text, options, "", mem_bias=mem_option)
-            answer = self._parse_token(response, options)
-            self._log(f"{'RESPONSE':<17}: {response!r}")
-            if answer_probs:
-                prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
-                self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
+            surviving = options
+            mem_bias  = mem_option
 
+        return context, surviving, mem_bias
+
+    def answer(self, question_text: str, options: dict) -> int:
+        self._question_num += 1
+        self._last_options = options
+        game_label = f"  [{self._game_info}]" if self._game_info else ""
+
+        self._log(_SEP)
+        self._log(f"Q #{self._question_num:>3}{game_label}")
+        self._log(_SEP)
+        self._log(f"{'QUESTION':<17}: {question_text}")
+        self._log(f"{'OPTIONS':<17}: {'  '.join(f'{k}: {v}' for k, v in options.items())}")
+        self._log("")
+
+        context, surviving, mem_bias = self._prepare(question_text, options)
+
+        response, answer_probs = self._generate(question_text, surviving, context, mem_bias=mem_bias)
+        answer = self._parse_token(response, options)
+        self._log(f"{'RESPONSE':<17}: {response!r}")
+        if answer_probs:
+            prob_str = "  ".join(f"{k}:{v}%" for k, v in answer_probs.items())
+            self._log(f"{'ANSWER PROBS':<17}: {prob_str}")
         self._log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
         return answer
 

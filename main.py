@@ -37,6 +37,9 @@ def load_model(config_path: str):
     elif model_class_name == "TfIdfWebModel":
         from models.tfidf import TfIdfWebModel
         return TfIdfWebModel(**config), model_key
+    elif model_class_name == "EnsembleModel":
+        from models.ensemble import EnsembleModel
+        return EnsembleModel(**config), model_key
     else:
         from models.LLM import LLMModel
         return LLMModel(**config), model_key
