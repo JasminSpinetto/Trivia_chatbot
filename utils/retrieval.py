@@ -456,86 +456,39 @@ class Retriever:
     # ── individual tool retrieval methods ──────────────────────────────────────
 
     def _get_wikipedia_context(self, question: str, options: dict, query: str = None) -> str:
-        """Wikipedia-only retrieval — no DDG fallback.
+        """Wikipedia-only retrieval — exactly one search request per question.
 
-        If query is provided (LLM-generated), it is used directly instead of the
-        automatic multi-query generation, keeping the search focused and fast.
+        Uses the LLM-generated query when available; otherwise falls back to
+        the single best auto-focused query.  One _run_queries() call = one search
+        API call + one extract batch call.
         """
         if query:
-            self._log(f"WIKI QUERIES     : [{query!r}]  (llm-generated, top-1)")
-            extracts, _ = self._run_queries([query], srlimit=1)
-            seen_text, unique = set(), []
-            for title, ctx in extracts.items():
-                if ctx[:80] not in seen_text:
-                    if _is_relevant(question, ctx):
-                        seen_text.add(ctx[:80])
-                        unique.append(ctx)
-                        self._log(f"WIKI ACCEPTED    : [{title}]")
-                    else:
-                        self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
-
-            if not unique:
-                # LLM query matched nothing useful — retry with proper nouns
-                # already present in the question (e.g. 'Acropolis', 'Caesar').
-                words = re.findall(r"\b[a-zA-Z']+\b", question)
-                direct_terms = list(dict.fromkeys(
-                    w for i, w in enumerate(words)
-                    if i > 0 and w[0].isupper() and len(w) >= 4
-                ))
-                if direct_terms:
-                    self._log(f"WIKI FALLBACK    : {direct_terms}  (proper nouns, top-1 each)")
-                    fb_extracts, _ = self._run_queries(direct_terms, srlimit=1)
-                    for title, ctx in fb_extracts.items():
-                        if ctx[:80] not in seen_text:
-                            if _is_relevant(question, ctx):
-                                seen_text.add(ctx[:80])
-                                unique.append(ctx)
-                                self._log(f"WIKI FB ACCEPTED : [{title}]")
-                            else:
-                                self._log(f"WIKI FB REJECTED : [{title}] (relevance too low)")
-
-            # Per-option search: one lookup per answer choice
-            self._search_options(options, question, seen_text, unique)
-
-            return self._score_and_combine(unique, question)
+            search_q = query
+            self._log(f"WIKI QUERY       : {search_q!r}  (llm-generated)")
         else:
-            proper_only = " ".join(
-                re.sub(r"'s?$", "", w)
-                for i, w in enumerate(re.findall(r"\b[a-zA-Z']+\b", question))
-                if i > 0 and w[0].isupper() and len(w) > 2
-            )
-            focused    = _focused_query(question)
-            opts_query = _options_query(question, options)
-            keywords   = _keywords(question)
-            quoted     = _quoted_terms(question)
-
-            quoted_queries = [f"{t} {' '.join(keywords[:2])}" for t in quoted] if quoted else []
-            seen_q, queries = set(), []
-            for q in quoted_queries + [proper_only, focused, opts_query]:
-                if q and q.lower() not in seen_q:
-                    seen_q.add(q.lower())
-                    queries.append(q)
-
-            if not queries:
-                self._log("WIKI QUERIES     : (none generated)")
+            quoted = _quoted_terms(question)
+            if quoted:
+                keywords = _keywords(question)
+                search_q = f"{quoted[0]} {' '.join(keywords[:2])}".strip()
+            else:
+                search_q = _focused_query(question)
+            if not search_q:
+                self._log("WIKI QUERY       : (no query generated)")
                 return ""
-            self._log(f"WIKI QUERIES     : {queries}")
+            self._log(f"WIKI QUERY       : {search_q!r}  (auto)")
 
-            extracts, _ = self._run_queries(queries)
-            seen_text, unique = set(), []
-            for title, ctx in extracts.items():
-                if ctx[:80] not in seen_text:
-                    if _is_relevant(question, ctx):
-                        seen_text.add(ctx[:80])
-                        unique.append(ctx)
-                        self._log(f"WIKI ACCEPTED    : [{title}]")
-                    else:
-                        self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+        extracts, _ = self._run_queries([search_q], srlimit=3)
+        seen_text, unique = set(), []
+        for title, ctx in extracts.items():
+            if ctx[:80] not in seen_text:
+                if _is_relevant(question, ctx):
+                    seen_text.add(ctx[:80])
+                    unique.append(ctx)
+                    self._log(f"WIKI ACCEPTED    : [{title}]")
+                else:
+                    self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
 
-            # Per-option search: one lookup per answer choice
-            self._search_options(options, question, seen_text, unique)
-
-            return self._score_and_combine(unique, question)
+        return self._score_and_combine(unique, question)
 
     def _get_wiktionary_context(self, question: str, options: dict, query: str = None) -> str:
         """Wiktionary-only lookup — best for word definitions and etymology."""
