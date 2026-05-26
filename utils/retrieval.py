@@ -7,9 +7,9 @@ from urllib3.util.retry import Retry
 
 
 _PARALLEL_TIMEOUT = 5.0   # per search-phase budget; extract batch is one extra call
-_MAX_CONTEXT_LEN  = 3000
-_MAX_ARTICLES     = 3     # keep only the top-scoring articles to avoid "lost in the middle"
-_WIKI_SENTENCES   = 15    # sentences per article summary
+_MAX_CONTEXT_LEN  = 5000
+_MAX_ARTICLES     = 4     # keep only the top-scoring articles to avoid "lost in the middle"
+_WIKI_SENTENCES   = 25    # sentences per article summary
 _MAX_WORKERS      = 4     # concurrent search calls (I/O-bound, safe for Colab)
 
 _WIKI_API  = "https://en.wikipedia.org/w/api.php"
@@ -411,6 +411,30 @@ class Retriever:
         self._log(f"SEARCH COMBINED  : {len(unique)} source(s), {len(combined)} chars")
         return combined
 
+    def _search_options(self, options: dict, question: str,
+                        seen_text: set, unique: list) -> None:
+        """Search each answer option as its own Wikipedia query (srlimit=1).
+
+        Results are appended in-place to `unique` and tracked in `seen_text`.
+        This gives the model grounding for every candidate answer, not just
+        the one the LLM happened to query about.
+        """
+        if not options:
+            return
+        opt_queries = list(dict.fromkeys(v.strip() for v in options.values() if v.strip()))
+        if not opt_queries:
+            return
+        self._log(f"WIKI OPT SEARCH  : {opt_queries}")
+        opt_extracts, _ = self._run_queries(opt_queries, srlimit=1)
+        for title, ctx in opt_extracts.items():
+            if ctx[:80] not in seen_text:
+                if _is_relevant(question, ctx):
+                    seen_text.add(ctx[:80])
+                    unique.append(ctx)
+                    self._log(f"WIKI OPT ACCEPT  : [{title}]")
+                else:
+                    self._log(f"WIKI OPT REJECT  : [{title}] (relevance too low)")
+
     # ── helpers shared by individual-tool methods ──────────────────────────────
 
     def _score_and_combine(self, unique: list, question: str) -> str:
@@ -470,6 +494,9 @@ class Retriever:
                             else:
                                 self._log(f"WIKI FB REJECTED : [{title}] (relevance too low)")
 
+            # Per-option search: one lookup per answer choice
+            self._search_options(options, question, seen_text, unique)
+
             return self._score_and_combine(unique, question)
         else:
             proper_only = " ".join(
@@ -504,6 +531,10 @@ class Retriever:
                         self._log(f"WIKI ACCEPTED    : [{title}]")
                     else:
                         self._log(f"WIKI REJECTED    : [{title}] (relevance too low)")
+
+            # Per-option search: one lookup per answer choice
+            self._search_options(options, question, seen_text, unique)
+
             return self._score_and_combine(unique, question)
 
     def _get_wiktionary_context(self, question: str, options: dict, query: str = None) -> str:
