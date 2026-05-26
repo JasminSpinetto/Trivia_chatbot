@@ -448,15 +448,23 @@ class LLMModel:
                 tool = _TOOL_MAP.get(best_digit, "wikipedia")
 
         # ── 4. Bayesian adjustment with memory confidence ─────────────────────
+        # Skipped when skip_memory_shortcut=True (ensemble/debate callers):
+        # they've already decided retrieval is needed at the ensemble level,
+        # so the internal Bayesian override must not kill it.
         if prob_dict is not None:
-            adj = _bayesian_adjust(prob_dict, mem_conf)
             raw_str = "  ".join(f"{k}:{v}%" for k, v in prob_dict.items())
-            adj_str = "  ".join(f"{k}:{v}%" for k, v in adj.items())
             self._log(f"{'TOOL PROBS':<17}: {raw_str}")
-            self._log(f"{'ADJ PROBS':<17}: {adj_str}  (mem={mem_conf:.0%})")
-            # Pick tool from adjusted probabilities
-            tool = max(adj, key=adj.get)
-            best_prob = adj[tool] / 100
+            if skip_memory_shortcut:
+                # Trust the LLM's raw tool selection — no Bayesian override.
+                tool = max(prob_dict, key=prob_dict.get)
+                best_prob = prob_dict[tool] / 100
+                self._log(f"{'ADJ PROBS':<17}: (skipped — ensemble/debate mode)")
+            else:
+                adj = _bayesian_adjust(prob_dict, mem_conf)
+                adj_str = "  ".join(f"{k}:{v}%" for k, v in adj.items())
+                self._log(f"{'ADJ PROBS':<17}: {adj_str}  (mem={mem_conf:.0%})")
+                tool = max(adj, key=adj.get)
+                best_prob = adj[tool] / 100
         else:
             self._log(f"{'TOOL PROBS':<17}: (unavailable — digit token ambiguity)")
 
