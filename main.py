@@ -9,7 +9,7 @@ import json
 import random
 import time
 
-ONLINE       = False
+ONLINE       = True
 RESULTS_FILE = "results/results.csv"
 CONFIG_DIR   = "config"
 
