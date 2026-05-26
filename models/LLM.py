@@ -290,21 +290,34 @@ class LLMModel:
         self._question_num = 0
         self._game_info    = competition_name
 
-    def _probe_memory(self, question_text: str, options: dict) -> tuple:
-        """Single-token forward pass: how confidently can the model answer without retrieval?
+    def _probe_memory(self, question_text: str, options: dict,
+                      context: str = "") -> tuple:
+        """Single-token forward pass: P(option | question [+ context]) via softmax.
 
-        Uses the same direct model.generate() path as tool selection to capture
-        per-token logits. Computes softmax over the 4 option token IDs only.
+        Same primitive used for two purposes:
+          - context=""        → memory probe (model's prior, no retrieval)
+          - context=<text>    → context probe (likelihood-based elimination,
+                                MM-PoE style — drop low-likelihood options)
 
-        Returns (best_option_key, confidence) — e.g. ('2', 0.83).
+        Returns (best_option_key, best_confidence, full_prob_dict).
         """
         options_str = "\n".join(f"{k}: {v}" for k, v in options.items())
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPTS["default"]},
-            {"role": "user",   "content": (
+        if context:
+            user_content = (
+                f"Context from web search:\n{context}\n\n"
                 f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
                 "Reply with only the option number."
-            )},
+            )
+            sys_prompt = SYSTEM_PROMPTS["retrieval"]
+        else:
+            user_content = (
+                f"Question: {question_text}\n\nOptions:\n{options_str}\n\n"
+                "Reply with only the option number."
+            )
+            sys_prompt = SYSTEM_PROMPTS["default"]
+        messages = [
+            {"role": "system", "content": sys_prompt},
+            {"role": "user",   "content": user_content},
         ]
         text   = self.pipe.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True

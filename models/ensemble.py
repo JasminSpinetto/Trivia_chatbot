@@ -125,48 +125,38 @@ class EnsembleModel:
             log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         log("")
 
-        # ── Phase 3: both models propose eliminations, strict intersection ─────
-        manual_fallback = False
+        # ── Phase 3: likelihood-based elimination (MM-PoE style) ───────────────
+        # Re-run the option-conditioned probe but WITH the retrieved context.
+        # The lowest-likelihood options under P(opt | question + context) get
+        # dropped — no LLM-as-judge prompt, just softmax scoring.
         if context:
-            surv_a, raw_a = self.model_a._eliminate_options(question_text, options, context)
-            surv_b, raw_b = self.model_b._eliminate_options(question_text, options, context)
-            elim_a = set(options.keys()) - set(surv_a.keys())
-            elim_b = set(options.keys()) - set(surv_b.keys())
+            _, _, cprobs_a = self.model_a._probe_memory(question_text, options, context=context)
+            _, _, cprobs_b = self.model_b._probe_memory(question_text, options, context=context)
 
-            log(f"{'ELIM A':<17}: dropped={sorted(elim_a)}  (raw: {raw_a!r})")
-            log(f"{'ELIM B':<17}: dropped={sorted(elim_b)}  (raw: {raw_b!r})")
+            keys      = list(options.keys())
+            avg_probs = {k: (cprobs_a.get(k, 0.0) + cprobs_b.get(k, 0.0)) / 2 for k in keys}
 
-            both_elim = elim_a & elim_b
-            if both_elim and len(both_elim) < len(options):
-                surviving = {k: v for k, v in options.items() if k not in both_elim}
-                dropped_labels = [options[k] for k in sorted(both_elim)]
-                log(f"{'AGREED ELIM':<17}: intersection={sorted(both_elim)} → dropping {dropped_labels}")
-            else:
-                # No agreement on what to drop — manual top-2 by averaged probe probabilities
-                manual_fallback = True
-                if probs_a and probs_b:
-                    keys      = list(options.keys())
-                    avg_probs = {k: (probs_a.get(k, 0.0) + probs_b.get(k, 0.0)) / 2 for k in keys}
-                    sorted_k  = sorted(avg_probs, key=avg_probs.get, reverse=True)
-                    surviving = {k: options[k] for k in sorted_k[:2] if k in options}
-                    dropped   = [options[k] for k in sorted_k[2:] if k in options]
-                    avg_str   = "  ".join(f"{k}:{round(v*100,1)}%" for k, v in avg_probs.items())
-                    log(f"{'MANUAL ELIM':<17}: no overlap → averaged probs [{avg_str}]")
-                    log(f"{'MANUAL ELIM':<17}: kept top-2, dropped {dropped}")
-                else:
-                    surviving = options
-                    log(f"{'MANUAL ELIM':<17}: no probes available → keeping all options")
+            a_str = "  ".join(f"{k}:{round(cprobs_a.get(k,0)*100,1)}%" for k in keys)
+            b_str = "  ".join(f"{k}:{round(cprobs_b.get(k,0)*100,1)}%" for k in keys)
+            v_str = "  ".join(f"{k}:{round(avg_probs[k]*100,1)}%" for k in keys)
+            log(f"{'CTX PROBE A':<17}: {a_str}")
+            log(f"{'CTX PROBE B':<17}: {b_str}")
+            log(f"{'CTX AVG':<17}: {v_str}")
+
+            sorted_k  = sorted(avg_probs, key=avg_probs.get, reverse=True)
+            surviving = {k: options[k] for k in sorted_k[:2] if k in options}
+            dropped   = [options[k] for k in sorted_k[2:] if k in options]
+            log(f"{'ELIMINATED':<17}: dropped bottom-2 by avg likelihood → {dropped}")
         else:
             surviving = options
             log(f"{'ELIMINATION':<17}: no context → all options survive")
         log("")
 
         # ── Phase 4: both models generate, vote ────────────────────────────────
-        # Each model gets a bias warning about its OWN probe pick — but only
-        # when "real" elimination happened.  For the manual top-2 fallback we
-        # want fresh thinking, so no bias warning is injected.
-        bias_a = None if manual_fallback else opt_a
-        bias_b = None if manual_fallback else opt_b
+        # No mem-bias warning: the likelihood-based elimination already used
+        # context information, so we let both models think fresh on the top-2.
+        bias_a = None
+        bias_b = None
 
         response_a, gprobs_a = self.model_a._generate(
             question_text, surviving, context, mem_bias=bias_a
