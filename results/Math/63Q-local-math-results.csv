@@ -2764,3 +2764,17 @@ Dataset,Questions,Correct,Accuracy %
 data/math_questions.json,63,36,57.1%
 ================================================================================
 
+================================================================================
+OFFLINE | phi-4-mini-dense-router | 2026-05-26 10:45:18
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+retrieval: MathWorld Dense (e5-base-v2 + FAISS)
+code_executor: True
+--------------------------------------------------------------------------------
+Dataset,Questions,Correct,Accuracy %
+data/math_questions.json,63,34,54.0%
+================================================================================
+

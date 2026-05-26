@@ -94,9 +94,6 @@ Maths,15,0.20,1.3%
 
 ================================================================================
 
-
-
-
 ================================================================================
 MATH BENCHMARK: phi-4-mini-dense | 2026-05-08 12:57:17
 model_name: microsoft/Phi-4-mini-instruct
@@ -109,5 +106,33 @@ code_executor: True
 --------------------------------------------------------------------------------
 Competition,Games,Avg Correct / 15,Accuracy %
 Maths,15,1.47,9.8%
+================================================================================
+
+================================================================================
+MATH BENCHMARK: phi-4-mini-hybrid | 2026-05-26 16:10:22
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+retrieval: Hybrid Dense+BM25: MathWorld(12629) + Wikipedia(2314) (e5 + FAISS + BM25 RRF)
+code_executor: True
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Maths,20,1.30,8.7%
+================================================================================
+
+================================================================================
+MATH BENCHMARK: phi-4-mini-hybrid | 2026-05-26 16:38:47
+model_name: microsoft/Phi-4-mini-instruct
+parameters: ~3.8B
+quantization: none
+decoding: greedy
+max_new_tokens: 256
+retrieval: Hybrid Dense+BM25: MathWorld(12629) + Wikipedia(2314) (e5 + FAISS + BM25 RRF)
+code_executor: True
+--------------------------------------------------------------------------------
+Competition,Games,Avg Correct / 15,Accuracy %
+Maths,20,0.65,4.3%
 ================================================================================
 

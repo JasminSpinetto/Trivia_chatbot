@@ -1,0 +1,261 @@
+
+---
+
+## Online Leaderboard Results
+
+| Config | Model | Params | Quantization | Retrieval | Code | Games | Avg/15 | Accuracy |
+|---|---|---|---|---|---|---|---|---|
+| qwen-1.5b | Qwen2.5-Math-1.5B-Instruct | 1.5B | none | none | no | 10 | 0.30 | 2.0% |
+| qwen-7b | Qwen2.5-Math-7B-Instruct | 7.6B | 4-bit | none | no | 10 | 0.10 | 0.7% |
+| llama-8b-wiki | Llama-3.1-8B-Instruct | 8.0B | 4-bit | Wikipedia+DDG | no | 10 | 0.60 | 4.0% |
+| qwen-7b-code | Qwen2.5-Math-7B-Instruct | 7.6B | 4-bit | none | yes | 10 | 0.20 | 1.3% |
+| llama-8b-wiki-code | Llama-3.1-8B-Instruct | 8.0B | 4-bit | Wikipedia+DDG | yes | 10 | 0.50 | 3.3% |
+| phi-4-mini-wiki-code | Phi-4-mini-instruct | 3.8B | none | Wikipedia+DDG | yes | 20 | 0.40 | 2.7% |
+| phi-4-dense | Phi-4 | 14.7B | 4-bit | MathWorld Dense | yes | 15 | 0.20 | 1.3% |
+| **phi-4-mini-dense** | **Phi-4-mini-instruct** | **3.8B** | **none** | **MathWorld Dense** | **yes** | **15** | **1.47** | **9.8% ★** |
+| phi-4-mini-hybrid | Phi-4-mini-instruct | 3.8B | none | Hybrid Dense+BM25 | yes | 20 | 1.30 | 8.7% |
+| phi-4-mini-hybrid (+ retrieval fixes) | Phi-4-mini-instruct | 3.8B | none | Hybrid Dense+BM25 | yes | 20 | 0.65 | 4.3% |
+
+---
+
+## Local Offline Benchmark Results
+
+An offline benchmark of 63 manually curated questions was assembled to evaluate configurations without consuming online competition attempts. Score = correct answers out of 63.
+
+| Config | Score | Accuracy | Notes |
+|---|---|---|---|
+| phi-4-mini-router | 27/63 | 42.9% | Router, MathWorld+Wiki+DDG, no code |
+| phi-4-mini-wiki-code | 32/63 | 50.8% | Wikipedia+DDG + code executor |
+| llama-8b-router | 30/63 | 47.6% | Llama-3.1-8B, MathWorld+Wiki+DDG, router |
+| mathstral-7b-router | 30/63 | 47.6% | Mathstral-7B, reasoning prompt |
+| phi-4-mini-dense (run 1) | 35/63 | 55.6% | First dense retrieval run |
+| **phi-4-mini-dense (run 2)** | **37/63** | **58.7% ★** | **Best dense-only local result** |
+| mathstral-7b-dense | 31/63 | 49.2% | Mathstral with MathWorld dense |
+| math-dual | 31/63 | 49.2% | Phi-4-mini + Mathstral dual model |
+| qwen25-math-7b-dense | 33/63 | 52.4% | Qwen2.5-Math-7B + dense retrieval |
+| qwen25-math-7b-dense-code (run 1) | 17/63 | 27.0% | Qwen + code executor, initial |
+| qwen25-math-7b-dense-code (run 2) | 29/63 | 46.0% | Qwen + code executor, fixed |
+| phi-4-mini-dense (runs 3–5) | 33–36/63 | 52–57% | Prompt tuning iterations |
+| phi-4-mini-dense-router | 34/63 | 54.0% | Dense + per-question code/text routing |
+| phi-4-mini-hybrid (run 1) | 32/63 | 50.8% | First hybrid (Dense+BM25+RRF) run |
+| phi-4-mini-hybrid (run 2) | 36/63 | 57.1% | Hybrid, prompt tuning |
+| **phi-4-mini-hybrid (run 3)** | **38/63** | **60.3% ★★** | **Best overall — + SymPy float rule** |
+| phi-4-mini-hybrid (run 4) | 33/63 | 52.4% | Extended prompt (GF/trig) — regression |
+| phi-4-mini-hybrid (run 5) | 36/63 | 57.1% | Retrieval fixes (dense-veto + BM25 gate) |
+| phi-4-mini-verify | 22/63 | 34.9% | Option verification prompt — regression |
+
+---
+
+# Model Selection
+
+**Math-specialised models**
+
+- **Qwen2.5-Math-1.5B-Instruct** (1.5B, no quantization): A model fine-tuned exclusively on mathematical reasoning. Despite the specialisation, scored only 2.0% online. The model's outputs were often poorly formatted and failed to select from the four multiple-choice options correctly.
+- **Qwen2.5-Math-7B-Instruct** (7.6B, 4-bit): Larger math-specialised model. Scored only 0.7% online without code executor, 1.3% with code executor. Heavy 4-bit quantization combined with the 30-second server timeout made generation unreliable. Counterintuitively, the math specialisation did not help on this mixed-topic competition.
+
+**General models**
+
+- **Llama-3.1-8B-Instruct** (8.0B, 4-bit): General instruction model. Scored 4.0% with Wikipedia retrieval alone (no code), beating both Qwen math models. Adding code executor dropped it slightly to 3.3%, suggesting code generation introduced more failure modes than it solved for this model size.
+- **Phi-4** (14.7B, 4-bit): Microsoft's larger model. Despite having the most parameters, scored only 1.3% online. The 4-bit quantization of a 14.7B model combined with the online timeout was the likely bottleneck — generation was often too slow.
+- **Mathstral-7B-v0.1** (7.0B, 4-bit): Mistral's math-specialised model. Tested with multiple prompts (`mathstral`, `mathstral_reason`, `code`) and retrieval combinations. Never produced competitive results in local testing, consistently underperforming Phi-4-mini despite similar parameter count.
+- **Phi-4-mini-instruct** (3.8B, no quantization): **Best overall model.** Small enough to run in full precision within the time limit, and general enough to handle the full range of question types (stats, algebra, conceptual, combinatorics). Achieved 9.8% online (best result) and 60.3% on the local benchmark.
+
+### Key Findings
+
+Larger does not mean better here. The 30-second online timeout and 5-second code execution timeout mean that inference speed matters as much as model quality. Phi-4-mini at full precision outperformed Phi-4 (4× larger) at 4-bit quantization. Similarly, math-specialised models (Qwen-Math, Mathstral) underperformed general instruction models — the competition covers statistics and conceptual questions where math-only fine-tuning is a disadvantage.
+
+---
+
+# Retrieval Strategy
+
+### 1 — No Retrieval (Baseline)
+
+Models answered from parametric knowledge only. Scores were low across all models, establishing the ceiling without external context.
+
+### 2 — Wikipedia + DuckDuckGo Fallback (Live Web Search)
+
+Implemented a live retrieval pipeline:
+1. Extract keywords from the question (filtering stop words and math symbols)
+2. Query the Wikipedia API; if no article found, fall back to DuckDuckGo web search
+3. Fetch and truncate the top passage (max 3000 chars) and prepend it to the prompt
+
+This improved Llama-3.1-8B from baseline to 4.0% online. However, latency was unpredictable (network calls inside the 30-second window), and retrieved content was often too generic to help with the specific question asked.
+
+### 3 — Domain-Specific Dense Retrieval (MathWorld Corpus)
+
+**Observation:** The competition's math questions heavily reference named theorems, formulas, and mathematical objects from the MathWorld encyclopaedia. Wikipedia is too broad; a domain-specific corpus should yield higher-precision retrieval.
+
+**Implementation (`DenseRetriever` / `HybridDenseRetriever`):**
+
+1. **Corpus construction:** Scraped and processed ~12,629 MathWorld article passages + ~2,314 Wikipedia math passages into a local corpus.
+2. **Encoder:** `intfloat/e5-base-v2` — a bi-encoder trained on passage retrieval tasks. Each passage is prefixed with `"passage: "` and each query with `"query: "` as required by the e5 architecture.
+3. **Index:** FAISS `IndexFlatIP` (inner-product / cosine similarity after L2 normalisation). Separate indexes per source, searched in parallel.
+4. **Threshold filtering:** Only passages scoring ≥ 0.82 cosine similarity are admitted to avoid retrieving off-topic content.
+5. **Cross-encoder reranking:** Top candidates are re-ranked by a `cross-encoder/ms-marco-MiniLM-L-6-v2` model for final passage selection.
+
+**Result:** phi-4-mini-dense jumped to **9.8% online (1.47/15 avg)** — the best online result. On the local benchmark, this configuration formed the basis for the best local score of 38/63.
+
+**Key insight:** Phi-4 (14.7B) with the same dense retrieval scored only 1.3% — demonstrating again that speed/precision of the smaller model dominated the larger model's knowledge advantage.
+
+### 4 — Hybrid Retrieval (Dense + BM25 + RRF Fusion)
+
+**Motivation:** Dense retrieval finds semantically similar passages but can miss exact keyword matches (e.g., a question mentioning "Abelian group" benefits from exact-match retrieval of the term "Abelian Group"). BM25 (sparse, keyword-based) complements dense retrieval.
+
+**Implementation (`HybridDenseRetriever`):**
+
+1. **BM25 index:** Built over all 14,943 passages using `BM25Okapi` (rank-bm25 library). Tokens are lowercased, filtered to ≥3 characters (single-letter variables like x, y, z are noise in BM25).
+2. **RRF (Reciprocal Rank Fusion):** Combines dense rank and BM25 rank into a single score: `score = 1/(k + dense_rank) + 1/(k + bm25_rank)` with k=60.
+3. **Cross-encoder reranking:** Applied on the merged candidate set.
+
+**Result:** phi-4-mini-hybrid scored **8.7% online (1.30/15)** — slightly below dense-only (9.8%). On the local benchmark, hybrid scored 32–38/63 across multiple runs depending on other configuration choices.
+
+**Conclusion:** BM25 added marginal value and introduced false positives (see Retrieval Failure Analysis below). Dense-only remained the best retrieval strategy.
+
+
+# Answer Generation Method
+
+### Method A — Plain Text Reasoning
+
+Model receives the question + options + retrieved context and outputs the option number directly. Effective for conceptual and definitional questions (statistics methodology, abstract algebra definitions). Fails for any question requiring numerical computation.
+
+### Method B — Code Executor (Agentic AI)
+
+**Motivation:** The model's ability to do arithmetic, solve equations, and compute statistics in its head is unreliable. Offloading computation to a Python interpreter is exact.
+
+**Implementation:**
+
+1. A keyword heuristic (`_should_use_code`) decides whether to invoke the code path based on question content (algebra, calculus, geometry, statistics keywords → code; "which of the following must be true", "observational study" → text).
+2. The model is prompted to write a `python` code block that prints the answer.
+3. The code block is extracted with regex and executed in a sandboxed namespace (5-second timeout, safe builtins, no file system access).
+4. The printed output is matched to the closest option numerically via `_match_to_option`.
+5. If code generation fails or produces no output, the model's text response is parsed as fallback.
+
+**Namespace pre-loaded:** `math`, `numpy`, `sympy` (full API), `scipy.stats`, `scipy.integrate`, `scipy.special`, `scipy.optimize`, `networkx`, `itertools`, `fractions`, `statistics`.
+
+**SymPy-specific improvements:**
+- Added polynomial domain objects to namespace: `ZZ` (integers), `QQ` (rationals), `GF(p)` (Galois field) — required for abstract algebra questions
+- Added `solve_to_float()` wrapper that calls `solve()` and converts all solutions to Python floats in one step
+- **Critical SymPy rule added to system prompt:** `float(N(expr))` must be called before any comparison or `round()` on a SymPy expression (e.g., `if float(N(f)) < 0` not `if f < 0`). This rule alone improved local score from 36 to 38.
+
+### Method C — Router (Dynamic Code/Text Selection)
+
+Implemented a per-question router (`use_router: true`) that applies `_should_use_code()` heuristic to decide path at runtime:
+- **Code path:** `system_prompt="code"`, `max_new_tokens=256`, retrieval disabled (retrieval with code confuses small models)
+- **Text path:** `system_prompt="default"`, `max_new_tokens=20`, retrieval enabled
+
+Tested with Phi-4-mini-dense-router config. The router itself worked correctly; performance was comparable to always-code with the hybrid retriever.
+
+### Method D — Dual Model Architecture
+
+**`MathDualModel`:** Two models loaded simultaneously — Phi-4-mini (fast, computation-focused) and Mathstral-7B (reasoning-focused, 4-bit). Both generate an answer; a selection strategy picks between them.
+
+Config: `math-dual.yaml` (phi-4-mini-dense + mathstral-7b-dense). The idea was that Mathstral would handle abstract reasoning questions where Phi-4-mini struggles, while Phi-4-mini handles computation. In practice, Mathstral-7B underperformed Phi-4-mini consistently, making the dual model no better than Phi-4-mini alone while doubling GPU memory usage.
+
+### Method E — Switch Model
+
+**`SwitchModel`:** A meta-model that routes entire competitions to different sub-models. General competitions → Llama-3.1-8B (broader knowledge); Math competition → MathDualModel.
+
+Config: `switch.yaml`. Adds one more layer of routing logic on top of the dual model. Tested but did not improve on phi-4-mini-dense standalone.
+
+### Method F — Option Verification instead of Selection
+
+**Motivation:** Instead of computing an answer and mapping it to options (which fails when the output format doesn't match), reframe generation as *verification*: the model writes code that tests whether each candidate option satisfies the problem constraints.
+
+**Implementation:**
+- New `SYSTEM_PROMPTS["verify"]`: instructs the model to extract option values, test each against the problem constraints, and print `ANSWER: X`.
+- `_answer_with_code` checks for `ANSWER: X` pattern (regex `\bANSWER:\s*([0-3])\b`) before falling back to numerical matching.
+- New config: `phi-4-mini-verify.yaml`.
+
+**Example expected output:**
+```python
+# Question: solve x²+2x-3=0, options: [-3, 1, 3, -1]
+for i, val in enumerate([-3, 1, 3, -1]):
+    if val**2 + 2*val - 3 == 0:
+        print('ANSWER:', i)
+        break
+```
+
+**Result:** 22/63 (34.9%) — worst local result, catastrophic regression from 38/63.
+
+**Root cause:** The model must both understand the mathematical verification structure AND implement it correctly. This is harder than forward computation. Failure modes included:
+- `ANSWER: _3` instead of `ANSWER: 3` (string formatting bug in model-generated code)
+- Conceptual/stats questions have no numerical constraints to verify — model generated nonsensical verification code
+- Wrong mathematical reasoning in the verifier (e.g., dividing vertex sum by 3, which is mathematically incorrect)
+
+The verify prompt was reverted to `code` prompt. The `ANSWER: X` detection remains in `_answer_with_code` as a no-cost fallback.
+
+---
+
+## System Prompt Engineering
+
+The system prompt had a significant effect on Phi-4-mini performance. Key findings:
+
+| Change | Local score | Delta |
+|---|---|---|
+| Baseline (code prompt, no SymPy rule) | 36/63 | — |
+| + SymPy float conversion rule | 38/63 | +2 |
+| + GF(p) Galois field guidance + trig rules (over-extended) | 33/63 | –5 |
+| Reverted to SymPy rule only | 38/63 | +5 |
+| "verify" prompt | 22/63 | –16 |
+
+**Lesson:** Phi-4-mini (3.8B) is sensitive to system prompt length. Adding more than ~2–3 lines of additional guidance caused regressions on other questions. The final effective prompt is the shortest version that includes only the critical SymPy float conversion rule.
+
+---
+
+## Failure Mode Taxonomy (38/63 Baseline)
+
+Analysing the 25 wrong answers in the best local run:
+
+| Category | Count | Description |
+|---|---|---|
+| SymPy TypeError | 5 | `TypeError: Cannot convert expression to float` — model calls `float(N(expr))` on a symbolic expression that still contains variable `x` |
+| Wrong code logic | 5 | Code runs without error but computes the wrong quantity (wrong formula, wrong approach) |
+| Conceptual/stats error | 8 | Stats methodology questions (Hawthorne effect, selection bias, response variable, t-test assumptions) where model picks wrong option |
+| Code crashes | 4 | Other runtime errors (CoercionFailed, NameError, TypeError) |
+| Abstract algebra logic | 3 | Z_3 irreducibility, coset structure — correct setup but domain/modular arithmetic implementation fails |
+
+The most impactful remaining improvement opportunity is the `TypeError: Cannot convert expression to float` category, which affects questions where the model correctly identifies the approach but `float(N(expr))` is applied to an expression with free variables (e.g., `x+11` instead of a number).
+
+---
+
+## Configuration Summary
+
+| Config file | Model | Retrieval | Code | Notes |
+|---|---|---|---|---|
+| `qwen25-math-7b-dense.yaml` | Qwen2.5-Math-7B | MathWorld Dense | no | Math specialist, underperformed |
+| `qwen25-math-7b-dense-code.yaml` | Qwen2.5-Math-7B | MathWorld Dense | yes | Code + math specialist |
+| `llama-8b-wiki.yaml` | Llama-3.1-8B | Wikipedia+DDG | no | First working retrieval |
+| `llama-8b-wiki-code.yaml` | Llama-3.1-8B | Wikipedia+DDG | yes | Code added |
+| `llama-8b-dense.yaml` | Llama-3.1-8B | MathWorld Dense | no | Dense on Llama |
+| `phi-4-mini-wiki-code.yaml` | Phi-4-mini | Wikipedia+DDG | yes | First Phi-4-mini run |
+| `phi-4-mini-dense.yaml` | Phi-4-mini | MathWorld Dense | yes | **Best online (9.8%)** |
+| `phi-4-mini-hybrid.yaml` | Phi-4-mini | Dense + BM25 + RRF | yes | **Best local (60.3%)** |
+| `phi-4-mini-router.yaml` | Phi-4-mini | MathWorld Dense | dynamic | Per-question code/text routing |
+| `phi-4-mini-dense-router.yaml` | Phi-4-mini | MathWorld Dense | dynamic | Router + dense |
+| `mathstral-7b-dense.yaml` | Mathstral-7B | MathWorld Dense | no | Math expert reasoning |
+| `mathstral-7b-router.yaml` | Mathstral-7B | MathWorld Dense | no | `mathstral_reason` prompt + router |
+| `math-dual.yaml` | Phi-4-mini + Mathstral | MathWorld Dense | mixed | Dual model architecture |
+| `smart-dual.yaml` | Phi-4-mini + Llama-8B | MathWorld Dense | mixed | Dual model variant |
+| `switch.yaml` | Llama-8B + Dual | Wikipedia / Dense | mixed | Competition-level routing |
+| `phi-4-reasoning-dense.yaml` | Phi-4 (14.7B) | MathWorld Dense | no | Large model, 4-bit |
+| `phi-4-dense.yaml` | Phi-4 (14.7B) | MathWorld Dense | yes | Large model + code |
+| `phi-4-mini-verify.yaml` | Phi-4-mini | Dense + BM25 + RRF | yes | Option verification (failed) |
+
+---
+
+## What Worked vs. What Didn't
+
+### What worked
+- **Domain-specific dense retrieval** over a curated MathWorld corpus, far outperforming live web search
+- **Phi-4-mini at full precision** over larger models at 4-bit — inference speed within the time limit matters
+- **Code executor with SymPy** for algebraic/calculus/probability computation
+- **Short, focused system prompts** — every added line risks regression on a 3.8B model
+- **SymPy float conversion rule** — single most impactful prompt change (+2 local questions)
+
+### What didn't work
+- **Math-specialised models** (Qwen-Math, Mathstral) — general instruction following is more important than math fine-tuning for a mixed competition
+- **Large models with 4-bit quantization** — speed/precision tradeoff goes against large quantized models
+- **Extended system prompts** — adding GF(p) and trig guidance caused –5 regression
+- **BM25 retrieval fixes** — both the dense-veto and dense-gate fixes were too aggressive, tripling zero-score online games
+- **Hybrid retrieval** — BM25 introduces false positives (keyword collisions like "salt"→Salinon, "assembly"→Assembly Number) that outweigh the gains
+- **Option verification prompt** — reframing generation as constraint verification is harder than forward computation for a 3.8B model; catastrophic –16 local regression

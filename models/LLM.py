@@ -52,6 +52,7 @@ class LLMModel:
         quantization: Optional[dict] = None,
         use_retrieval: bool = False,
         use_dense_retrieval: bool = False,
+        use_hybrid_retrieval: bool = False,
         repetition_penalty: Optional[float] = None,
     ):
         HF_login()
@@ -71,7 +72,11 @@ class LLMModel:
         self._search_reversed   = search_reversed
         self._repetition_penalty = repetition_penalty
 
-        if use_dense_retrieval:
+        if use_hybrid_retrieval:
+            from utils.retrieval import HybridDenseRetriever
+            self._retriever     = HybridDenseRetriever()
+            self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt) if system_prompt != "default" else SYSTEM_PROMPTS["retrieval"]
+        elif use_dense_retrieval:
             from utils.retrieval import DenseRetriever
             self._retriever     = DenseRetriever()
             self._system_prompt = SYSTEM_PROMPTS.get(system_prompt, system_prompt) if system_prompt != "default" else SYSTEM_PROMPTS["retrieval"]

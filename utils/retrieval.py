@@ -261,33 +261,55 @@ class MathRetriever(Retriever):
 
 class DenseRetriever:
     """
-    Dense vector retrieval over a pre-built MathWorld corpus.
-    Replaces live DDG searches with sub-100ms FAISS lookups.
+    Dense vector retrieval over one or more pre-built corpora.
 
-    Build the index once with:
+    Searches MathWorld by default; also searches ProofWiki and DLMF indexes
+    automatically if their index files exist on disk.
+
+    Build indexes with:
         python scripts/build_mathworld_index.py
-
-    Then use in any YAML config by setting:
-        use_dense_retrieval: true   (handled in MATH.py / LLM.py init)
+        python scripts/build_proofwiki_index.py
+        python scripts/build_dlmf_index.py
     """
     description = "MathWorld Dense (e5-base-v2 + FAISS)"
 
-    _INDEX_PATH        = "data/mathworld/mathworld.faiss"
-    _PASSAGE_PATH      = "data/mathworld/passages.npy"
-    _MIN_SCORE         = 0.78
-    _RERANKER_MODEL    = "cross-encoder/ms-marco-MiniLM-L6-v2"
+    # (faiss_path, passages_path, label) — searched in order; missing ones skipped
+    # DLMF excluded: scraped with mojibake encoding (â¡/Â§/Î artifacts), hurts retrieval quality
+    _SOURCES = [
+        ("data/mathworld/mathworld.faiss",   "data/mathworld/passages.npy",   "MathWorld"),
+        ("data/proofwiki/proofwiki.faiss",   "data/proofwiki/passages.npy",   "ProofWiki"),
+        ("data/wikipedia/wikipedia.faiss",   "data/wikipedia/passages.npy",   "Wikipedia"),
+    ]
+    _MIN_SCORE      = 0.82
+    _RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L6-v2"
+    _TOP_K_PER_SRC  = 5   # candidates fetched from each source before reranking
+    _TOP_K_FINAL    = 2   # passages kept after reranking
 
     def __init__(self):
         import faiss
         import numpy as np
+        from pathlib import Path
         from sentence_transformers import SentenceTransformer, CrossEncoder
 
-        # Both encoder and reranker on CPU to avoid CUDA conflicts with the LLM
         self._encoder  = SentenceTransformer("intfloat/e5-base-v2", device="cpu")
         self._reranker = CrossEncoder(self._RERANKER_MODEL, device="cpu")
-        self._index    = faiss.read_index(self._INDEX_PATH)
-        self._passages = list(np.load(self._PASSAGE_PATH, allow_pickle=True))
-        print(f"[DenseRetriever] loaded {self._index.ntotal} passages (encoder + reranker on CPU)")
+
+        self._indexes = []
+        labels_loaded = []
+        for idx_path, pass_path, label in self._SOURCES:
+            if Path(idx_path).exists() and Path(pass_path).exists():
+                idx      = faiss.read_index(idx_path)
+                passages = list(np.load(pass_path, allow_pickle=True))
+                self._indexes.append((idx, passages))
+                labels_loaded.append(f"{label}({idx.ntotal})")
+
+        if not self._indexes:
+            raise FileNotFoundError("No dense index found. Run build_mathworld_index.py first.")
+
+        sources_str = " + ".join(labels_loaded)
+        total       = sum(idx.ntotal for idx, _ in self._indexes)
+        self.description = f"Dense: {sources_str} (e5-base-v2 + FAISS)"
+        print(f"[DenseRetriever] {total} passages across {len(self._indexes)} source(s): {sources_str}")
 
     def get_context(self, question: str, options: dict = None) -> str:
         query = f"query: {question}"
@@ -299,21 +321,130 @@ class DenseRetriever:
             [query], normalize_embeddings=True, convert_to_numpy=True
         ).astype("float32")
 
-        # Step 1: FAISS retrieval
-        D, I = self._index.search(embedding, k=5)
-        candidates = [self._passages[i] for i, s in zip(I[0], D[0])
-                      if 0 <= i < len(self._passages) and s >= self._MIN_SCORE]
+        # Step 1: gather candidates from every loaded index
+        candidates = []
+        for idx, passages in self._indexes:
+            D, I = idx.search(embedding, k=self._TOP_K_PER_SRC)
+            for i, s in zip(I[0], D[0]):
+                if 0 <= i < len(passages) and s >= self._MIN_SCORE:
+                    candidates.append(passages[i])
 
         if not candidates:
             return ""
 
-        clean = [p[len("passage: "):] if p.startswith("passage: ") else p for p in candidates]
+        clean = [p[len("passage: "):] if p.startswith("passage: ") else p
+                 for p in candidates]
 
-        # Step 2: cross-encoder re-ranking (only when multiple candidates)
+        # Step 2: cross-encoder reranking over the combined candidate pool
         if len(clean) > 1:
             scores = self._reranker.predict([(question, p[:500]) for p in clean])
-            ranked = sorted(zip(scores, clean), reverse=True)[:2]
-            clean = [p for _, p in ranked]
+            ranked = sorted(zip(scores, clean), reverse=True)[:self._TOP_K_FINAL]
+            clean  = [p for _, p in ranked]
 
         combined = "\n\n[—]\n\n".join(clean)
         return combined[:_MAX_CONTEXT]
+
+
+class HybridDenseRetriever(DenseRetriever):
+    """
+    Hybrid dense (FAISS + e5-base-v2) + sparse (BM25) retrieval.
+    Combines both via Reciprocal Rank Fusion, then reranks with a cross-encoder.
+
+    BM25 catches exact keyword matches (theorem names, proper nouns) that dense
+    retrieval can miss; dense catches semantic matches that BM25 misses.
+
+    Requires: pip install rank-bm25
+    """
+    _TOP_K_SPARSE    = 10    # BM25 candidates fetched before RRF
+    _RRF_K           = 60    # RRF constant (higher = less aggressive rank weighting)
+
+    def __init__(self):
+        super().__init__()
+        try:
+            from rank_bm25 import BM25Okapi
+        except ImportError:
+            raise ImportError("rank-bm25 not installed. Run: pip install rank-bm25")
+
+        # Flatten all passages from all loaded indexes into one list for BM25
+        self._bm25_passages = []
+        for _, passages in self._indexes:
+            self._bm25_passages.extend(passages)
+
+        def _tokenize(text: str) -> list:
+            if text.startswith("passage: "):
+                text = text[9:]
+            # min 3 chars: single-letter variables (x,y,z,c,n) are noise in math BM25
+            return re.findall(r'\b[a-z0-9]{3,}\b', text.lower())
+
+        print(f"[HybridDenseRetriever] Building BM25 over {len(self._bm25_passages)} passages...")
+        import time as _time
+        t0 = _time.time()
+        self._bm25     = BM25Okapi([_tokenize(p) for p in self._bm25_passages])
+        self._tokenize = _tokenize
+        sources_str = self.description.split("Dense: ")[-1].split(" (")[0]
+        self.description = f"Hybrid Dense+BM25: {sources_str} (e5 + FAISS + BM25 RRF)"
+        print(f"[HybridDenseRetriever] BM25 ready in {_time.time()-t0:.1f}s")
+
+    def get_context(self, question: str, options: dict = None) -> str:
+        # ── dense retrieval ───────────────────────────────────────────────────
+        dense_query = f"query: {question}"
+        if options:
+            dense_query = f"query: {question} {' '.join(options.values())[:80]}"
+
+        embedding = self._encoder.encode(
+            [dense_query], normalize_embeddings=True, convert_to_numpy=True
+        ).astype("float32")
+
+        dense_rank: dict = {}   # passage -> rank (lower = better)
+        rank = 0
+        for idx, passages in self._indexes:
+            D, I = idx.search(embedding, k=self._TOP_K_PER_SRC)
+            for i, s in zip(I[0], D[0]):
+                if 0 <= i < len(passages):
+                    p = passages[i]
+                    if s >= self._MIN_SCORE and p not in dense_rank:
+                        dense_rank[p] = rank
+                        rank += 1
+
+        # ── BM25 retrieval ────────────────────────────────────────────────────
+        bm25_text = re.sub(r'\$\$?[^$]+\$\$?', ' ', question)
+        bm25_text = re.sub(r'\\[a-zA-Z]+(?:\{[^}]*\})*', ' ', bm25_text)
+        if options:
+            bm25_text += ' ' + ' '.join(options.values())
+        bm25_tokens = re.findall(r'\b[a-z0-9]{3,}\b', bm25_text.lower())
+
+        bm25_scores  = self._bm25.get_scores(bm25_tokens)
+        top_bm25_idx = bm25_scores.argsort()[::-1][: self._TOP_K_SPARSE]
+
+        bm25_rank: dict = {}
+        for r, i in enumerate(top_bm25_idx):
+            if bm25_scores[i] > 0:
+                p = self._bm25_passages[i]
+                if p not in bm25_rank:
+                    bm25_rank[p] = r
+
+        # ── RRF fusion ────────────────────────────────────────────────────────
+        all_passages = set(dense_rank) | set(bm25_rank)
+        if not all_passages:
+            return ""
+
+        k = self._RRF_K
+        ranked = sorted(
+            all_passages,
+            key=lambda p: (
+                1.0 / (k + dense_rank.get(p, 999)) +
+                1.0 / (k + bm25_rank.get(p, 999))
+            ),
+            reverse=True,
+        )
+        candidates = ranked[: self._TOP_K_PER_SRC * 2]
+
+        clean = [p[9:] if p.startswith("passage: ") else p for p in candidates]
+
+        # ── cross-encoder reranking ───────────────────────────────────────────
+        if len(clean) > 1:
+            scores = self._reranker.predict([(question, p[:500]) for p in clean])
+            ranked = sorted(zip(scores, clean), reverse=True)[: self._TOP_K_FINAL]
+            clean  = [p for _, p in ranked]
+
+        return "\n\n[—]\n\n".join(clean)[: _MAX_CONTEXT]

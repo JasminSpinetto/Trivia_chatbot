@@ -16,8 +16,8 @@ from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError
 
 ONLINE            = True
-RESULTS_FILE      = "results/Math/online-math-results.csv"
-#RESULTS_FILE      = "results/results.csv"
+#RESULTS_FILE      = "results/Math/63Q-local-math-results.csv"
+RESULTS_FILE      = "results/results.csv"
 CONFIG_DIR        = "config"
 ONLINE_TIMEOUT_S  = 30   # hard limit imposed by the quiz server
 OFFLINE_TIMEOUT_S = 180  # generous limit for local runs to better analyze behaviour

@@ -4,7 +4,14 @@
       "Bash(python -c ' *)",
       "Bash(rm -rf ~/.cache/huggingface/hub/ && echo \"Done\")",
       "Bash(ls ~/.cache/huggingface/ 2>/dev/null)",
-      "Read(//c/Users/PC/.cache/huggingface/**)"
+      "Read(//c/Users/PC/.cache/huggingface/**)",
+      "Bash(python -c \"import sys,json; nb=json.load\\(sys.stdin\\); print\\(len\\(nb['cells']\\), 'cells'\\); [print\\(f'[{i}] {c[\\\\\"cell_type\\\\\"]}: {repr\\(\\\\\"\\\\\".join\\(c[\\\\\"source\\\\\"]\\)[:120]\\)}'\\) for i,c in enumerate\\(nb['cells']\\)]\")",
+      "Bash(conda run *)",
+      "Bash(python main.py --config config/phi-4-mini-hybrid.yaml --dataset data/math_questions.json --verbose)",
+      "Bash(python -c \"from sympy.polys.domains import ZZ, QQ, GF; print\\('ZZ:', ZZ\\); print\\('GF\\(3\\):', GF\\(3\\)\\); from sympy import Poly, symbols; x=symbols\\('x'\\); p=Poly\\(x**3+x**2+1, x, domain=GF\\(3\\)\\); print\\('is_irreducible:', p.is_irreducible\\)\")",
+      "Bash(python main.py --help)",
+      "Bash(python debug_retrieval.py)",
+      "Bash(Select-String \"\\\\.md\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\PC\\.cache\\huggingface\\hub"

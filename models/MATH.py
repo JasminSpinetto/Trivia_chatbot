@@ -66,6 +66,17 @@ SYSTEM_PROMPTS["mathstral_reason"] = (
     "  ANSWER: [option number]  (only when the answer follows from pure reasoning, no numbers needed)"
 )
 
+SYSTEM_PROMPTS["verify"] = (
+    "You are a math expert. For each multiple-choice question, write a ```python``` block that:\n"
+    "1. Extracts the numerical value of each option (0, 1, 2, 3) from the problem.\n"
+    "2. Tests which option satisfies the problem constraints (substitute back, compute and compare, etc.).\n"
+    "3. Ends with: print('ANSWER:', correct_option_number)\n"
+    "Do NOT import anything. Available: math, np, sp (sympy), stats (scipy.stats), solve, symbols,\n"
+    "sqrt, integrate, diff, pi, e, N, norm, comb, factorial, comb, gcd, lcm, Rational, Fraction, etc.\n"
+    "SymPy rule: always use float(N(expr)) before comparing or rounding SymPy expressions.\n"
+    "For purely abstract questions (no numbers), reason in plain text and end with only the option number."
+)
+
 SYSTEM_PROMPTS["code"] = (
     "You are a math expert solving multiple choice questions.\n"
     "Default to writing code. Use a ```python``` block that prints the final result for ANY "
@@ -83,6 +94,10 @@ SYSTEM_PROMPTS["code"] = (
     "  N, Sum, Product, Abs, Piecewise,\n"
     "  itertools, Fraction, Counter, defaultdict, deque,\n"
     "  nx (networkx) for graph theory problems.\n"
+    "CRITICAL SymPy rule: SymPy expressions cannot be used directly in comparisons or round(). "
+    "Always convert first: use float(N(expr)) before any comparison or rounding. "
+    "Examples: 'if float(N(f2)) < 0' not 'if f2 < 0'; 'round(float(N(expr)))' not 'round(expr)'. "
+    "After solve(), do: sols = [float(N(s)) for s in solve(...)]\n"
     "Only reason in plain text for purely abstract questions with no numbers at all.\n"
     "Always end your response with ONLY the option number on the last line."
 )
@@ -255,8 +270,13 @@ class MathLLMModel(LLMModel):
     def _generate(self, question_text: str, options: dict, context: str = "") -> str:
         options_str = "\n".join(f"{id}: {text}" for id, text in options.items())
         _is_qwen_tir = (self._system_prompt == SYSTEM_PROMPTS.get("qwen_math", ""))
+        _is_verify   = (self._system_prompt == SYSTEM_PROMPTS.get("verify", ""))
         if _is_qwen_tir:
             user_suffix = "Answer concisely. End with \\boxed{option_number}."
+        elif _is_verify:
+            user_suffix = (
+                "Write a ```python``` block that tests each option and prints: ANSWER: X"
+            )
         elif self._use_code_executor:
             user_suffix = (
                 "You MUST write a ```python``` code block that prints the answer, even when context is provided. "
@@ -520,6 +540,15 @@ class MathLLMModel(LLMModel):
             ]:
                 if hasattr(sp, _name) and _name not in namespace:
                     namespace[_name] = getattr(sp, _name)
+        except ImportError:
+            pass
+
+        # ── sympy polynomial domains ──────────────────────────────────────────
+        try:
+            from sympy.polys.domains import ZZ as _ZZ, QQ as _QQ, GF as _GF
+            namespace["ZZ"] = _ZZ   # integer domain (for Poly(f, x, domain=ZZ))
+            namespace["QQ"] = _QQ   # rational domain
+            namespace["GF"] = _GF   # Galois field: GF(p) for prime p
         except ImportError:
             pass
 
@@ -850,14 +879,20 @@ class MathLLMModel(LLMModel):
             else:
                 code_result = self._execute_code(code)
                 if code_result is not None:
-                    # Strip trailing standalone option index (0-3) that phi adds via print(N)
-                    lines = [l for l in code_result.strip().split("\n") if l.strip()]
-                    if len(lines) > 1 and re.fullmatch(r"[0-3]", lines[-1].strip()):
-                        code_result = "\n".join(lines[:-1])
-                    matched = self._match_to_option(code_result, options)
-                    if matched is not None:
-                        final_answer = matched
-                        print(f"  [AGENTIC OK  ] code ran -> output: {code_result!r} -> option {final_answer}")
+                    # Priority 1: explicit ANSWER: X from option-verification mode
+                    ans_match = re.search(r'\bANSWER:\s*([0-3])\b', code_result)
+                    if ans_match and ans_match.group(1) in options:
+                        final_answer = int(ans_match.group(1))
+                        print(f"  [VERIFY OK   ] code tested options -> ANSWER: {final_answer}")
+                    else:
+                        # Priority 2: strip trailing option index phi sometimes adds
+                        lines = [l for l in code_result.strip().split("\n") if l.strip()]
+                        if len(lines) > 1 and re.fullmatch(r"[0-3]", lines[-1].strip()):
+                            code_result = "\n".join(lines[:-1])
+                        matched = self._match_to_option(code_result, options)
+                        if matched is not None:
+                            final_answer = matched
+                            print(f"  [AGENTIC OK  ] code ran -> output: {code_result!r} -> option {final_answer}")
                 if final_answer is None:
                     exec_err = getattr(self, "_last_exec_error", "unknown error")
                     print(f"  [AGENTIC FAIL] {exec_err} -> text fallback")
