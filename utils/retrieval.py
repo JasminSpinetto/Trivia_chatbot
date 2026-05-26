@@ -116,7 +116,10 @@ def _proper_noun_phrases(question: str) -> list:
 
 def _is_relevant(question: str, context: str) -> bool:
     """Accept if ≥50% of question proper nouns appear in context, OR if any
-    content keyword overlaps.
+    content keyword overlaps (exact or 4-char prefix stem).
+
+    The stem fallback catches morphological variants like "roofing"/"roof",
+    "material"/"materials", "ancient"/"ancients" that exact matching misses.
     """
     c_lower = context.lower()
     proper  = _proper_nouns(question)
@@ -126,7 +129,12 @@ def _is_relevant(question: str, context: str) -> bool:
             return True
     q_kw = set(_keywords(question))
     c_kw = set(_keywords(context))
-    return bool(q_kw & c_kw)
+    if q_kw & c_kw:
+        return True
+    # Stem fallback: share a 4-char prefix (e.g. "roof" matches "roofing")
+    q_stems = {w[:4] for w in q_kw if len(w) >= 5}
+    c_stems = {w[:4] for w in c_kw if len(w) >= 5}
+    return bool(q_stems & c_stems)
 
 
 def _strip_html(raw: str) -> str:

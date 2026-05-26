@@ -68,18 +68,30 @@ class DebateModel:
     # ── debate primitive ───────────────────────────────────────────────────────
 
     def _debate_generate(self, model: LLMModel, question: str, options: dict,
-                         context: str, opponent: dict = None) -> tuple:
+                         context: str, opponent: dict = None,
+                         prior_answer: str = None) -> tuple:
         """Generate one-sentence reason + final answer.
 
-        opponent: {'key': option_key_str, 'reason': str} — the other model's
-                  position that this model must respond to.  None = open statement.
+        opponent     : {'key': str, 'reason': str} — the other model's position.
+        prior_answer : option key the model already chose (Phase 3); when set,
+                       anchors the prompt to that answer to prevent hallucination
+                       drift when context is poor.
 
         Returns (full_text, reason_str, answer_key_str).
         """
         options_str = "\n".join(f"{k}: {v}" for k, v in options.items())
         ctx_block   = f"Context:\n{context}\n\n" if context else ""
 
-        if opponent:
+        if prior_answer is not None:
+            prior_label = options.get(str(prior_answer), "?")
+            user_content = (
+                f"{ctx_block}"
+                f"Question: {question}\n\nOptions:\n{options_str}\n\n"
+                f"You previously chose option {prior_answer} ({prior_label!r}). "
+                "Using the context above, defend or reconsider this position in one sentence, "
+                "then write your final answer as a single number on the last line."
+            )
+        elif opponent:
             opp_label = options.get(str(opponent["key"]), "?")
             user_content = (
                 f"{ctx_block}"
@@ -224,7 +236,8 @@ class DebateModel:
         log(f"{'DEBATE':<17}: Llama-3B presents case → Qwen-7B decides")
 
         _, llama_reason, llama_key = self._debate_generate(
-            self.model_b, question_text, options, context
+            self.model_b, question_text, options, context,
+            prior_answer=str(ans_b),   # anchor to Phase 3 answer, prevent hallucination drift
         )
         log(f"{'LLAMA CASE':<17}: option={llama_key} ({options.get(llama_key, '?')!r})")
         log(f"{'  reason':<17}: {llama_reason!r}")
