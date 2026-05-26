@@ -244,7 +244,7 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
 
     # Constants
     MAX_LEVELS = 15
-    TIME_LIMIT = 30.0
+    TIME_LIMIT = 120.0  # offline: no server constraint, give slow models room
     # Prize ladder: doubles each level, classic millionaire-like progression
     PRIZES = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
 

@@ -109,7 +109,7 @@ class DebateModel:
         with torch.no_grad():
             out = model.pipe.model.generate(
                 **inputs,
-                max_new_tokens=80,
+                max_new_tokens=40,
                 do_sample=False,
             )
 
