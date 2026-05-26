@@ -338,7 +338,8 @@ class LLMModel:
         prob_dict   = {k: probs[i].item() for i, k in enumerate(keys)}
         return keys[best_i], probs[best_i].item(), prob_dict
 
-    def _select_tool(self, question_text: str, options: dict) -> tuple:
+    def _select_tool(self, question_text: str, options: dict,
+                     skip_memory_shortcut: bool = False) -> tuple:
         """Return (source_tag, tool_name, query) for retrieval.
 
         Logging is done internally so callers stay clean.
@@ -351,6 +352,10 @@ class LLMModel:
         3. LLM tool+query call   → '<digit> | <query>' format, 30 tokens
         4. Bayesian adjustment   → blend tool probs with memory confidence
         5. Confidence guard      → low-confidence picks fall back to wikipedia
+
+        skip_memory_shortcut : when True, the single-model confidence shortcut
+        is disabled — used by EnsembleModel where the shortcut is evaluated
+        across both models at the ensemble level.
 
         source_tag  : 'heuristic' | 'memory-shortcut(…%)' | raw LLM text
         tool_name   : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
@@ -370,7 +375,7 @@ class LLMModel:
             f"conf={mem_conf:.0%}"
         )
 
-        if mem_conf >= _MEMORY_SHORTCUT_THRESHOLD:
+        if not skip_memory_shortcut and mem_conf >= _MEMORY_SHORTCUT_THRESHOLD:
             tag = f"memory-shortcut(conf={mem_conf:.0%})"
             return tag, "none", None, mem_option, mem_probs
 
