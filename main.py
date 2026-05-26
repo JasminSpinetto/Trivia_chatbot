@@ -5,7 +5,7 @@ import yaml
 from datetime import datetime
 from dotenv import dotenv_values
 from utils import MillionaireClient, AuthenticationError, GameError
-from models.transcriber import Transcriber
+from utils.transcriber import Transcriber
 import json
 import random
 import time
@@ -167,25 +167,20 @@ def play_online(model, model_key, speech_mode, test_all, multiplicity, verbose, 
             else:
                 try:
                     question_audio = game.fetch_audio_question()
-                    question = transcriber.process(question_audio)
+                    transcriber.process(question_audio)
                 except GameError as e:
                     print(f"Error fetching question audio: {e}")
                     break
                 
-                options = {}
                 for i in range(4):
                     try:
                         option_audio = game.fetch_audio_option_next()
-                        option = transcriber.process(option_audio, option=i)
-                        if game.current_question and i < len(game.current_question.options):
-                            options[str(i)] = option
+                        transcriber.process(option_audio)
                     except GameError as e:
                         print(f"Error fetching question audio: {e}")
                         break
-                
-                if not options:
-                    print("No question available. Game may have ended.")
-                    break
+
+                question, options = transcriber.llm_refine(competitions[comp_id].name, model)
 
             if print_cond:
                 print(f"\n--- Level {game.current_level} ---")
