@@ -1,7 +1,7 @@
 import torch
 from models.LLM import LLMModel, SYSTEM_PROMPTS, _SEP
 
-_PROBE_AGREEMENT_THRESHOLD = 0.90
+_QWEN_CONFIDENCE_THRESHOLD = 0.95   # Qwen must be this sure to trigger shortcut
 
 _DEBATE_SYSTEM = (
     "You are debating a multiple-choice quiz question. "
@@ -12,26 +12,28 @@ _DEBATE_SYSTEM = (
 
 
 class DebateModel:
-    """Qwen-7B (retrieval driver) + Llama-3B (challenger) multi-turn debate.
+    """Qwen-7B (driver) + Llama-3B (challenger) debate ensemble.
 
     Pipeline
     ────────
-    Phase 1 — memory probe on both.  Both agree at ≥90 % → early exit.
-    Phase 2 — Qwen-7B drives agentic retrieval (one Wikipedia search).
-    Phase 3 — MM-PoE elimination: drop bottom-2 options by avg context-probe
-               probability, leaving the top-2 for the debate.
-    Phase 4 — Debate round 1: each model states its position + one-sentence
-               reason independently.  Agree → done.
-    Phase 5 — Debate round 2: each model sees the opponent's R1 position and
-               reason before answering again.  Agree → done.
-    Phase 6 — Tiebreak: pick the model whose context-probe is more confident
-               about its own R2 pick.  Qwen-7B breaks exact ties.
+    Phase 1 — Qwen-7B memory probe.
+              conf ≥ 95 % AND Llama-3B agrees → answer immediately (no retrieval).
+              Otherwise → fetch context.
 
-    GPU budget: Qwen-7B 4-bit ≈ 4.5 GB + Llama-3B 4-bit ≈ 2.0 GB ≈ 6.5 GB.
+    Phase 2 — Qwen-7B drives agentic retrieval (one Wikipedia search).
+
+    Phase 3 — Both models answer with context (single-token generate).
+              Agree → done.  Disagree → debate.
+
+    Phase 4 — Debate (one round):
+              a) Llama-3B presents its case (must defend from context).
+              b) Qwen-7B reads Llama's argument and makes the final call.
+
+    Elimination is disabled — all options remain throughout.
     """
 
     def __init__(self, model_a: dict, model_b: dict):
-        self.model_a = LLMModel(**model_a)   # Qwen-7B  — drives retrieval
+        self.model_a = LLMModel(**model_a)   # Qwen-7B  — drives retrieval, final arbiter
         self.model_b = LLMModel(**model_b)   # Llama-3B — challenger
         self._debug        = False
         self._last_options: dict = {}
@@ -67,10 +69,10 @@ class DebateModel:
 
     def _debate_generate(self, model: LLMModel, question: str, options: dict,
                          context: str, opponent: dict = None) -> tuple:
-        """Generate a one-sentence reason followed by a final answer number.
+        """Generate one-sentence reason + final answer.
 
-        opponent: {'key': option_key_str, 'reason': str} from the previous
-                  round, or None for round 1.
+        opponent: {'key': option_key_str, 'reason': str} — the other model's
+                  position that this model must respond to.  None = open statement.
 
         Returns (full_text, reason_str, answer_key_str).
         """
@@ -84,14 +86,14 @@ class DebateModel:
                 f"Question: {question}\n\nOptions:\n{options_str}\n\n"
                 f"Your opponent chose option {opponent['key']} ({opp_label!r}) "
                 f"saying: \"{opponent['reason']}\"\n\n"
-                "Do you agree or disagree? Give your reasoning in one sentence, "
-                "then write your final answer as a single number on the last line."
+                "Using the context above, explain in one sentence why you agree or "
+                "disagree, then write your final answer as a single number on the last line."
             )
         else:
             user_content = (
                 f"{ctx_block}"
                 f"Question: {question}\n\nOptions:\n{options_str}\n\n"
-                "Give your reasoning in one sentence, "
+                "Using the context above, give your reasoning in one sentence, "
                 "then write your final answer as a single number on the last line."
             )
 
@@ -118,7 +120,7 @@ class DebateModel:
             out[0, input_len:], skip_special_tokens=True
         ).strip()
 
-        # Parse answer: last token that matches an option key
+        # Parse answer: last token matching an option key
         answer_key = None
         for tok in reversed(full_text.split()):
             t = tok.strip(".,!?:;")
@@ -128,7 +130,6 @@ class DebateModel:
         if answer_key is None:
             answer_key = list(options.keys())[0]
 
-        # Reason: first non-empty line (usually the reasoning sentence)
         lines  = [l.strip() for l in full_text.split("\n") if l.strip()]
         reason = lines[0] if lines else full_text[:120]
 
@@ -150,29 +151,30 @@ class DebateModel:
         log(f"{'OPTIONS':<17}: {'  '.join(f'{k}: {v}' for k, v in options.items())}")
         log("")
 
-        # ── Phase 1: two-model memory probe ───────────────────────────────────
+        # ── Phase 1: Qwen-7B probe → check Llama only if Qwen is confident ────
         opt_a, conf_a, probs_a = self.model_a._probe_memory(question_text, options)
-        opt_b, conf_b, probs_b = self.model_b._probe_memory(question_text, options)
-
-        log(f"{'PROBE A':<17}: option={opt_a} ({options.get(str(opt_a), '?')!r})  conf={conf_a:.0%}")
+        log(f"{'PROBE A (Qwen)':<17}: option={opt_a} ({options.get(str(opt_a), '?')!r})  conf={conf_a:.0%}")
         if probs_a:
             log(f"{'  A PROBS':<17}: {'  '.join(f'{k}:{int(v*100)}%' for k, v in probs_a.items())}")
-        log(f"{'PROBE B':<17}: option={opt_b} ({options.get(str(opt_b), '?')!r})  conf={conf_b:.0%}")
+
+        opt_b, conf_b, probs_b = self.model_b._probe_memory(question_text, options)
+        log(f"{'PROBE B (Llama)':<17}: option={opt_b} ({options.get(str(opt_b), '?')!r})  conf={conf_b:.0%}")
         if probs_b:
             log(f"{'  B PROBS':<17}: {'  '.join(f'{k}:{int(v*100)}%' for k, v in probs_b.items())}")
 
-        if (opt_a == opt_b
-                and conf_a >= _PROBE_AGREEMENT_THRESHOLD
-                and conf_b >= _PROBE_AGREEMENT_THRESHOLD):
+        if conf_a >= _QWEN_CONFIDENCE_THRESHOLD and opt_a == opt_b:
             log(
-                f"{'PROBE SHORTCUT':<17}: BOTH AGREE @ ≥{int(_PROBE_AGREEMENT_THRESHOLD*100)}% "
-                f"→ skip retrieval, answer={opt_a}"
+                f"{'SHORTCUT':<17}: Qwen ≥{int(_QWEN_CONFIDENCE_THRESHOLD*100)}% "
+                f"AND Llama agrees → answer={opt_a}"
             )
             answer = int(opt_a)
             log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
             return answer
 
-        log(f"{'PHASE 1':<17}: no consensus → retrieval")
+        if conf_a >= _QWEN_CONFIDENCE_THRESHOLD:
+            log(f"{'PHASE 1':<17}: Qwen confident but Llama disagrees → fetch context")
+        else:
+            log(f"{'PHASE 1':<17}: Qwen conf={conf_a:.0%} < {int(_QWEN_CONFIDENCE_THRESHOLD*100)}% → fetch context")
         log("")
 
         # ── Phase 2: Qwen-7B drives agentic retrieval ─────────────────────────
@@ -195,87 +197,46 @@ class DebateModel:
             log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         log("")
 
-        # ── Phase 3: MM-PoE elimination (drop bottom-2 by avg context prob) ───
-        if context:
-            _, _, cprobs_a = self.model_a._probe_memory(question_text, options, context=context)
-            _, _, cprobs_b = self.model_b._probe_memory(question_text, options, context=context)
+        # ── Phase 3: both answer with context (single-token generate) ─────────
+        response_a, gprobs_a = self.model_a._generate(question_text, options, context)
+        response_b, gprobs_b = self.model_b._generate(question_text, options, context)
 
-            keys      = list(options.keys())
-            avg_probs = {k: (cprobs_a.get(k, 0.0) + cprobs_b.get(k, 0.0)) / 2 for k in keys}
+        ans_a = self.model_a._parse_token(response_a, options)
+        ans_b = self.model_b._parse_token(response_b, options)
 
-            a_str = "  ".join(f"{k}:{round(cprobs_a.get(k,0)*100,1)}%" for k in keys)
-            b_str = "  ".join(f"{k}:{round(cprobs_b.get(k,0)*100,1)}%" for k in keys)
-            v_str = "  ".join(f"{k}:{round(avg_probs[k]*100,1)}%" for k in keys)
-            log(f"{'CTX PROBE A':<17}: {a_str}")
-            log(f"{'CTX PROBE B':<17}: {b_str}")
-            log(f"{'CTX AVG':<17}: {v_str}")
+        log(f"{'CTX GEN A':<17}: {response_a!r} → {ans_a} ({options.get(str(ans_a), '?')})")
+        if gprobs_a:
+            log(f"{'  A PROBS':<17}: {'  '.join(f'{k}:{v}%' for k, v in gprobs_a.items())}")
+        log(f"{'CTX GEN B':<17}: {response_b!r} → {ans_b} ({options.get(str(ans_b), '?')})")
+        if gprobs_b:
+            log(f"{'  B PROBS':<17}: {'  '.join(f'{k}:{v}%' for k, v in gprobs_b.items())}")
 
-            sorted_k  = sorted(avg_probs, key=avg_probs.get, reverse=True)
-            surviving = {k: options[k] for k in sorted_k[:2] if k in options}
-            dropped   = [options[k] for k in sorted_k[2:] if k in options]
-            log(f"{'ELIMINATED':<17}: dropped bottom-2 → {dropped}")
-        else:
-            surviving = options
-            log(f"{'ELIMINATION':<17}: no context → all options survive")
-        log("")
-
-        # ── Phase 4: Debate round 1 ────────────────────────────────────────────
-        log(f"{'DEBATE R1':<17}: both state position independently")
-        _, r1_reason_a, r1_key_a = self._debate_generate(
-            self.model_a, question_text, surviving, context
-        )
-        _, r1_reason_b, r1_key_b = self._debate_generate(
-            self.model_b, question_text, surviving, context
-        )
-        log(f"{'R1 A':<17}: {r1_key_a} ({surviving.get(r1_key_a, options.get(r1_key_a, '?'))!r})")
-        log(f"{'  A reason':<17}: {r1_reason_a!r}")
-        log(f"{'R1 B':<17}: {r1_key_b} ({surviving.get(r1_key_b, options.get(r1_key_b, '?'))!r})")
-        log(f"{'  B reason':<17}: {r1_reason_b!r}")
-
-        if r1_key_a == r1_key_b:
-            answer = int(r1_key_a)
-            log(f"{'R1 VOTE':<17}: AGREE → {answer}")
+        if ans_a == ans_b:
+            answer = ans_a
+            log(f"{'CTX VOTE':<17}: AGREE → {answer}")
             log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
             return answer
 
-        log(f"{'R1 VOTE':<17}: DISAGREE  A={r1_key_a}  B={r1_key_b} → round 2")
+        log(f"{'CTX VOTE':<17}: DISAGREE  A={ans_a}  B={ans_b} → debate")
         log("")
 
-        # ── Phase 5: Debate round 2 (each sees opponent's R1) ─────────────────
-        log(f"{'DEBATE R2':<17}: each sees opponent's R1 position")
-        _, r2_reason_a, r2_key_a = self._debate_generate(
-            self.model_a, question_text, surviving, context,
-            opponent={"key": r1_key_b, "reason": r1_reason_b},
+        # ── Phase 4: one debate round — Llama presents, Qwen decides ──────────
+        log(f"{'DEBATE':<17}: Llama-3B presents case → Qwen-7B decides")
+
+        _, llama_reason, llama_key = self._debate_generate(
+            self.model_b, question_text, options, context
         )
-        _, r2_reason_b, r2_key_b = self._debate_generate(
-            self.model_b, question_text, surviving, context,
-            opponent={"key": r1_key_a, "reason": r1_reason_a},
+        log(f"{'LLAMA CASE':<17}: option={llama_key} ({options.get(llama_key, '?')!r})")
+        log(f"{'  reason':<17}: {llama_reason!r}")
+
+        _, qwen_reason, final_key = self._debate_generate(
+            self.model_a, question_text, options, context,
+            opponent={"key": llama_key, "reason": llama_reason},
         )
-        log(f"{'R2 A':<17}: {r2_key_a} ({surviving.get(r2_key_a, options.get(r2_key_a, '?'))!r})")
-        log(f"{'  A reason':<17}: {r2_reason_a!r}")
-        log(f"{'R2 B':<17}: {r2_key_b} ({surviving.get(r2_key_b, options.get(r2_key_b, '?'))!r})")
-        log(f"{'  B reason':<17}: {r2_reason_b!r}")
+        log(f"{'QWEN FINAL':<17}: option={final_key} ({options.get(final_key, '?')!r})")
+        log(f"{'  reason':<17}: {qwen_reason!r}")
 
-        if r2_key_a == r2_key_b:
-            answer = int(r2_key_a)
-            log(f"{'R2 VOTE':<17}: AGREE → {answer}")
-            log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
-            return answer
-
-        # ── Phase 6: tiebreak — context-probe confidence ───────────────────────
-        # Ask each model: "how confident are you in your own R2 pick?"
-        _, _, fprobs_a = self.model_a._probe_memory(question_text, surviving, context=context)
-        _, _, fprobs_b = self.model_b._probe_memory(question_text, surviving, context=context)
-
-        ca = fprobs_a.get(r2_key_a, 0.0)
-        cb = fprobs_b.get(r2_key_b, 0.0)
-
-        log(f"{'R2 VOTE':<17}: DISAGREE  A={r2_key_a}(conf={ca:.0%})  B={r2_key_b}(conf={cb:.0%})")
-
-        # Higher context-confidence wins; Qwen-7B (model A) breaks exact ties
-        answer_key = r2_key_a if ca >= cb else r2_key_b
-        answer     = int(answer_key)
-        log(f"{'TIEBREAK':<17}: → {'A (Qwen-7B)' if answer_key == r2_key_a else 'B (Llama-3B)'}")
+        answer = int(final_key)
         log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
         return answer
 
