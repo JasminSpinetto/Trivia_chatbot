@@ -388,14 +388,37 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
         save_results(model_key, model, competitions, play_history, math_only)
 
 
+def show_leaderboard(top: int = 10):
+    """Print the leaderboard for every competition."""
+    client = login()
+    competitions = client.competitions.list_all()
+    for comp in competitions:
+        print(f"\n{'='*60}")
+        print(f"  {comp.name}  (top {top})")
+        print(f"{'='*60}")
+        entries = client.leaderboard.get_top(comp.id, n=top)
+        if not entries:
+            print("  (no entries yet)")
+            continue
+        print(f"  {'#':<5} {'Username':<25} {'Level':>6} {'Score':>12}")
+        print(f"  {'-'*52}")
+        for rank, e in enumerate(entries, 1):
+            print(f"  {rank:<5} {e.username:<25} {e.reached_level:>6} {e.score:>12,.0f}")
+    print()
+
+
 def main():
     parser = argparse.ArgumentParser(description="PoliMillionaire chatbot")
     parser.add_argument(
         "--config",
         type=str,
-        required=True,
+        default=None,
         help=f"Model config YAML filename (looked up in {CONFIG_DIR}/) or full path"
     )
+    parser.add_argument("--leaderboard",  action="store_true", default=False,
+                        help="Show leaderboard for all competitions and exit (online only)")
+    parser.add_argument("--leaderboard_top", type=int, default=10,
+                        help="Number of top entries to show per competition (default: 10)")
     parser.add_argument("--test_all",    action="store_true", default=False, help="Test all competitions")
     parser.add_argument("--math",        action="store_true", default=False, help="Run on math competition only")
     parser.add_argument("--multiplicity",type=int, default=1, help="Games per competition")
@@ -405,6 +428,16 @@ def main():
     parser.add_argument("--debug",       action="store_true", default=False,
                         help="Log prompts, context, and answers to a timestamped file in logs/")
     args = parser.parse_args()
+
+    if args.leaderboard:
+        if not ONLINE:
+            print("Leaderboard is only available in online mode (set ONLINE=True in main.py).")
+            return
+        show_leaderboard(top=args.leaderboard_top)
+        return
+
+    if args.config is None:
+        parser.error("--config is required unless --leaderboard is used")
 
     if args.multiplicity < 1:
         print("Input Error: Multiplicity value should be greater or equal to 1!")
