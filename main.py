@@ -95,7 +95,7 @@ def save_results(model_key, model, competitions, play_history, math_only):
     print(f"\nResults appended to {RESULTS_FILE}")
 
 
-def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, math_only):
+def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, math_only, fixed_comp_id=None):
     """
     Runs an interactive quiz session against the online platform.
     Allows the user to select a competition, play multiple games, and
@@ -118,7 +118,12 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
     for comp in competitions:
         print(f"  {comp.id}: {comp.name} ({comp.max_levels} questions)")
 
-    if math_only:
+    if fixed_comp_id is not None:
+        if fixed_comp_id < 0 or fixed_comp_id >= num_competitions:
+            print(f"Error: --comp_id {fixed_comp_id} is out of range [0-{num_competitions-1}]")
+            return
+        print(f"\nFixed competition: running {multiplicity} games on '{competitions[fixed_comp_id].name}'")
+    elif math_only:
         math_comp_id = next(
             (i for i, c in enumerate(competitions) if "math" in c.name.lower()), None
         )
@@ -128,10 +133,15 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
         print(f"\nMath-only mode: running {multiplicity} games on '{competitions[math_comp_id].name}'")
 
     cnt        = -1
-    print_cond = (not test_all and not math_only) or verbose
+    print_cond = (not test_all and not math_only and fixed_comp_id is None) or verbose
 
     while True:
-        if math_only:
+        if fixed_comp_id is not None:
+            cnt += 1
+            comp_id = fixed_comp_id
+            play_history[comp_id]["num_games"] += 1
+            if verbose: print(f"Competition selected: {competitions[comp_id].name}")
+        elif math_only:
             cnt += 1
             comp_id = math_comp_id
             play_history[comp_id]["num_games"] += 1
@@ -195,7 +205,9 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
         play_history[comp_id]["level"].append(game.current_level - 1)
         play_history[comp_id]["score"].append(game.earned_amount)
 
-        if math_only:
+        if fixed_comp_id is not None:
+            if cnt + 1 >= multiplicity: break
+        elif math_only:
             if cnt + 1 >= multiplicity: break
         elif test_all:
             if cnt + 1 >= num_competitions * multiplicity: break
@@ -216,20 +228,20 @@ def play_online(model, model_key, test_all, multiplicity, verbose, output_csv, m
         save_results(model_key, model, competitions, play_history, math_only)
 
 
-def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only):
+def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, math_only, fixed_comp_id=None):
     """
     Runs the quiz session in offline mode using a local dataset.
     Used when the online platform is no longer available.
     """
- 
+
     assert multiplicity >= 1, "Input Error: Multiplicity value should be greater or equal to 1!"
- 
+
     # Constants
     MAX_LEVELS = 15
     TIME_LIMIT = 30.0
     # Prize ladder: doubles each level, classic millionaire-like progression
     PRIZES = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
- 
+
     # Read all competitions
     competition_ds = []
     with open(os.path.join('data/', 'entertainment.json'), 'r', encoding="utf-8") as file:
@@ -240,35 +252,45 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
         competition_ds.append(json.load(file))
     with open(os.path.join('data/', 'maths.json'), 'r', encoding="utf-8") as file:
         competition_ds.append(json.load(file))
- 
+
     # Build a competitions structure compatible with save_results
     competitions = {
         i: {"id": comp["id"], "name": comp["name"], "max_levels": MAX_LEVELS}
         for i, comp in enumerate(competition_ds)
     }
- 
+
     # Session summary
     num_competitions = len(competition_ds)
     play_history = {
         i: {"num_games": 0, "level": [], "score": []}
         for i in range(num_competitions)
     }
- 
+
     # List available competitions
     print("\n=== Available Competitions ===")
     for i in range(len(competition_ds)):
         print(f"  {competition_ds[i]['id']}: {competition_ds[i]['name']} ({len(competition_ds[i]['objects'])} questions)")
- 
+
     math_comp_id = 3
-    if math_only:
+    if fixed_comp_id is not None:
+        if fixed_comp_id < 0 or fixed_comp_id >= num_competitions:
+            print(f"Error: --comp_id {fixed_comp_id} is out of range [0-{num_competitions-1}]")
+            return
+        print(f"\nFixed competition: running {multiplicity} games on '{competition_ds[fixed_comp_id]['name']}'")
+    elif math_only:
         print(f"\nMath-only mode: running {multiplicity} games on '{competition_ds[math_comp_id]['name']}'")
- 
+
     cnt        = -1
-    print_cond = (not test_all and not math_only) or verbose
- 
+    print_cond = (not test_all and not math_only and fixed_comp_id is None) or verbose
+
     while True:
         # Choose a competition ID
-        if math_only:
+        if fixed_comp_id is not None:
+            cnt += 1
+            comp_id = fixed_comp_id
+            play_history[comp_id]["num_games"] += 1
+            if verbose: print(f"Competition selected: {competition_ds[comp_id]['name']}")
+        elif math_only:
             cnt += 1
             comp_id = math_comp_id
             play_history[comp_id]["num_games"] += 1
@@ -367,13 +389,15 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
         play_history[comp_id]["level"].append(correct_answers)
         play_history[comp_id]["score"].append(earned_amount)
  
-        if math_only:
+        if fixed_comp_id is not None:
+            if cnt + 1 >= multiplicity: break
+        elif math_only:
             if cnt + 1 >= multiplicity: break
         elif test_all:
             if cnt + 1 >= num_competitions * multiplicity: break
         else:
             if input("Play again? [Y/N]: ").lower() == 'n': break
- 
+
     print("\n=== Session Summary ===")
     for comp_id, data in play_history.items():
         n = data["num_games"]
@@ -383,7 +407,7 @@ def play_offline(model, model_key, test_all, multiplicity, verbose, output_csv, 
         print(f"Average correct answers: {sum(data['level'])/n:,.2f}")
         print(f"Average earnings: {sum(data['score'])/n:,.2f}")
         print()
- 
+
     if output_csv:
         save_results(model_key, model, competitions, play_history, math_only)
 
@@ -420,8 +444,9 @@ def main():
     parser.add_argument("--leaderboard_top", type=int, default=10,
                         help="Number of top entries to show per competition (default: 10)")
     parser.add_argument("--test_all",    action="store_true", default=False, help="Test all competitions")
+    parser.add_argument("--comp_id",     type=int, default=None, help="Run only this competition ID (0-based)")
     parser.add_argument("--math",        action="store_true", default=False, help="Run on math competition only")
-    parser.add_argument("--multiplicity",type=int, default=1, help="Games per competition")
+    parser.add_argument("--multiplicity",type=int, default=1, help="Games per competition (or per --comp_id)")
     parser.add_argument("--verbose",     action="store_true", default=False, help="Print logs")
     parser.add_argument("--output_csv",  action="store_true", default=False,
                         help=f"Append session results to {RESULTS_FILE}")
@@ -459,9 +484,9 @@ def main():
         model.debug = args.debug
 
     if ONLINE:
-        play_online(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
+        play_online(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math, fixed_comp_id=args.comp_id)
     else:
-        play_offline(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math)
+        play_offline(model, model_key, args.test_all, args.multiplicity, args.verbose, args.output_csv, args.math, fixed_comp_id=args.comp_id)
 
 
 if __name__ == "__main__":
