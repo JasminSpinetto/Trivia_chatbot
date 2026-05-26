@@ -1,10 +1,5 @@
-model_name: "Qwen/Qwen2.5-14B-Instruct"
+model_name: "Qwen/Qwen2.5-7B-Instruct-GPTQ-Int4"
 use_retrieval: true
 use_tool_selection: true
 do_sample: false
 max_new_tokens: 240
-quantization:
-  load_in_4bit: true
-  quant_type: "nf4"
-  compute_dtype: "bfloat16"
-  double_quant: true
