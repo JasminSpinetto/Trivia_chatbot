@@ -190,8 +190,10 @@ class DebateModel:
         log("")
 
         # ── Phase 2: Qwen-7B drives agentic retrieval ─────────────────────────
+        # Pass Phase 1 probe so _select_tool doesn't re-run it (saves 1 forward pass)
         source_tag, tool, query, _, _ = self.model_a._select_tool(
-            question_text, options, skip_memory_shortcut=True
+            question_text, options, skip_memory_shortcut=True,
+            precomputed_probe=(opt_a, conf_a, probs_a),
         )
         if source_tag == "heuristic":
             log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
@@ -209,19 +211,19 @@ class DebateModel:
             log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         log("")
 
-        # ── Phase 3: both answer with context (single-token generate) ─────────
-        response_a, gprobs_a = self.model_a._generate(question_text, options, context)
-        response_b, gprobs_b = self.model_b._generate(question_text, options, context)
+        # ── Phase 3: both vote with context via 1-token probe (fast) ──────────
+        opt_a3, conf_a3, cprobs_a = self.model_a._probe_memory(question_text, options, context=context)
+        opt_b3, conf_b3, cprobs_b = self.model_b._probe_memory(question_text, options, context=context)
 
-        ans_a = self.model_a._parse_token(response_a, options)
-        ans_b = self.model_b._parse_token(response_b, options)
+        ans_a = int(opt_a3)
+        ans_b = int(opt_b3)
 
-        log(f"{'CTX GEN A':<17}: {response_a!r} → {ans_a} ({options.get(str(ans_a), '?')})")
-        if gprobs_a:
-            log(f"{'  A PROBS':<17}: {'  '.join(f'{k}:{v}%' for k, v in gprobs_a.items())}")
-        log(f"{'CTX GEN B':<17}: {response_b!r} → {ans_b} ({options.get(str(ans_b), '?')})")
-        if gprobs_b:
-            log(f"{'  B PROBS':<17}: {'  '.join(f'{k}:{v}%' for k, v in gprobs_b.items())}")
+        log(f"{'CTX PROBE A':<17}: option={opt_a3} ({options.get(opt_a3, '?')!r})  conf={conf_a3:.0%}")
+        if cprobs_a:
+            log(f"{'  A PROBS':<17}: {'  '.join(f'{k}:{int(v*100)}%' for k, v in cprobs_a.items())}")
+        log(f"{'CTX PROBE B':<17}: option={opt_b3} ({options.get(opt_b3, '?')!r})  conf={conf_b3:.0%}")
+        if cprobs_b:
+            log(f"{'  B PROBS':<17}: {'  '.join(f'{k}:{int(v*100)}%' for k, v in cprobs_b.items())}")
 
         if ans_a == ans_b:
             answer = ans_a

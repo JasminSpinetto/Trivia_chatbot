@@ -352,7 +352,8 @@ class LLMModel:
         return keys[best_i], probs[best_i].item(), prob_dict
 
     def _select_tool(self, question_text: str, options: dict,
-                     skip_memory_shortcut: bool = False) -> tuple:
+                     skip_memory_shortcut: bool = False,
+                     precomputed_probe: tuple = None) -> tuple:
         """Return (source_tag, tool_name, query) for retrieval.
 
         Logging is done internally so callers stay clean.
@@ -367,8 +368,10 @@ class LLMModel:
         5. Confidence guard      → low-confidence picks fall back to wikipedia
 
         skip_memory_shortcut : when True, the single-model confidence shortcut
-        is disabled — used by EnsembleModel where the shortcut is evaluated
-        across both models at the ensemble level.
+        is disabled — used by EnsembleModel/DebateModel where the shortcut is
+        evaluated across both models at the ensemble level.
+        precomputed_probe    : (mem_option, mem_conf, mem_probs) already computed
+        by the caller — reused directly to avoid a duplicate forward pass.
 
         source_tag  : 'heuristic' | 'memory-shortcut(…%)' | raw LLM text
         tool_name   : 'none' | 'wikipedia' | 'wiktionary' | 'ddg'
@@ -381,7 +384,10 @@ class LLMModel:
             return "heuristic", hint, None, None, {}
 
         # ── 2. Memory probe ───────────────────────────────────────────────────
-        mem_option, mem_conf, mem_probs = self._probe_memory(question_text, options)
+        if precomputed_probe is not None:
+            mem_option, mem_conf, mem_probs = precomputed_probe
+        else:
+            mem_option, mem_conf, mem_probs = self._probe_memory(question_text, options)
         mem_option_text = options.get(str(mem_option), "?") if mem_option else "?"
         self._log(
             f"{'MEMORY PROBE':<17}: option={mem_option} ({mem_option_text!r})  "
