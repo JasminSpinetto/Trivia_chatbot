@@ -218,6 +218,352 @@ The most impactful remaining improvement opportunity is the `TypeError: Cannot c
 
 ---
 
+# System Prompt Engineering
+
+Eight distinct system prompts were written and tested across different models
+and configurations. All prompts are defined in `models/LLM.py` (base prompts)
+and `models/MATH.py` (math-specific prompts).
+
+### `default`
+
+```
+You are a quiz contestant. Given a multiple choice question,
+reply with ONLY the number of the correct option. No explanation.
+```
+
+**Purpose:** minimal baseline. No role, no reasoning, just output the option.
+Used for all early non-math runs and as the text-path target in the router
+(conceptual questions where reasoning is unhelpful noise).
+
+**Design rationale:** short prompts leave maximum token budget for the actual
+question. On a 3.8B model, a long system prompt competes with the question
+for the effective context window.
+
+**Used by:** all LLMModel-based configs, router text path.
+
+---
+
+### `retrieval`
+
+```
+You are a quiz contestant. Given a multiple choice question and optional web context,
+reply with ONLY the number of the correct option. No explanation.
+```
+
+**Purpose:** same as `default` but explicitly acknowledges the retrieval context
+that follows. Without this, models sometimes ignored the context block entirely.
+
+**Used by:** any config with `use_retrieval`, `use_dense_retrieval`, or
+`use_hybrid_retrieval` enabled (when `system_prompt` is left at default).
+
+---
+
+### `math`
+
+```
+You are a math expert. Take a deep breath and reason step by step,
+then reply with ONLY the number of the correct option.
+```
+
+**Purpose:** early math-specific prompt. The phrase "take a deep breath" comes
+from a published finding (Yang et al., 2023) that emotional / deliberative
+priming phrases improve LLM reasoning on benchmarks. "Reason step by step" is
+a standard chain-of-thought trigger.
+
+**Design rationale:** tried to get the model to show working before committing
+to an answer, without specifying a rigid output format.
+
+**Limitation:** on Phi-4-mini, this prompt produced verbose responses that
+sometimes filled `max_new_tokens=256` without reaching a numeric conclusion,
+causing token truncation and fallback to the first token (usually wrong).
+Replaced by `code` for computational questions and `default` for conceptual ones.
+
+**Used by:** early phi-4-mini experiments.
+
+---
+
+### `mathstral`
+
+```
+You are a math competition expert. For each question:
+1. Identify the mathematical domain and the relevant framework or theorem.
+2. Show your reasoning step by step, being precise about definitions.
+3. Compute or derive the answer carefully.
+4. Reply with ONLY the option number on the last line.
+```
+
+**Purpose:** structured reasoning prompt tailored to Mathstral-7B, a model
+fine-tuned on math olympiad and competition data. Explicitly asks the model to
+identify the domain first — a meta-cognitive step that helped Mathstral avoid
+applying the wrong theorem.
+
+**Design rationale:** Mathstral tends to output long, structured proofs. This
+prompt aligns with its training distribution. The final line "ONLY the option
+number" was necessary to prevent Mathstral from ending with a sentence like
+"therefore the answer is option 2" which sometimes failed `_parse_token`.
+
+**Observed behaviour:** on the 63Q set, Mathstral correctly identified the
+domain and theorem for most questions but made arithmetic errors in the
+computation step. Router configs helped by delegating computation to code.
+
+**Used by:** mathstral-7b-router, mathstral-7b-dense, math-dual (Stage 1).
+
+---
+
+### `mathstral_reason`
+
+```
+You are a math competition expert. Reason step by step through the problem.
+DO NOT compute any numerical values yourself.
+Identify the correct mathematical framework, set up the equations, and simplify
+as far as possible analytically.
+End your response with EXACTLY one of:
+  COMPUTE: [the precise expression, equation, or system to evaluate numerically]
+  ANSWER: [option number]  (only when the answer follows from pure reasoning, no numbers needed)
+```
+
+**Purpose:** designed for the dual-model architecture. Forces Mathstral to
+produce only symbolic/analytical work and explicitly output a `COMPUTE:` handoff
+for numerical evaluation by a second model (Phi-4-mini).
+
+**Design rationale:** separating symbolic reasoning from numerical computation
+addresses the main failure mode of math LLMs: setting up the right equation but
+making arithmetic mistakes. Mathstral handles the harder "which theorem applies"
+step; a code executor handles the easier "evaluate this integral" step.
+
+**Key detail:** "DO NOT compute any numerical values yourself" was necessary —
+without it Mathstral would compute intermediate results and pass those forward,
+losing the exact expression needed for reliable numerical evaluation.
+
+**Used by:** math-dual config (Stage 1 of the dual-model pipeline).
+
+---
+
+### `qwen_math`
+
+```
+Please integrate natural language reasoning with programs to solve the problem above,
+and put your final answer within \boxed{}.
+For multiple choice questions, put the correct option number (0, 1, 2, or 3) inside \boxed{}.
+Be brief: short reasoning, minimal code.
+```
+
+**Purpose:** matches Qwen2.5-Math's training format. Qwen math models are
+trained with Tool-Integrated Reasoning (TIR): they interleave natural language
+and code blocks, then produce a LaTeX `\boxed{}` answer.
+
+**Design rationale:** using a prompt close to the training distribution avoids
+the "format shock" that degrades outputs. The `\boxed{}` format is also easy
+to parse reliably. A custom `_BoxedStoppingCriteria` stops generation as soon
+as `\boxed{N}` is produced for a valid option key, saving significant tokens.
+
+**Additional implementation:** `_generate()` appends a user suffix
+"Answer concisely. End with \\boxed{option_number}." to reinforce the format.
+
+**Limitation:** Qwen2.5-Math-7B in 4-bit quantization still underperformed
+Phi-4-mini at full precision. The TIR-style code it generated was often more
+complex than needed and prone to errors under quantization.
+
+**Used by:** qwen25-math-7b-dense, qwen25-math-7b-dense-code.
+
+---
+
+### `code` *(best performing)*
+
+```
+You are a math expert solving multiple choice questions.
+Default to writing code. Use a ```python``` block that prints the final result
+for ANY question with numbers: algebra, calculus, probability, statistics,
+combinatorics, geometry, complex numbers, or any theorem applied to a concrete value.
+IMPORTANT: do NOT write any import statements. The following are already available:
+  math, cmath, np (numpy), sp (sympy), stats (scipy.stats),
+  quad, dblquad, nquad (scipy.integrate), erf, erfinv, gamma (scipy.special),
+  norm, chi2, binom, poisson, t_dist, f_dist (scipy stats distributions),
+  solve, symbols, sqrt, Rational, integrate, diff, Matrix, pi, I, oo,
+  ln, log, log2, log10, exp, sin, cos, tan, asin, acos, atan, atan2,
+  sinh, cosh, tanh, hypot, degrees, radians, floor, ceil, factorial,
+  sqrt, prod, reduce, comb, gcd, lcm, perm, inf, pi, e,
+  factorint, isprime, nextprime, totient, mod_inverse, binomial (sympy),
+  N, Sum, Product, Abs, Piecewise,
+  itertools, Fraction, Counter, defaultdict, deque,
+  nx (networkx) for graph theory problems.
+CRITICAL SymPy rule: SymPy expressions cannot be used directly in comparisons or round().
+Always convert first: use float(N(expr)) before any comparison or rounding.
+Examples: 'if float(N(f2)) < 0' not 'if f2 < 0'; 'round(float(N(expr)))' not 'round(expr)'.
+After solve(), do: sols = [float(N(s)) for s in solve(...)]
+Only reason in plain text for purely abstract questions with no numbers at all.
+Always end your response with ONLY the option number on the last line.
+```
+
+**Purpose:** the main production prompt. Instructs the model to default to code
+for any computational question, with a comprehensive list of available libraries
+so the model never needs to write import statements (which are stripped anyway,
+but writing them wastes tokens and sometimes produces "ImportError" in the model's
+reasoning).
+
+**Key design decisions:**
+
+1. **"Default to writing code"** — not "write code if needed." The word "default"
+   pushes the model harder toward code generation without making it strictly
+   mandatory (which caused issues with purely abstract questions).
+
+2. **Exhaustive library list** — listing every available function by name
+   dramatically reduced `NameError` exceptions. Early versions had the model
+   writing `import sympy as sp` then using `sp.solve()`, only for the import
+   to be stripped, causing `NameError: name 'sp' is not defined`. The list
+   clarifies what is pre-loaded.
+
+3. **CRITICAL SymPy rule** — this single addition fixed approximately +2
+   questions on the 63Q set. SymPy's symbolic expressions are not Python floats.
+   Expressions like `if sp.solve(f, x)[0] < 0` crash with
+   `TypeError: cannot determine truth value of Relational`, and
+   `round(sp.sqrt(2))` returns a SymPy `Integer` not a Python int. The explicit
+   rule and examples train the model to always call `float(N(expr))` first.
+
+4. **User suffix reinforcement** — `_generate()` appends:
+   "You MUST write a python code block that prints the answer, even when context
+   is provided. Read constraints carefully — only enforce what the problem
+   explicitly states. End with only the option number."
+   The "even when context is provided" clause was added after observing the
+   model sometimes deciding to answer from retrieval context without code,
+   losing numerical precision.
+
+5. **Fallback chain** — if code extraction fails, code execution fails, or
+   no output is produced, the system falls back to parsing the model's text
+   response directly. This means a code failure is not a total loss.
+
+**Used by:** phi-4-mini-dense, phi-4-mini-hybrid, phi-4-mini-dense-router
+(code path), phi-4-mini-verify config (reverted to `code` after verify failed).
+
+---
+
+### `verify` *(experimental — reverted after 22/63)*
+
+```
+You are a math expert. For each multiple-choice question, write a ```python``` block that:
+1. Extracts the numerical value of each option (0, 1, 2, 3) from the problem.
+2. Tests which option satisfies the problem constraints (substitute back, compute and compare, etc.).
+3. Ends with: print('ANSWER:', correct_option_number)
+Do NOT import anything. Available: math, np, sp (sympy), stats (scipy.stats), solve, symbols,
+sqrt, integrate, diff, pi, e, N, norm, comb, factorial, comb, gcd, lcm, Rational, Fraction, etc.
+SymPy rule: always use float(N(expr)) before comparing or rounding SymPy expressions.
+For purely abstract questions (no numbers), reason in plain text and end with only the option number.
+```
+
+**Purpose:** option verification — instead of computing the answer and finding
+the closest option, write code that *tests each option against the problem's
+constraints* and identifies which satisfies them. The expected output is
+`ANSWER: X` where X is the option key.
+
+**Design rationale:** verification is often easier than discovery. Substituting
+a candidate answer back into an equation to check it holds is a simpler
+computation than solving the equation from scratch. This approach also makes
+the model's reasoning more transparent (each test is explicit code) and should
+reduce format errors (instead of matching a float to an option, the model
+directly states `ANSWER: 2`).
+
+**Implementation additions:**
+- `_answer_with_code()` checks for `ANSWER:\s*([0-3])` in code output before
+  falling through to the standard numerical matching path.
+- User message suffix: "Write a python block that tests each option and
+  prints: ANSWER: X"
+
+**Why it failed (22/63):**
+
+1. **String formatting bugs** — the model frequently produced `ANSWER: _3`,
+   `ANSWER:3` (no space), or `ANSWER: option3` from f-string misuse. The
+   regex `\bANSWER:\s*([0-3])\b` did not match these variants, causing fallback
+   to numerical matching which was now completely wrong (no numeric output).
+
+2. **Incorrect constraint extraction** — the model often misidentified what
+   "satisfies the constraints" means. For a question about polynomial roots, it
+   checked `f(option_value) == 0` when the option was a coefficient, not a root.
+
+3. **Conceptual questions** — for abstract math (group theory, topology,
+   statistics interpretation), there are no testable numerical constraints.
+   The model produced syntactically correct code that printed nonsense or
+   crashed, and the fallback text response also failed because the verify prompt
+   had conditioned the model away from clean text reasoning.
+
+**Conclusion:** 3.8B model is too small to reliably meta-reason about which
+constraints to test per question. Forward computation (compute the answer,
+match to option) is simpler and more reliable.
+
+---
+
+## Prompt Engineering Iterations Summary
+
+The progression from worst to best prompt performance:
+
+1. `default` → 42.9% (27/63) — baseline, no domain knowledge
+2. `math` → ~45% — "take a deep breath" helps slightly
+3. `mathstral` on Mathstral-7B → 47.6% — better structure, same ceiling
+4. `code` without SymPy rule → ~50% — code helps but crashes on SymPy types
+5. `code` with SymPy rule → 58.7% (37/63) — single rule change, +2 questions
+6. `code` + hybrid retrieval → 60.3% (38/63) — better context
+7. `verify` → 34.9% (22/63) — worse than baseline (reverted)
+
+---
+
+## Key Engineering Details
+
+### Code sandbox
+
+The code executor (`_execute_code`) runs in a daemon thread with a 5-second
+timeout. The execution namespace is carefully constructed:
+
+- `__builtins__` is replaced with a safe subset (no `open`, `__import__`, `eval`,
+  `exec`, `compile`, `os`, `sys.exit`, etc.)
+- All needed math libraries are pre-loaded: `math`, `cmath`, `numpy`, `sympy`,
+  `scipy`, `itertools`, `fractions`, `collections`, `networkx`
+- `print` is replaced by a SymPy-aware wrapper that calls `.evalf()` on any
+  SymPy expression before printing (catches cases where the model prints a
+  SymPy object directly)
+- `float()` and `int()` are replaced by wrappers that unwrap single-element
+  lists (common from `sympy.solve()`) and call `.evalf()` if needed
+- Import statements in model-generated code are silently stripped by
+  `_preprocess_code()` (prevents NameError when the model writes `import sympy`)
+
+### Output matching
+
+After code execution, `_match_to_option()` finds the best matching option:
+- First checks if the output is directly a valid option key ("2", "0", etc.)
+- Extracts all standalone numbers (not embedded in identifiers like `Z_3`)
+- Handles fractions in option text: `{3}/{4}`, `3/4`, and `\frac{3}{4}` all
+  parse to 0.75 for comparison
+- Matches by minimum absolute difference (tolerance: exact match preferred)
+
+### Logging
+
+Every code-executor run is logged to `AgenticAI_scripts/` with:
+- Full question text and options
+- Retrieved context (if any)
+- Generated Python code
+- Code output / error message
+- Final answer and time taken
+- After-the-fact verdict and running accuracy (from `log_result()`)
+
+Log files are renamed to `LOCAL_Xof63_timestamp.txt` after offline evaluation.
+
+---
+
+## Failure Taxonomy
+
+From analysing the 63Q logs:
+
+| Failure type | Approx frequency | Example |
+|---|---|---|
+| Wrong theorem / domain | ~25% | Applied normal dist to a non-normal problem |
+| SymPy type error (pre-fix) | ~10% | `round(sp.sqrt(2))` crashed |
+| Code produced no output | ~8% | Loop with no `print` |
+| Code logic error | ~15% | Wrong formula or off-by-one |
+| Conceptual question guessed | ~20% | Text-path answers for abstract algebra |
+| Retrieval mismatch | ~10% | Retrieved unrelated passage, confused model |
+| Trivial code guard triggered | ~5% | Model wrote `print(2)` as a guess |
+| Verify format mismatch | ~100% verify runs | `ANSWER: _3` not matched |
+
+---
+
 ## Configuration Summary
 
 | Config file | Model | Retrieval | Code | Notes |
