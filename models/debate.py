@@ -2,6 +2,8 @@ import torch
 from models.LLM import LLMModel, SYSTEM_PROMPTS, _SEP
 
 _QWEN_CONFIDENCE_THRESHOLD = 0.95   # Qwen must be this sure to trigger shortcut
+_DEBATE_CONFIDENT_AGREE   = 0.65   # both must exceed this for agreement to skip debate (Rule 3)
+_LLAMA_MIN_DEBATE_CONF    = 0.40   # Llama must exceed this to present its case   (Rule 2)
 
 _DEBATE_SYSTEM = (
     "You are debating a multiple-choice quiz question. "
@@ -218,6 +220,13 @@ class DebateModel:
             log(f"{'CONTEXT TEXT':<17}:\n{preview}")
         log("")
 
+        # ── Rule 1: no context → debate is pointless, fall back to Qwen memory ─
+        if not context:
+            log(f"{'NO CONTEXT':<17}: debate skipped → Qwen memory answer={opt_a}")
+            answer = int(opt_a)
+            log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
+            return answer
+
         # ── Phase 3: both vote with context via 1-token probe (fast) ──────────
         opt_a3, conf_a3, cprobs_a = self.model_a._probe_memory(question_text, options, context=context)
         opt_b3, conf_b3, cprobs_b = self.model_b._probe_memory(question_text, options, context=context)
@@ -232,32 +241,50 @@ class DebateModel:
         if cprobs_b:
             log(f"{'  B PROBS':<17}: {'  '.join(f'{k}:{int(v*100)}%' for k, v in cprobs_b.items())}")
 
+        # ── Rule 3: agreement shortcut only when BOTH are confident ───────────
         if ans_a == ans_b:
-            answer = ans_a
-            log(f"{'CTX VOTE':<17}: AGREE → {answer}")
-            log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
-            return answer
-
-        log(f"{'CTX VOTE':<17}: DISAGREE  A={ans_a}  B={ans_b} → debate")
+            if conf_a3 >= _DEBATE_CONFIDENT_AGREE and conf_b3 >= _DEBATE_CONFIDENT_AGREE:
+                answer = ans_a
+                log(
+                    f"{'CTX VOTE':<17}: AGREE + both confident "
+                    f"(A={conf_a3:.0%} B={conf_b3:.0%}) → {answer}"
+                )
+                log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
+                return answer
+            log(
+                f"{'CTX VOTE':<17}: AGREE but uncertain "
+                f"(A={conf_a3:.0%} B={conf_b3:.0%} threshold={int(_DEBATE_CONFIDENT_AGREE*100)}%) "
+                "→ debate anyway"
+            )
+        else:
+            log(f"{'CTX VOTE':<17}: DISAGREE  A={ans_a}  B={ans_b} → debate")
         log("")
 
-        # ── Phase 4: one debate round — Llama presents, Qwen decides ──────────
-        log(f"{'DEBATE':<17}: Llama-3B presents case → Qwen-7B decides")
+        # ── Phase 4: one debate round ──────────────────────────────────────────
+        # Rule 2: Llama only presents if its context-probe confidence is ≥ 40%.
+        # Below that threshold it cannot mount a credible argument, so Qwen
+        # decides based on its own Phase 3 answer.
+        if conf_b3 >= _LLAMA_MIN_DEBATE_CONF:
+            log(f"{'DEBATE':<17}: Llama-3B presents case (conf={conf_b3:.0%}) → Qwen-7B decides")
+            _, llama_reason, llama_key = self._debate_generate(
+                self.model_b, question_text, options, context,
+                prior_answer=str(ans_b),
+            )
+            log(f"{'LLAMA CASE':<17}: option={llama_key} ({options.get(llama_key, '?')!r})")
+            log(f"{'  reason':<17}: {llama_reason!r}")
 
-        _, llama_reason, llama_key = self._debate_generate(
-            self.model_b, question_text, options, context,
-            prior_answer=str(ans_b),   # anchor to Phase 3 answer, prevent hallucination drift
-        )
-        log(f"{'LLAMA CASE':<17}: option={llama_key} ({options.get(llama_key, '?')!r})")
-        log(f"{'  reason':<17}: {llama_reason!r}")
-
-        # Qwen reads Llama's argument via 1-token probe — avoids the generation
-        # parsing bug where the model writes correct reasoning but a wrong digit.
-        debate_ctx = (context + "\n\n" if context else "") + f"Challenger argument: {llama_reason}"
-        _, _, qwen_probs = self.model_a._probe_memory(question_text, options, context=debate_ctx)
-        final_key = max(qwen_probs, key=qwen_probs.get)
-        q_str = "  ".join(f"{k}:{int(v*100)}%" for k, v in qwen_probs.items())
-        log(f"{'QWEN FINAL':<17}: option={final_key} ({options.get(final_key, '?')!r})  [{q_str}]")
+            debate_ctx = context + f"\n\nChallenger argument: {llama_reason}"
+            _, _, qwen_probs = self.model_a._probe_memory(question_text, options, context=debate_ctx)
+            final_key = max(qwen_probs, key=qwen_probs.get)
+            q_str = "  ".join(f"{k}:{int(v*100)}%" for k, v in qwen_probs.items())
+            log(f"{'QWEN FINAL':<17}: option={final_key} ({options.get(final_key, '?')!r})  [{q_str}]")
+        else:
+            log(
+                f"{'DEBATE':<17}: Llama conf={conf_b3:.0%} < "
+                f"{int(_LLAMA_MIN_DEBATE_CONF*100)}% → too uncertain to present, "
+                "Qwen decides alone"
+            )
+            final_key = str(ans_a)
 
         answer = int(final_key)
         log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
