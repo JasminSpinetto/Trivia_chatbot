@@ -1,12 +1,18 @@
 import os
 import re
 import random
+import warnings
 import numpy as np
 import torch
 from datetime import datetime
 from typing import Optional
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
 from utils.HF_login import HF_login
+
+# Silence the bitsandbytes _check_is_size FutureWarning that fires once per
+# quantized layer per forward pass — cosmetic noise, does not affect results.
+warnings.filterwarnings("ignore", message=r".*_check_is_size.*")
+warnings.filterwarnings("ignore", category=FutureWarning, module=r"bitsandbytes.*")
 
 SYSTEM_PROMPTS = {
     "default": (
