@@ -244,12 +244,13 @@ class DebateModel:
         log(f"{'LLAMA CASE':<17}: option={llama_key} ({options.get(llama_key, '?')!r})")
         log(f"{'  reason':<17}: {llama_reason!r}")
 
-        _, qwen_reason, final_key = self._debate_generate(
-            self.model_a, question_text, options, context,
-            opponent={"key": llama_key, "reason": llama_reason},
-        )
-        log(f"{'QWEN FINAL':<17}: option={final_key} ({options.get(final_key, '?')!r})")
-        log(f"{'  reason':<17}: {qwen_reason!r}")
+        # Qwen reads Llama's argument via 1-token probe — avoids the generation
+        # parsing bug where the model writes correct reasoning but a wrong digit.
+        debate_ctx = (context + "\n\n" if context else "") + f"Challenger argument: {llama_reason}"
+        _, _, qwen_probs = self.model_a._probe_memory(question_text, options, context=debate_ctx)
+        final_key = max(qwen_probs, key=qwen_probs.get)
+        q_str = "  ".join(f"{k}:{int(v*100)}%" for k, v in qwen_probs.items())
+        log(f"{'QWEN FINAL':<17}: option={final_key} ({options.get(final_key, '?')!r})  [{q_str}]")
 
         answer = int(final_key)
         log(f"{'ANSWER':<17}: {answer} → {options.get(str(answer), '?')}")
