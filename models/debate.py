@@ -5,9 +5,10 @@ _QWEN_CONFIDENCE_THRESHOLD = 0.95   # Qwen must be this sure to trigger shortcut
 
 _DEBATE_SYSTEM = (
     "You are debating a multiple-choice quiz question. "
-    "Read the question and any provided context carefully. "
-    "Write your reasoning in ONE concise sentence, "
-    "then on the very last line write ONLY the option number."
+    "Read the context carefully. In ONE sentence you MUST do one of two things:\n"
+    "  • Quote or paraphrase what the context says that supports your answer, OR\n"
+    "  • State explicitly that the context does not support any option, and why you chose based on your knowledge.\n"
+    "Then on the very last line write ONLY the option number."
 )
 
 
@@ -88,8 +89,9 @@ class DebateModel:
                 f"{ctx_block}"
                 f"Question: {question}\n\nOptions:\n{options_str}\n\n"
                 f"You previously chose option {prior_answer} ({prior_label!r}). "
-                "Using the context above, defend or reconsider this position in one sentence, "
-                "then write your final answer as a single number on the last line."
+                "In one sentence, state what the context says that supports or contradicts this choice "
+                "(or that the context gives no relevant information). "
+                "Then write your final answer as a single number on the last line."
             )
         elif opponent:
             opp_label = options.get(str(opponent["key"]), "?")
@@ -98,15 +100,16 @@ class DebateModel:
                 f"Question: {question}\n\nOptions:\n{options_str}\n\n"
                 f"Your opponent chose option {opponent['key']} ({opp_label!r}) "
                 f"saying: \"{opponent['reason']}\"\n\n"
-                "Using the context above, explain in one sentence why you agree or "
-                "disagree, then write your final answer as a single number on the last line."
+                "In one sentence, state whether the context supports or contradicts their reading, "
+                "then write your final answer as a single number on the last line."
             )
         else:
             user_content = (
                 f"{ctx_block}"
                 f"Question: {question}\n\nOptions:\n{options_str}\n\n"
-                "Using the context above, give your reasoning in one sentence, "
-                "then write your final answer as a single number on the last line."
+                "In one sentence, quote or paraphrase the context evidence that leads to your answer "
+                "(or state that the context provides no relevant information). "
+                "Then write your final answer as a single number on the last line."
             )
 
         messages = [
@@ -199,7 +202,11 @@ class DebateModel:
             log(f"{'TOOL SELECT':<17}: heuristic → {tool}")
         else:
             log(f"{'TOOL SELECT':<17}: llm={source_tag!r} → {tool}")
-            if query:
+            if isinstance(query, dict):
+                log(f"{'QUERY TITLE':<17}: {query.get('title')!r}")
+                if query.get("alternatives"):
+                    log(f"{'QUERY ALTS':<17}: {query['alternatives']}")
+            elif query:
                 log(f"{'QUERY (LLM)':<17}: {query!r}")
 
         context = self.model_a._retriever.get_context_for_tool(

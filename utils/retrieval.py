@@ -8,7 +8,7 @@ from urllib3.util.retry import Retry
 
 _PARALLEL_TIMEOUT = 5.0   # per search-phase budget; extract batch is one extra call
 _MAX_CONTEXT_LEN  = 5000
-_MAX_ARTICLES     = 4     # keep only the top-scoring articles to avoid "lost in the middle"
+_MAX_ARTICLES     = 2     # keep only the top-scoring articles to avoid "lost in the middle"
 _WIKI_SENTENCES   = 25    # sentences per article summary
 _MAX_WORKERS      = 4     # concurrent search calls (I/O-bound, safe for Colab)
 
@@ -463,13 +463,89 @@ class Retriever:
 
     # ── individual tool retrieval methods ──────────────────────────────────────
 
-    def _get_wikipedia_context(self, question: str, options: dict, query: str = None) -> str:
-        """Wikipedia-only retrieval — exactly one search request per question.
+    def _opensearch_title(self, title: str):
+        """Resolve a guessed article title via Wikipedia's opensearch endpoint.
 
-        Uses the LLM-generated query when available; otherwise falls back to
-        the single best auto-focused query.  One _run_queries() call = one search
-        API call + one extract batch call.
+        opensearch does title-prefix matching (what the Wikipedia search box uses),
+        much more precise than list=search full-text for well-known article names.
+        Returns the best non-disambiguation title string, or None on miss/error.
         """
+        if not title:
+            return None
+        try:
+            r = self._session.get(
+                _WIKI_API,
+                params={"action": "opensearch", "search": title,
+                        "limit": 5, "namespace": 0, "format": "json"},
+                timeout=3,
+            )
+            r.raise_for_status()
+            data   = r.json()
+            titles = data[1] if len(data) > 1 else []
+            # Exact case-insensitive match wins; otherwise first non-disambiguation
+            for t in titles:
+                if t.lower() == title.lower():
+                    return t
+            for t in titles:
+                if "(disambiguation)" not in t.lower():
+                    return t
+            return titles[0] if titles else None
+        except Exception as e:
+            self._log(f"OPENSEARCH ERR   : {title!r} → {e}")
+            return None
+
+    def _get_wikipedia_context(self, question: str, options: dict, query=None) -> str:
+        """Wikipedia-only retrieval.
+
+        When query is a dict {"title": ..., "alternatives": [...]} (from the
+        structured LLM JSON output):
+          Phase 1 — opensearch with the LLM-guessed title (precise title match).
+          Phase 2 — list=search with the alternative terms if Phase 1 misses.
+
+        When query is a plain string or None, falls back to the single best
+        auto-focused query via list=search (original behaviour).
+        """
+        if isinstance(query, dict):
+            title        = query.get("title", "").strip()
+            alternatives = [a for a in query.get("alternatives", []) if a.strip()]
+
+            # Phase 1: opensearch with LLM title guess
+            matched = self._opensearch_title(title) if title else None
+            if matched:
+                self._log(f"OPENSEARCH HIT   : {matched!r}")
+                extracts  = self._fetch_extracts([matched])
+                seen_text, unique = set(), []
+                for t, ctx in extracts.items():
+                    if ctx[:80] not in seen_text and _is_relevant(question, ctx):
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"WIKI ACCEPTED    : [{t}]")
+                    elif ctx[:80] not in seen_text:
+                        self._log(f"WIKI REJECTED    : [{t}] (relevance too low)")
+                if unique:
+                    return self._score_and_combine(unique, question)
+                self._log("OPENSEARCH MISS  : not relevant → trying alternatives")
+            else:
+                self._log(f"OPENSEARCH MISS  : no title match for {title!r}")
+
+            # Phase 2: list=search with alternatives (or title as last resort)
+            fallback = alternatives or ([title] if title else [])
+            if not fallback:
+                return ""
+            self._log(f"WIKI FALLBACK    : {fallback}")
+            extracts, _ = self._run_queries(fallback, srlimit=3)
+            seen_text, unique = set(), []
+            for t, ctx in extracts.items():
+                if ctx[:80] not in seen_text:
+                    if _is_relevant(question, ctx):
+                        seen_text.add(ctx[:80])
+                        unique.append(ctx)
+                        self._log(f"WIKI ACCEPTED    : [{t}]")
+                    else:
+                        self._log(f"WIKI REJECTED    : [{t}] (relevance too low)")
+            return self._score_and_combine(unique, question)
+
+        # Plain string or None — original single-query behaviour
         if query:
             search_q = query
             self._log(f"WIKI QUERY       : {search_q!r}  (llm-generated)")
@@ -498,9 +574,14 @@ class Retriever:
 
         return self._score_and_combine(unique, question)
 
-    def _get_wiktionary_context(self, question: str, options: dict, query: str = None) -> str:
+    def _get_wiktionary_context(self, question: str, options: dict, query=None) -> str:
         """Wiktionary-only lookup — best for word definitions and etymology."""
-        if query:
+        if isinstance(query, dict):
+            # Use title as the primary term, alternatives as extras
+            terms = [query.get("title", "")] + query.get("alternatives", [])
+            terms = [t.strip() for t in terms if t.strip()]
+            self._log(f"WIKT LOOKUP      : {terms}  (llm-generated)")
+        elif query:
             terms = [query]
             self._log(f"WIKT LOOKUP      : {terms}  (llm-generated)")
         else:

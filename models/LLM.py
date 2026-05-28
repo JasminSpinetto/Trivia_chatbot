@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import random
 import warnings
 import numpy as np
@@ -33,11 +34,11 @@ TOOL_QUERY_PROMPT = (
     "  2 = wiktionary  — word definitions and etymology ONLY (NOT historical/cultural facts)\n\n"
     "IMPORTANT: use wiktionary ONLY when the question asks what a word or term MEANS "
     "linguistically — NOT for facts about a historical entity, person, or event.\n\n"
-    "Reply on ONE line in this exact format:  <digit> | <search query>\n"
+    'Reply on ONE line:  <digit> | {"title": "<most likely article title>", "alternatives": ["<alt1>", "<alt2>"]}\n'
     "For digit=0 write:  0 | none\n\n"
     "Examples:\n"
-    "  1 | Roman citizens body ancient Rome\n"
-    "  2 | logos\n"
+    '  1 | {"title": "Roman salute", "alternatives": ["fascist salute history", "Mussolini arm gesture"]}\n'
+    '  2 | {"title": "logos", "alternatives": ["logos Greek etymology", "logos meaning"]}\n'
     "  0 | none"
 )
 
@@ -130,21 +131,34 @@ _WIKT_TRANSLATE_RE = re.compile(r"\btranslates?\s+(?:to|from|as)\b", re.IGNORECA
 
 
 def _parse_tool_query(raw: str) -> tuple:
-    """Parse '<digit> | <query>' → (tool, query_or_None).
+    """Parse '<digit> | <json_or_string>' → (tool, query).
 
-    Handles missing pipe, missing query, 'none' query, and unexpected text gracefully.
+    query is a dict {"title": str, "alternatives": list} when JSON parsed
+    successfully, a plain string as graceful fallback, or None for digit=0.
     """
     raw = raw.strip()
     if "|" in raw:
         digit_part, query_part = raw.split("|", 1)
         digit = digit_part.strip().strip(".,!?:;")
-        query = query_part.strip()
+        query_str = query_part.strip()
     else:
-        digit = raw.split()[0].strip(".,!?:;") if raw else ""
-        query = ""
-    tool  = _TOOL_MAP.get(digit, "wikipedia")
-    query = None if not query or query.lower() in ("none", "-", "n/a") else query
-    return tool, query
+        digit     = raw.split()[0].strip(".,!?:;") if raw else ""
+        query_str = ""
+    tool = _TOOL_MAP.get(digit, "wikipedia")
+    if not query_str or query_str.lower() in ("none", "-", "n/a"):
+        return tool, None
+    # Try structured JSON first
+    try:
+        data = json.loads(query_str)
+        if isinstance(data, dict) and "title" in data:
+            return tool, {
+                "title":        str(data.get("title", "")).strip(),
+                "alternatives": [str(a).strip() for a in data.get("alternatives", []) if a],
+            }
+    except (json.JSONDecodeError, ValueError):
+        pass
+    # Fallback: plain string (e.g. model ignored the JSON format instruction)
+    return tool, query_str
 
 
 def _extract_quoted(question: str) -> list:
@@ -659,7 +673,11 @@ class LLMModel:
                     self._log(f"{'TOOL SELECT':<17}: {source_tag} → none")
                 else:
                     self._log(f"{'TOOL SELECT':<17}: llm={source_tag!r} → {tool}")
-                    if query:
+                    if isinstance(query, dict):
+                        self._log(f"{'QUERY TITLE':<17}: {query.get('title')!r}")
+                        if query.get("alternatives"):
+                            self._log(f"{'QUERY ALTS':<17}: {query['alternatives']}")
+                    elif query:
                         self._log(f"{'QUERY (LLM)':<17}: {query!r}")
                 context = self._retriever.get_context_for_tool(
                     tool, question_text, options, query=query
