@@ -34,6 +34,10 @@ TOOL_QUERY_PROMPT = (
     "  2 = wiktionary  — word definitions and etymology ONLY (NOT historical/cultural facts)\n\n"
     "IMPORTANT: use wiktionary ONLY when the question asks what a word or term MEANS "
     "linguistically — NOT for facts about a historical entity, person, or event.\n\n"
+    "You will see the answer options. Use them ONLY to identify the topic domain "
+    "(e.g. if options are Egyptian period names, search Egypt). "
+    "Do NOT write a query that searches for one specific option — write a neutral "
+    "query about the underlying concept in the question.\n\n"
     'Reply on ONE line:  <digit> | {"title": "<most likely article title>", "alternatives": ["<alt1>", "<alt2>"]}\n'
     "For digit=0 write:  0 | none\n\n"
     "Examples:\n"
@@ -419,12 +423,14 @@ class LLMModel:
             return tag, "none", None, mem_option, mem_probs
 
         # ── 3. LLM tool + query call ──────────────────────────────────────────
-        # Options are intentionally hidden — seeing them causes the model to
-        # anchor on a guessed answer and write a confirmation query rather than
-        # a genuine search for the underlying fact.
+        # Options are shown so the model can infer the topic domain (e.g. seeing
+        # "Old Kingdom / New Kingdom" tells it this is an Egypt question).
+        # The prompt instructs it to use options for domain only, not to anchor
+        # on a specific answer.
+        options_str = "\n".join(f"  {k}: {v}" for k, v in options.items())
         messages = [
             {"role": "system", "content": TOOL_QUERY_PROMPT},
-            {"role": "user",   "content": f"Question: {question_text}"},
+            {"role": "user",   "content": f"Question: {question_text}\n\nOptions:\n{options_str}"},
         ]
         text   = self.pipe.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
