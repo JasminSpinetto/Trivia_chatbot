@@ -11,7 +11,27 @@
       "Bash(python -c \"from sympy.polys.domains import ZZ, QQ, GF; print\\('ZZ:', ZZ\\); print\\('GF\\(3\\):', GF\\(3\\)\\); from sympy import Poly, symbols; x=symbols\\('x'\\); p=Poly\\(x**3+x**2+1, x, domain=GF\\(3\\)\\); print\\('is_irreducible:', p.is_irreducible\\)\")",
       "Bash(python main.py --help)",
       "Bash(python debug_retrieval.py)",
-      "Bash(Select-String \"\\\\.md\")"
+      "Bash(Select-String \"\\\\.md\")",
+      "Bash(python)",
+      "Bash(python _nb_insert.py)",
+      "Bash(del _nb_insert.py)",
+      "Bash(python _fix_nb.py)",
+      "Bash(del \"c:\\\\Users\\\\PC\\\\Desktop\\\\GITHUB REPO\\\\NLP_challenge\\\\_fix_nb.py\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\PC\\\\Desktop\\\\GITHUB REPO\\\\NLP_challenge\\\\_fix_nb.py\")",
+      "Bash(python _enrich_nb.py)",
+      "Bash(data/math_questions.json)",
+      "Bash(phi4_dense)",
+      "Bash(phi4_dense_router)",
+      "Bash(qwen25_dense)",
+      "Bash(phi4_wiki_code)",
+      "Bash(python _fix_table.py)",
+      "Bash(python _scan_comments.py)",
+      "Bash(python _trim_comments.py)",
+      "Bash(python _ns_cell.py)",
+      "Bash(Remove-Item _ns_cell.py)",
+      "Bash(rm -f _ns_cell.py)",
+      "Bash(python _fix_free_mem.py)",
+      "Bash(python _fix_ns.py)"
     ],
     "additionalDirectories": [
       "C:\\Users\\PC\\.cache\\huggingface\\hub"
